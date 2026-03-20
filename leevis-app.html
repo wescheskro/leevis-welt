@@ -203,7 +203,7 @@ body{
 .pkey.bk:active{background:#555}
 
 /* ===== YOUTUBE SCREEN ===== */
-.yt-cats{display:flex;gap:8px;flex:1;flex-wrap:wrap;padding:0;background:none;border:none;transition:none}
+.yt-cats{display:flex;gap:8px;flex:1;flex-wrap:nowrap;padding:0;background:none;border:none;transition:none;overflow-x:auto;-webkit-overflow-scrolling:touch}
 .yt-cats.hidden-scroll{opacity:1;margin-top:0;pointer-events:auto}
 .yt-cat{background:rgba(255,255,255,0.15);border:2px solid rgba(255,255,255,0.25);border-radius:16px;width:140px;height:140px;font-size:4.8em;cursor:pointer;color:#fff;transition:all 0.15s;touch-action:manipulation;display:flex;align-items:center;justify-content:center;text-align:center;line-height:1;padding:4px;flex-shrink:0}
 .yt-cat:active{transform:scale(0.95)}
@@ -412,7 +412,7 @@ body{
 
 <!-- AAC (SPRECHEN) SCREEN -->
 <div class="screen" id="aac">
-  <div class="topbar blue" style="flex-wrap:wrap"><button class="back-btn" onclick="go('home')">←</button><div class="aac-cats" id="aacCats"></div></div>
+  <div class="topbar blue" style="flex-wrap:nowrap"><button class="back-btn" onclick="go('home')">←</button><div class="aac-cats" id="aacCats"></div></div>
   <div class="sentence-bar">
     <div class="sentence" id="sentence">Tippe auf Bilder...</div>
     <button class="speak-btn" onclick="speakAll()">🔊</button>
@@ -423,19 +423,19 @@ body{
 
 <!-- LEARN SCREEN -->
 <div class="screen" id="learn">
-  <div class="topbar green" style="flex-wrap:wrap"><button class="back-btn" onclick="go('home')">←</button><div class="learn-cats" id="learnCats"></div></div>
+  <div class="topbar green" style="flex-wrap:nowrap"><button class="back-btn" onclick="go('home')">←</button><div class="learn-cats" id="learnCats"></div></div>
   <div class="game-area" id="gArea"></div>
 </div>
 
 <!-- MUSIC SCREEN -->
 <div class="screen" id="music">
-  <div class="topbar orange" style="flex-wrap:wrap"><button class="back-btn" onclick="go('home')">←</button><div class="music-cats" id="musicCats"></div></div>
+  <div class="topbar orange" style="flex-wrap:nowrap"><button class="back-btn" onclick="go('home')">←</button><div class="music-cats" id="musicCats"></div></div>
   <div class="music-content" id="musicContent" style="flex:1;overflow-y:auto;padding:10px"></div>
 </div>
 
 <!-- YOUTUBE SCREEN -->
 <div class="screen" id="youtube">
-  <div class="topbar red" style="flex-wrap:wrap"><button class="back-btn" onclick="ytBack()">←</button><div class="yt-cats" id="ytCats"></div></div>
+  <div class="topbar red" style="flex-wrap:nowrap"><button class="back-btn" onclick="ytBack()">←</button><div class="yt-cats" id="ytCats"></div></div>
   <div class="yt-grid" id="ytGrid" style="padding-bottom:76px"></div>
   <div class="yt-player" id="ytPlayer" style="display:none;padding-bottom:68px">
     <iframe id="ytPlayerFrame" style="flex:1;width:100%;border:none" allow="autoplay;encrypted-media" allowfullscreen></iframe>
