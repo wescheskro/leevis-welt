@@ -59,7 +59,7 @@
   --category-purple:#6A1B9A;
   --category-red:#C62828
 }
-html,body{height:100%;overflow:hidden}
+html,body{height:100%;overflow:hidden;touch-action:manipulation}
 body{
   font-family:'Segoe UI',system-ui,-apple-system,sans-serif;
   background:var(--dark-bg);
@@ -68,7 +68,7 @@ body{
   -webkit-user-select:none;
   -webkit-user-drag:none
 }
-.screen{display:none;height:100vh;width:100vw;position:absolute;top:0;left:0;flex-direction:column;overflow:hidden;background:var(--dark-bg);opacity:0;transition:opacity 0.3s ease;z-index:1}
+.screen{display:none;height:100vh;width:100vw;position:absolute;top:0;left:0;flex-direction:column;overflow:hidden;background:var(--dark-bg);opacity:0;transition:opacity 0.3s ease;z-index:1;min-height:0}
 .screen.active{display:flex;opacity:1}
 
 /* ===== PEPPA FLOATING BUDDY =====
@@ -91,7 +91,7 @@ body{
 
 /* ===== HOME ===== */
 #home{background:linear-gradient(135deg,var(--dark-bg2) 0%,var(--dark-bg3) 100%);justify-content:center;align-items:center;padding:1vh 10px;padding-bottom:76px}
-.home-inner{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:0;overflow:hidden;width:100%}
+.home-inner{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:0;overflow-y:scroll;-webkit-overflow-scrolling:touch;touch-action:pan-y;width:100%}
 .home-title{color:var(--text-primary);font-size:clamp(1.4em,4.5vh,3.2em);font-weight:900;text-shadow:2px 2px 4px rgba(0,0,0,0.5);flex-shrink:0}
 .home-buddy{width:clamp(50px,14vh,140px);height:clamp(50px,14vh,140px);margin:0.5vh 0;animation:buddyBounce 2s infinite;flex-shrink:1}
 .home-buddy img{width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 8px 20px rgba(0,0,0,0.4))}
@@ -145,7 +145,7 @@ body{
 /* MOTOR PLANNING: AAC grid is always 2 columns. Items within a category
  * are NEVER reordered. The item at position [row,col] is always the same
  * pictogram for a given category. */
-.aac-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(clamp(80px,15vw,130px),1fr));gap:clamp(6px,1.2vw,10px);padding:clamp(6px,1.2vw,10px);flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;align-content:start;touch-action:pan-y}
+.aac-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(clamp(80px,15vw,130px),1fr));gap:clamp(6px,1.2vw,10px);padding:clamp(6px,1.2vw,10px);flex:1;overflow-y:auto;overflow-y:scroll;-webkit-overflow-scrolling:touch;align-content:start;touch-action:pan-y;min-height:0}
 .aac-card{background:var(--card-bg);border-radius:clamp(10px,2vw,16px);padding:clamp(6px,1.5vw,14px) clamp(4px,1vw,8px);display:flex;flex-direction:column;align-items:center;gap:clamp(4px,1vw,8px);cursor:pointer;transition:all 0.15s;box-shadow:0 3px 12px rgba(0,0,0,0.3);border:2px solid var(--border);justify-content:center;touch-action:pan-y}
 .aac-card:active{transform:scale(0.93);background:var(--card-bg2)}
 .aac-card .pic{width:clamp(60px,18vw,140px);height:clamp(60px,18vw,140px);object-fit:contain}
@@ -169,7 +169,7 @@ body{
 .learn-cat.active{border-width:3px;box-shadow:0 0 10px rgba(255,255,255,0.3);background:rgba(255,255,255,0.35);border-color:#fff}
 
 /* ===== GAME SCREEN ===== */
-.game-area{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:16px;overflow-y:auto;-webkit-overflow-scrolling:touch;gap:8px;touch-action:pan-y}
+.game-area{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:16px;overflow-y:scroll;-webkit-overflow-scrolling:touch;gap:8px;touch-action:pan-y;min-height:0}
 .g-progress{display:flex;gap:6px;margin-bottom:4px}
 .g-dot{width:14px;height:14px;border-radius:50%;background:rgba(255,255,255,0.15);transition:all 0.3s}
 .g-dot.done{background:var(--green);box-shadow:0 0 6px var(--green)}
@@ -200,7 +200,7 @@ body{
 @keyframes starSpin{0%{transform:scale(0) rotate(-180deg);opacity:0}100%{transform:scale(1) rotate(0deg);opacity:1}}
 
 /* ===== MUSIC SCREEN ===== */
-.music-list{display:flex;flex-direction:column;gap:clamp(8px,1.5vw,12px);padding:clamp(8px,2vw,16px);flex:1;overflow-y:auto}
+.music-list{display:flex;flex-direction:column;gap:clamp(8px,1.5vw,12px);padding:clamp(8px,2vw,16px);flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;touch-action:pan-y;min-height:0}
 .music-box{background:var(--card-bg);border-radius:clamp(10px,2.5vw,18px);padding:clamp(10px,2vw,16px);box-shadow:0 3px 12px rgba(0,0,0,0.3);border:1px solid var(--border)}
 .music-box h3{font-size:clamp(0.8em,2vw,1em);color:var(--text-primary);margin-bottom:clamp(6px,1.2vw,10px)}
 .snd-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(clamp(100px,20vw,160px),1fr));gap:clamp(8px,1.5vw,14px)}
@@ -221,7 +221,7 @@ body{
 .yt-cat .cat-icon{font-size:5.6em;line-height:1}
 .yt-cat:active{transform:scale(0.95)}
 .yt-cat.active{background:rgba(255,255,255,0.35);color:#fff;border-color:#fff;box-shadow:0 0 10px rgba(255,255,255,0.3)}
-.yt-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(clamp(140px,28vw,280px),1fr));gap:clamp(8px,1.5vw,14px);padding:clamp(8px,1.5vw,14px);flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;align-content:start;min-height:0;grid-auto-rows:min-content}
+.yt-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(clamp(140px,28vw,280px),1fr));gap:clamp(8px,1.5vw,14px);padding:clamp(8px,1.5vw,14px);flex:1;overflow-y:scroll;-webkit-overflow-scrolling:touch;align-content:start;min-height:0;grid-auto-rows:min-content;touch-action:pan-y}
 .yt-card{background:var(--card-bg);border-radius:clamp(10px,2vw,16px);overflow:hidden;box-shadow:0 3px 12px rgba(0,0,0,0.3);cursor:pointer;transition:all 0.15s;border:1px solid var(--border);touch-action:pan-y}
 .yt-card:active{transform:scale(0.98)}
 .yt-thumb{width:100%;aspect-ratio:16/9;background:#000;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
@@ -256,7 +256,7 @@ body{
 .credits-container{--cred-bg:#05051a}
 .credits-container::before{content:'';position:absolute;top:0;left:0;right:0;height:100px;background:linear-gradient(to bottom,var(--cred-bg) 20%,transparent);z-index:2;pointer-events:none}
 .credits-container::after{content:'';position:absolute;bottom:56px;left:0;right:0;height:100px;background:linear-gradient(to top,var(--cred-bg) 20%,transparent);z-index:2;pointer-events:none}
-.credits-scroll{flex:1;overflow-y:auto;padding:70px 16px 90px;color:#d4d4e8;font-size:1.3em;line-height:2.2;text-align:center;font-family:'Courier New','Lucida Console',monospace;scrollbar-width:none;-ms-overflow-style:none;position:relative;z-index:1;width:100%;box-sizing:border-box}
+.credits-scroll{flex:1;overflow-y:scroll;-webkit-overflow-scrolling:touch;touch-action:pan-y;min-height:0;padding:70px 16px 90px;color:#d4d4e8;font-size:1.3em;line-height:2.2;text-align:center;font-family:'Courier New','Lucida Console',monospace;scrollbar-width:none;-ms-overflow-style:none;position:relative;z-index:1;width:100%;box-sizing:border-box}
 .credits-scroll::-webkit-scrollbar{display:none}
 .credits-title-block{margin:50px 0 60px;padding:20px 0}
 .credits-movie-title{font-size:2.2em;letter-spacing:8px;color:#ffffff;text-transform:uppercase;font-weight:300;text-shadow:0 0 40px rgba(150,130,255,0.3)}
@@ -313,7 +313,7 @@ body{
 
 /* ===== CALM MODE ===== */
 #calm{background:linear-gradient(135deg,var(--dark-bg2) 0%,var(--dark-bg3) 50%,#0a0a15 100%);overflow:hidden}
-.calm-content{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;padding-bottom:80px;text-align:center;position:relative;overflow-y:auto;overflow-x:hidden}
+.calm-content{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;padding-bottom:80px;text-align:center;position:relative;overflow-y:scroll;overflow-x:hidden;-webkit-overflow-scrolling:touch;touch-action:pan-y;min-height:0}
 .calm-stars{position:absolute;top:0;left:0;right:0;bottom:0;pointer-events:none}
 .calm-star{position:absolute;background:#e0e0e0;border-radius:50%;animation:twinkle 3s infinite ease-in-out}
 @keyframes twinkle{0%,100%{opacity:0.2;transform:scale(0.8)}50%{opacity:1;transform:scale(1.2)}}
@@ -442,7 +442,7 @@ body{
 <!-- MUSIC SCREEN -->
 <div class="screen" id="music">
   <div class="topbar orange" style="flex-wrap:nowrap"><button class="back-btn" onclick="go('home')">←</button><div class="music-cats" id="musicCats"></div></div>
-  <div class="music-content" id="musicContent" style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:10px;touch-action:pan-y"></div>
+  <div class="music-content" id="musicContent" style="flex:1;overflow-y:scroll;-webkit-overflow-scrolling:touch;padding:10px;touch-action:pan-y;min-height:0"></div>
 </div>
 
 <!-- YOUTUBE SCREEN -->
@@ -459,7 +459,7 @@ body{
     <div id="ytPlayerInfo" style="padding:12px 16px;background:var(--dark-bg2);border-bottom:1px solid var(--border)">
       <h3 id="ytPlayerTitle" style="font-size:1.1em;color:var(--text-primary);margin:0"></h3>
     </div>
-    <div id="ytRelated" class="yt-grid" style="flex:1;overflow-y:auto;padding:10px;padding-bottom:76px"></div>
+    <div id="ytRelated" class="yt-grid" style="flex:1;overflow-y:scroll;-webkit-overflow-scrolling:touch;touch-action:pan-y;min-height:0;padding:10px;padding-bottom:76px"></div>
   </div>
 </div>
 
@@ -576,7 +576,7 @@ body{
       <button class="close-dash-btn" onclick="closePin()">Abbrechen</button>
     </div>
   </div>
-  <div style="position:absolute;top:0;left:0;right:0;bottom:0;overflow-y:auto;-webkit-overflow-scrolling:touch;display:none;padding:clamp(10px,2vw,20px)" id="dashContent">
+  <div style="position:absolute;top:0;left:0;right:0;bottom:0;overflow-y:scroll;-webkit-overflow-scrolling:touch;display:none;padding:clamp(10px,2vw,20px);touch-action:pan-y" id="dashContent">
     <div class="dash">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:clamp(6px,1.5vw,12px)">
         <h2 style="color:var(--text-primary);margin:0">👨‍👩‍👦 Elternbereich</h2>
@@ -612,11 +612,14 @@ body{
       </div>
 
       <div class="dcard">
-        <h3>📺 YouTube API Key</h3>
-        <p style="font-size:0.8em;color:var(--text-secondary);margin-bottom:8px">Für automatische Video-Suche. Kostenlos auf console.cloud.google.com erstellen.</p>
-        <input type="text" id="ytApiKeyInput" placeholder="AIza..." style="width:100%;padding:8px 12px;border-radius:8px;border:1px solid var(--border);background:var(--dark-bg2);color:var(--text-primary);font-size:0.9em;box-sizing:border-box;margin-bottom:6px">
-        <button class="close-dash-btn" onclick="saveYTApiKey()" style="background:var(--category-green);color:#fff;border-color:var(--green);margin-top:4px">💾 Speichern</button>
-        <span id="ytApiKeyStatus" style="font-size:0.75em;color:var(--text-secondary);margin-left:8px"></span>
+        <h3>📺 YouTube API Keys (Rotation)</h3>
+        <p style="font-size:0.8em;color:var(--text-secondary);margin-bottom:8px">Mehrere Keys kommagetrennt eingeben. Bei Quota-Limit wechselt die App automatisch zum nächsten Key.</p>
+        <textarea id="ytApiKeyInput" placeholder="AIza..., AIza..., AIza..." rows="3" style="width:100%;padding:8px 12px;border-radius:8px;border:1px solid var(--border);background:var(--dark-bg2);color:var(--text-primary);font-size:0.85em;box-sizing:border-box;margin-bottom:6px;resize:vertical;font-family:monospace"></textarea>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+          <button class="close-dash-btn" onclick="saveYTApiKey()" style="background:var(--category-green);color:#fff;border-color:var(--green)">💾 Speichern</button>
+          <span id="ytKeyCount" style="font-size:0.8em;color:var(--accent-blue)"></span>
+          <span id="ytApiKeyStatus" style="font-size:0.75em;color:var(--text-secondary)"></span>
+        </div>
       </div>
 
       <div class="dcard">
@@ -678,6 +681,7 @@ body{
 <button id="ytScrollTopBtn" class="scroll-top-btn" onclick="document.getElementById('ytGrid').scrollTo({top:0,behavior:'smooth'})">▲</button>
 <div class="motor-bar" id="motorBar">
   <button class="motor-btn" onclick="toggleMoodPicker()" id="moodBtn"><img src="https://static.arasaac.org/pictograms/6517/6517_500.png" style="width:70%;height:70%;object-fit:contain"></button>
+  <button class="motor-btn" onclick="go('home');playSound('click')" style="background:var(--category-blue);border-color:var(--accent-blue);color:#fff;font-size:clamp(1.6em,4vw,2.6em)">🏠</button>
   <button class="motor-btn" onclick="go('credits');playSound('click')"><img src="https://static.arasaac.org/pictograms/9183/9183_500.png" style="width:70%;height:70%;object-fit:contain"></button>
 </div>
 <div class="mood-picker" id="moodPicker">
@@ -1671,64 +1675,171 @@ function initAlphabetGrid(){
 // API-Key wird einmalig im Eltern-Dashboard eingegeben (kostenlos).
 
 const ytCategories={
-  '🔢 Zahlen':{query:'Zahlen lernen Kinder deutsch Lied'},
-  '🔤 ABC':{query:'ABC Buchstaben lernen Kinder deutsch Lied'},
-  '🎬 Abspänne':{query:'movie studio logo intro animation'},
-  '🎵 Lieder':{query:'Kinderlieder deutsch zum Mitsingen'},
-  '🌙 Ruhe':{query:'Baby Sensory calming relaxing video'},
-  '🐷 Peppa Pig':{query:'Peppa Pig Deutsch'}
+  '🔢 Zahlen':{query:'Zahlen lernen Kinder deutsch Lied',fallback:[
+    {id:'DFaEfuopmJo',title:'Zahlen Lied 1-20'},
+    {id:'u0n4eMGXAyk',title:'Zahlen lernen für Kinder'},
+    {id:'GUmhNMCPSFY',title:'Zählen bis 100'},
+    {id:'W4Z11o6yMcs',title:'1234567 - Zahlenlied'},
+    {id:'DR-cfDseSdY',title:'Zahlen lernen 1 bis 10'},
+    {id:'FDrJWXIMSPo',title:'Zahlen 1-10 deutsch'}
+  ]},
+  '🔤 ABC':{query:'ABC Buchstaben lernen Kinder deutsch Lied',fallback:[
+    {id:'qkOFB3ByWbQ',title:'ABC Lied Deutsch'},
+    {id:'BELlZKpi1Zs',title:'Das Alphabet lernen'},
+    {id:'grVBiLjlmBo',title:'ABC Song Deutsch'},
+    {id:'SaGE2gAQ_kE',title:'Sing Kinderlieder ABC'},
+    {id:'yQzRxjJ-XBE',title:'Buchstaben A-Z lernen'},
+    {id:'3tx0rvuXIRg',title:'ABC lernen mit Bildern'}
+  ]},
+  '🎬 Abspänne':{query:'movie end credits rolling credits',fallback:[
+    {id:'v8YnyJxrEgQ',title:'Movie Credits Compilation'},
+    {id:'eFTLKWw542g',title:'Film Abspann Marathon'},
+    {id:'H5mLkTBZRVk',title:'End Credits Collection'},
+    {id:'gY5nOBGoyms',title:'Rolling Credits Mix'},
+    {id:'Q1sDmooVHj8',title:'Movie Outro Compilation'},
+    {id:'IUB-yA07jfg',title:'Film Credits Rolling'}
+  ]},
+  '🎵 Lieder':{query:'Kinderlieder deutsch zum Mitsingen',fallback:[
+    {id:'0wSllz_hmzs',title:'Kinderlieder zum Mitsingen'},
+    {id:'Zu6o23Pu0Do',title:'Die Räder vom Bus'},
+    {id:'RHhZx-Ywkk4',title:'Alle meine Entchen'},
+    {id:'VkRUk1KPOEQ',title:'Häschen in der Grube'},
+    {id:'lXFjl_V2454',title:'Hoppe hoppe Reiter'},
+    {id:'4B_UYYPb-Gk',title:'Backe backe Kuchen'}
+  ]},
+  '🌙 Ruhe':{query:'Baby Sensory calming relaxing video',fallback:[
+    {id:'hlWiI4xVXKY',title:'Ruhige Musik zum Einschlafen'},
+    {id:'eKFTSSKCzWA',title:'Natur Geräusche'},
+    {id:'eFbKKsEoQNg',title:'Baby Sensory Calming'},
+    {id:'S3GrNQBBKMo',title:'Relaxing Visual'},
+    {id:'tVj0ZTS4WF4',title:'Ocean Waves Relaxation'},
+    {id:'qGEoEaUz_sU',title:'Night Sky Sensory'}
+  ]},
+  '🐷 Peppa Pig':{query:'Peppa Pig Deutsch',fallback:[
+    {id:'hMhJhRLsl34',title:'Peppa Wutz Deutsch'},
+    {id:'iy9Ij2QnpJM',title:'Peppa Pig Neue Folgen'},
+    {id:'4AILxySnXtk',title:'Peppa Wutz Abenteuer'},
+    {id:'G4JTz0wnGpE',title:'Peppa im Urlaub'},
+    {id:'ceGLEhahLKQ',title:'Peppa Wutz Ganze Folgen'},
+    {id:'YFhUaOSb05w',title:'Peppa Pig Compilation'}
+  ]}
 };
 
 let ytPlayerActive=false;
 let ytLoadGeneration=0;
 
-// --- API Key Management ---
-function getYTApiKey(){return localStorage.getItem('yt_api_key')||'AIzaSyCkMpSeYSoEbI9wnEm-cMn9U15YFSgUX60'}
+// --- API Key Management (Multi-Key Rotation) ---
+const YT_DEFAULT_KEYS=['AIzaSyC_LocCmhYdt8RN2E67t9F10e7vgJUTzsQ','AIzaSyCqFu2U7a9kvKuOquqiU8knbj2AONM3b3s'];
+function getYTApiKeys(){
+  try{
+    const stored=localStorage.getItem('yt_api_keys');
+    if(stored){const arr=JSON.parse(stored);if(arr.length>0)return arr}
+  }catch(e){}
+  // Fallback: alte Single-Key-Migration
+  const old=localStorage.getItem('yt_api_key');
+  if(old)return[old,...YT_DEFAULT_KEYS.filter(k=>k!==old)];
+  return[...YT_DEFAULT_KEYS];
+}
+function getYTCurrentKeyIndex(){return parseInt(localStorage.getItem('yt_key_idx')||'0')||0}
+function setYTCurrentKeyIndex(i){localStorage.setItem('yt_key_idx',String(i))}
+function getYTApiKey(){
+  const keys=getYTApiKeys();
+  if(keys.length===0)return null;
+  const idx=getYTCurrentKeyIndex()%keys.length;
+  return keys[idx];
+}
+function rotateYTApiKey(){
+  const keys=getYTApiKeys();
+  if(keys.length<=1)return null;
+  const oldIdx=getYTCurrentKeyIndex()%keys.length;
+  const newIdx=(oldIdx+1)%keys.length;
+  setYTCurrentKeyIndex(newIdx);
+  console.log('YT API Key rotiert: Key '+(newIdx+1)+'/'+keys.length);
+  return keys[newIdx];
+}
 function saveYTApiKey(){
   const input=document.getElementById('ytApiKeyInput');
   const status=document.getElementById('ytApiKeyStatus');
-  const key=input.value.trim();
-  if(key){
-    localStorage.setItem('yt_api_key',key);
-    status.textContent='Gespeichert!';
-    status.style.color='var(--green)';
-  }else{
-    localStorage.removeItem('yt_api_key');
-    status.textContent='Entfernt';
+  const raw=input.value.trim();
+  if(!raw){
+    localStorage.removeItem('yt_api_keys');
+    localStorage.removeItem('yt_key_idx');
+    status.textContent='Alle entfernt – Standard-Key aktiv';
     status.style.color='var(--red)';
+    updateKeyCountDisplay();
+    setTimeout(()=>{status.textContent=''},3000);
+    return;
   }
-  setTimeout(()=>{status.textContent=''},3000);
+  // Mehrere Keys: komma- oder zeilengetrennt
+  const keys=raw.split(/[,\n]+/).map(k=>k.trim()).filter(k=>k.startsWith('AIza'));
+  if(keys.length===0){
+    status.textContent='Ungültige Keys (müssen mit AIza... beginnen)';
+    status.style.color='var(--red)';
+  }else{
+    localStorage.setItem('yt_api_keys',JSON.stringify(keys));
+    setYTCurrentKeyIndex(0);
+    status.textContent=keys.length+' Key'+(keys.length>1?'s':'')+' gespeichert! Rotation aktiv.';
+    status.style.color='var(--green)';
+  }
+  updateKeyCountDisplay();
+  setTimeout(()=>{status.textContent=''},4000);
+}
+function updateKeyCountDisplay(){
+  const el=document.getElementById('ytKeyCount');
+  if(!el)return;
+  const keys=getYTApiKeys();
+  const idx=getYTCurrentKeyIndex()%keys.length;
+  el.textContent='Aktiv: Key '+(idx+1)+' von '+keys.length;
 }
 
-// --- YouTube Data API v3 Suche ---
+// --- YouTube Data API v3 Suche (mit Key-Rotation) ---
 async function searchYouTube(query,maxResults,pageToken){
-  const key=getYTApiKey();
-  if(!key)return null;
-  const params=new URLSearchParams({
-    part:'snippet',
-    type:'video',
-    maxResults:String(maxResults||12),
-    q:query,
-    safeSearch:'strict',
-    relevanceLanguage:'de',
-    key:key
-  });
-  if(pageToken)params.set('pageToken',pageToken);
-  const r=await fetch('https://www.googleapis.com/youtube/v3/search?'+params);
-  if(!r.ok){
-    const err=await r.json().catch(()=>({}));
-    console.warn('YouTube API Fehler:',r.status,err);
-    return null;
+  const keys=getYTApiKeys();
+  if(keys.length===0)return null;
+  // Versuche jeden Key einmal bei Quota-Fehler
+  for(let attempt=0;attempt<keys.length;attempt++){
+    const key=getYTApiKey();
+    if(!key)return null;
+    const params=new URLSearchParams({
+      part:'snippet',
+      type:'video',
+      maxResults:String(maxResults||12),
+      q:query,
+      safeSearch:'strict',
+      relevanceLanguage:'de',
+      key:key
+    });
+    if(pageToken)params.set('pageToken',pageToken);
+    try{
+      const r=await fetch('https://www.googleapis.com/youtube/v3/search?'+params);
+      if(r.ok){
+        const data=await r.json();
+        updateKeyCountDisplay();
+        return{
+          videos:(data.items||[]).map(item=>({
+            id:item.id.videoId,
+            title:item.snippet.title,
+            thumb:item.snippet.thumbnails.medium?item.snippet.thumbnails.medium.url:('https://img.youtube.com/vi/'+item.id.videoId+'/mqdefault.jpg')
+          })),
+          nextPageToken:data.nextPageToken||null
+        };
+      }
+      const err=await r.json().catch(()=>({}));
+      // 403 = Quota überschritten → nächsten Key versuchen
+      if(r.status===403&&keys.length>1){
+        console.warn('YT Key Quota voll, rotiere...',err);
+        rotateYTApiKey();
+        continue;
+      }
+      console.warn('YouTube API Fehler:',r.status,err);
+      return null;
+    }catch(e){
+      console.warn('YouTube API Netzwerk-Fehler:',e);
+      return null;
+    }
   }
-  const data=await r.json();
-  return{
-    videos:(data.items||[]).map(item=>({
-      id:item.id.videoId,
-      title:item.snippet.title,
-      thumb:item.snippet.thumbnails.medium?item.snippet.thumbnails.medium.url:('https://img.youtube.com/vi/'+item.id.videoId+'/mqdefault.jpg')
-    })),
-    nextPageToken:data.nextPageToken||null
-  };
+  console.warn('Alle YT API Keys aufgebraucht');
+  return null;
 }
 
 // --- localStorage Cache (24h) ---
@@ -1806,12 +1917,6 @@ async function loadCategoryVideos(cat,gen){
   const catData=ytCategories[cat];
   if(!catData)return;
 
-  // Kein API Key?
-  if(!getYTApiKey()){
-    grid.innerHTML='<div style="text-align:center;padding:40px;color:var(--text-secondary);font-size:1em;line-height:1.6">Bitte YouTube API Key im Eltern-Dashboard eingeben.<br><span style="font-size:0.85em">Eltern-Button unten → 📺 YouTube API Key</span></div>';
-    return;
-  }
-
   ytCurrentQuery=catData.query;
 
   // Cache pruefen
@@ -1827,18 +1932,31 @@ async function loadCategoryVideos(cat,gen){
   // Lade-Animation
   grid.innerHTML='<div class="yt-loading"><div class="yt-loading-bounce"></div><span>Videos laden...</span></div>';
 
-  // YouTube-Suche
-  const result=await searchYouTube(catData.query,24);
-  if(ytLoadGeneration!==gen)return;
+  // YouTube-Suche (API), mit Fallback auf kuratierte Videos
+  let loaded=false;
+  if(getYTApiKey()){
+    const result=await searchYouTube(catData.query,24);
+    if(ytLoadGeneration!==gen)return;
+    if(result&&result.videos.length>0){
+      setCachedSearch(catData.query,result.videos,result.nextPageToken);
+      grid.innerHTML='';
+      ytNextPageToken=result.nextPageToken;
+      appendVideos(grid,result.videos);
+      setupSentinelObserver(grid,gen);
+      loaded=true;
+    }
+  }
 
-  if(result&&result.videos.length>0){
-    setCachedSearch(catData.query,result.videos,result.nextPageToken);
+  // Fallback: Kuratierte Videos anzeigen wenn API fehlschlägt
+  if(!loaded){
+    if(ytLoadGeneration!==gen)return;
     grid.innerHTML='';
-    ytNextPageToken=result.nextPageToken;
-    appendVideos(grid,result.videos);
-    setupSentinelObserver(grid,gen);
-  }else{
-    grid.innerHTML='<div style="text-align:center;padding:40px;color:var(--text-secondary)">Videos konnten nicht geladen werden.<br><span style="font-size:0.85em">API Key prüfen oder später erneut versuchen.</span></div>';
+    const fallback=catData.fallback||[];
+    if(fallback.length>0){
+      appendVideos(grid,fallback);
+    }else{
+      grid.innerHTML='<div style="text-align:center;padding:40px;color:var(--text-secondary)">Keine Videos verfügbar.</div>';
+    }
   }
 }
 
@@ -2927,9 +3045,13 @@ function showDashboard(){
   document.getElementById('pinBoxWrap').style.display='none';
   const dash=document.getElementById('dashContent');
   dash.style.display='block';
-  // API Key Feld vorbelegen
+  // API Keys Feld vorbelegen
   const keyInput=document.getElementById('ytApiKeyInput');
-  if(keyInput)keyInput.value=getYTApiKey();
+  if(keyInput){
+    const keys=getYTApiKeys();
+    keyInput.value=keys.join(', ');
+  }
+  updateKeyCountDisplay();
   updateDashboard();
   buildQuickSymbolEditor();
 }
