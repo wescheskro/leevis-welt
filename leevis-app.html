@@ -72,7 +72,7 @@ body{
  * MOTOR PLANNING: Peppa is FIXED at top-right. NOT draggable.
  * This position must NEVER change across any screen or state. */
 .buddy-float{position:fixed;top:8px;right:8px;z-index:80}
-.buddy-float .peppa-body{width:90px;height:90px;display:flex;align-items:center;justify-content:center;animation:peppaIdle 3s infinite ease-in-out;filter:drop-shadow(0 4px 12px rgba(0,0,0,0.4))}
+.buddy-float .peppa-body{width:120px;height:120px;display:flex;align-items:center;justify-content:center;animation:peppaIdle 3s infinite ease-in-out;filter:drop-shadow(0 4px 12px rgba(0,0,0,0.4))}
 .buddy-float .peppa-body img{width:100%;height:100%;object-fit:contain}
 .buddy-float .peppa-body:active{transform:scale(1.15)}
 @keyframes peppaIdle{0%,100%{transform:translateY(0) rotate(0deg)}25%{transform:translateY(-6px) rotate(-3deg)}50%{transform:translateY(0) rotate(0deg)}75%{transform:translateY(-4px) rotate(3deg)}}
@@ -88,8 +88,8 @@ body{
 /* ===== HOME ===== */
 #home{background:linear-gradient(135deg,var(--dark-bg2) 0%,var(--dark-bg3) 100%);justify-content:center;align-items:center;padding:20px;padding-bottom:76px}
 .home-title{color:var(--text-primary);font-size:3.2em;font-weight:900;text-shadow:2px 2px 4px rgba(0,0,0,0.5)}
-.home-buddy{width:120px;height:120px;margin:10px 0;animation:buddyBounce 2s infinite}
-.home-buddy img{width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 4px 12px rgba(0,0,0,0.3))}
+.home-buddy{width:250px;height:250px;margin:10px 0;animation:buddyBounce 2s infinite}
+.home-buddy img{width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 8px 20px rgba(0,0,0,0.4))}
 @keyframes buddyBounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-20px)}}
 .home-subtitle{color:var(--text-secondary);font-size:1.1em;margin-bottom:30px;text-align:center}
 .home-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;width:100%;max-width:600px;padding:0 10px}
@@ -679,6 +679,9 @@ function go(screen){
   // Peppa zeigt passende Bilder je nach Screen
   const peppaScreenMap={home:'happy',aac:'happy',learn:'think',youtube:'happy',music:'music',credits:'happy',sensory:'play',calm:'sleep'};
   setPeppa(peppaScreenMap[screen]||'happy');
+  // Auf Home-Screen: Floating Buddy verstecken (große Peppa in Mitte reicht)
+  const buddy=document.getElementById('buddy');
+  if(screen==='home'){buddy.style.display='none'}else{buddy.style.display=''}
 }
 
 // ===== TEXT-TO-SPEECH (High-Quality Audio First) =====
@@ -815,15 +818,11 @@ function bubbleSay(text){
 
 function bennyReact(emotion){
   const buddy=document.getElementById('buddy');
-  // Map emotions to peppa images
-  if(emotion==='happy'){setPeppa('celebrate');}
-  else if(emotion==='wave'){setPeppa('wave');}
-  else{setPeppa('happy');}
+  // Only do CSS animation bounce - don't override the peppa image!
   buddy.classList.add(emotion);
   clearTimeout(peppaResetTimer);
   peppaResetTimer=setTimeout(()=>{
     buddy.classList.remove(emotion);
-    setPeppa('happy');
   },2000);
 }
 
@@ -936,7 +935,7 @@ function displayAACCards(){
     card.className='aac-card';
     card.innerHTML=`<img class="pic" src="https://static.arasaac.org/pictograms/${item.pid}/${item.pid}_500.png" onerror="this.style.display='none'">
       <div class="text">${item.text}</div>`;
-    card.onclick=()=>{words.push({text:item.text,pid:item.pid});updateSentence();speak(item.text);bennyReact('wave');playSound('click');trackAACUsage(item)};
+    card.onclick=()=>{words.push({text:item.text,pid:item.pid});updateSentence();speak(item.text);setPeppa('wave');bennyReact('wave');playSound('click');trackAACUsage(item)};
     grid.appendChild(card);
   });
 }
@@ -2017,7 +2016,7 @@ async function showVoiceSearchResults(query){
     ytNextPageToken=result.nextPageToken;
     setCachedSearch(query,result.videos,result.nextPageToken);
     setupSentinelObserver(grid,gen);
-    bennyReact('happy');
+    setPeppa('celebrate');bennyReact('happy');
   }else{
     grid.innerHTML='<div style="text-align:center;padding:40px;color:var(--text-secondary)">Keine Videos gefunden.<br><span style="font-size:0.85em">Versuch einen anderen Begriff!</span></div>';
   }
@@ -2931,7 +2930,7 @@ document.addEventListener('gesturestart',e=>e.preventDefault(),{passive:false});
           aiCooldown=true;
           updateAIStatus('Erkannt: '+label+' ('+Math.round(maxScore*100)+'%) → Ruhezeit');
           bubbleSay('Ich höre etwas... Lass uns zur Ruhe kommen. 🌙');
-          bennyReact('wave');
+          setPeppa('sleep');bennyReact('wave');
 
           // Nur triggern wenn nicht schon im Calm-Modus
           if(currentScreen!=='calm'){
