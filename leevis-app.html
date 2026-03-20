@@ -1746,54 +1746,12 @@ function initAlphabetGrid(){
 // API-Key wird einmalig im Eltern-Dashboard eingegeben (kostenlos).
 
 const ytCategories={
-  '🔢 Zahlen':{query:'Zahlen lernen Kinder deutsch Lied',fallback:[
-    {id:'DFaEfuopmJo',title:'Zahlen Lied 1-20'},
-    {id:'u0n4eMGXAyk',title:'Zahlen lernen für Kinder'},
-    {id:'GUmhNMCPSFY',title:'Zählen bis 100'},
-    {id:'W4Z11o6yMcs',title:'1234567 - Zahlenlied'},
-    {id:'DR-cfDseSdY',title:'Zahlen lernen 1 bis 10'},
-    {id:'FDrJWXIMSPo',title:'Zahlen 1-10 deutsch'}
-  ]},
-  '🔤 ABC':{query:'ABC Buchstaben lernen Kinder deutsch Lied',fallback:[
-    {id:'qkOFB3ByWbQ',title:'ABC Lied Deutsch'},
-    {id:'BELlZKpi1Zs',title:'Das Alphabet lernen'},
-    {id:'grVBiLjlmBo',title:'ABC Song Deutsch'},
-    {id:'SaGE2gAQ_kE',title:'Sing Kinderlieder ABC'},
-    {id:'yQzRxjJ-XBE',title:'Buchstaben A-Z lernen'},
-    {id:'3tx0rvuXIRg',title:'ABC lernen mit Bildern'}
-  ]},
-  '🎬 Abspänne':{query:'movie end credits rolling credits',fallback:[
-    {id:'v8YnyJxrEgQ',title:'Movie Credits Compilation'},
-    {id:'eFTLKWw542g',title:'Film Abspann Marathon'},
-    {id:'H5mLkTBZRVk',title:'End Credits Collection'},
-    {id:'gY5nOBGoyms',title:'Rolling Credits Mix'},
-    {id:'Q1sDmooVHj8',title:'Movie Outro Compilation'},
-    {id:'IUB-yA07jfg',title:'Film Credits Rolling'}
-  ]},
-  '🎵 Lieder':{query:'Kinderlieder deutsch zum Mitsingen',fallback:[
-    {id:'0wSllz_hmzs',title:'Kinderlieder zum Mitsingen'},
-    {id:'Zu6o23Pu0Do',title:'Die Räder vom Bus'},
-    {id:'RHhZx-Ywkk4',title:'Alle meine Entchen'},
-    {id:'VkRUk1KPOEQ',title:'Häschen in der Grube'},
-    {id:'lXFjl_V2454',title:'Hoppe hoppe Reiter'},
-    {id:'4B_UYYPb-Gk',title:'Backe backe Kuchen'}
-  ]},
-  '🌙 Ruhe':{query:'Baby Sensory calming relaxing video',fallback:[
-    {id:'hlWiI4xVXKY',title:'Ruhige Musik zum Einschlafen'},
-    {id:'eKFTSSKCzWA',title:'Natur Geräusche'},
-    {id:'eFbKKsEoQNg',title:'Baby Sensory Calming'},
-    {id:'S3GrNQBBKMo',title:'Relaxing Visual'},
-    {id:'tVj0ZTS4WF4',title:'Ocean Waves Relaxation'},
-    {id:'qGEoEaUz_sU',title:'Night Sky Sensory'}
-  ]},
-  '🐷 Peppa Pig':{query:'Peppa Pig Deutsch',fallback:[
-    {id:'hMhJhRLsl34',title:'Peppa Wutz Deutsch'},
-    {id:'iy9Ij2QnpJM',title:'Peppa Pig Neue Folgen'},
-    {id:'4AILxySnXtk',title:'Peppa Wutz Abenteuer'},
-    {id:'G4JTz0wnGpE',title:'Peppa im Urlaub'},
-    {id:'ceGLEhahLKQ',title:'Peppa Wutz Ganze Folgen'},
-    {id:'YFhUaOSb05w',title:'Peppa Pig Compilation'}
-  ]}
+  '🔢 Zahlen':{query:'Zahlen lernen Kinder deutsch Lied'},
+  '🔤 ABC':{query:'ABC Buchstaben lernen Kinder deutsch Lied'},
+  '🎬 Abspänne':{query:'movie end credits rolling credits'},
+  '🎵 Lieder':{query:'Kinderlieder deutsch zum Mitsingen'},
+  '🌙 Ruhe':{query:'Baby Sensory calming relaxing video'},
+  '🐷 Peppa Pig':{query:'Peppa Pig Deutsch'}
 };
 
 let ytPlayerActive=false;
@@ -2018,16 +1976,10 @@ async function loadCategoryVideos(cat,gen){
     }
   }
 
-  // Fallback: Kuratierte Videos anzeigen wenn API fehlschlägt
+  // Fehlermeldung wenn API nicht funktioniert
   if(!loaded){
     if(ytLoadGeneration!==gen)return;
-    grid.innerHTML='';
-    const fallback=catData.fallback||[];
-    if(fallback.length>0){
-      appendVideos(grid,fallback);
-    }else{
-      grid.innerHTML='<div style="text-align:center;padding:40px;color:var(--text-secondary)">Keine Videos verfügbar.</div>';
-    }
+    grid.innerHTML='<div style="text-align:center;padding:40px;color:var(--text-secondary);font-size:1.1em">⚠️ Videos konnten nicht geladen werden.<br><span style="font-size:0.85em">Bitte API-Key im Eltern-Dashboard prüfen.</span></div>';
   }
 }
 
