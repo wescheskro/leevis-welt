@@ -214,14 +214,15 @@ body{
 .pkey.bk:active{background:#555}
 
 /* ===== YOUTUBE SCREEN ===== */
-.yt-cats{display:flex;gap:8px;flex:1;flex-wrap:nowrap;padding:0;background:none;border:none;transition:none;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.yt-cats{display:flex;gap:8px;flex:1;flex-wrap:nowrap;padding:0;background:none;border:none;transition:none;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;-ms-overflow-style:none;touch-action:pan-x}
+.yt-cats::-webkit-scrollbar{display:none}
 .yt-cats.hidden-scroll{opacity:1;margin-top:0;pointer-events:auto}
-.yt-cat{background:rgba(255,255,255,0.15);border:2px solid rgba(255,255,255,0.25);border-radius:14px;width:140px;height:140px;font-size:0.65em;font-weight:700;cursor:pointer;color:#fff;transition:all 0.15s;touch-action:manipulation;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;flex-shrink:0;white-space:nowrap}
+.yt-cat{background:rgba(255,255,255,0.15);border:2px solid rgba(255,255,255,0.25);border-radius:14px;width:140px;height:140px;font-size:0.65em;font-weight:700;cursor:pointer;color:#fff;transition:all 0.15s;touch-action:pan-x;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;flex-shrink:0;white-space:nowrap}
 .yt-cat .cat-icon{font-size:5.6em;line-height:1}
 .yt-cat:active{transform:scale(0.95)}
 .yt-cat.active{background:rgba(255,255,255,0.35);color:#fff;border-color:#fff;box-shadow:0 0 10px rgba(255,255,255,0.3)}
 .yt-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(clamp(140px,28vw,280px),1fr));gap:clamp(8px,1.5vw,14px);padding:clamp(8px,1.5vw,14px);flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;align-content:start;min-height:0;grid-auto-rows:min-content}
-.yt-card{background:var(--card-bg);border-radius:clamp(10px,2vw,16px);overflow:hidden;box-shadow:0 3px 12px rgba(0,0,0,0.3);cursor:pointer;transition:all 0.15s;border:1px solid var(--border);touch-action:manipulation}
+.yt-card{background:var(--card-bg);border-radius:clamp(10px,2vw,16px);overflow:hidden;box-shadow:0 3px 12px rgba(0,0,0,0.3);cursor:pointer;transition:all 0.15s;border:1px solid var(--border);touch-action:pan-y}
 .yt-card:active{transform:scale(0.98)}
 .yt-thumb{width:100%;aspect-ratio:16/9;background:#000;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
 .yt-thumb img{width:100%;height:100%;object-fit:cover}
@@ -1948,6 +1949,14 @@ function initYouTube(){
   const favVideos=getFavoriteVideos();
   const allCats=['⭐ Favoriten',...Object.keys(ytCategories)];
 
+  // Such-Button als erstes
+  const micBtn=document.createElement('div');
+  micBtn.className='yt-cat yt-voice-cat';
+  micBtn.id='ytVoiceCatBtn';
+  micBtn.innerHTML='<span class="cat-icon">🎙️</span>Suche';
+  micBtn.onclick=()=>startYTVoiceSearch();
+  catsDiv.appendChild(micBtn);
+
   allCats.forEach((cat,i)=>{
     const btn=document.createElement('div');
     btn.className='yt-cat'+(i===0?' active':'');
@@ -1966,13 +1975,6 @@ function initYouTube(){
     };
     catsDiv.appendChild(btn);
   });
-  // Mikrofon-Button als letzter Button in der Kategorie-Leiste
-  const micBtn=document.createElement('div');
-  micBtn.className='yt-cat yt-voice-cat';
-  micBtn.id='ytVoiceCatBtn';
-  micBtn.innerHTML='<span class="cat-icon">🎙️</span>Suche';
-  micBtn.onclick=()=>startYTVoiceSearch();
-  catsDiv.appendChild(micBtn);
 
   currentYTCat=allCats[0];
   showYTGrid(allCats[0]);
