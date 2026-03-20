@@ -988,6 +988,17 @@ const gameConfigs={
       {name:'Kreis',symbol:'⬤',audio:'kreis'},{name:'Dreieck',symbol:'▲',audio:'dreieck'},
       {name:'Quadrat',symbol:'■',audio:'quadrat'},{name:'Stern',symbol:'★',audio:'stern'},
       {name:'Herz',symbol:'♥',audio:'herz'},{name:'Raute',symbol:'◆',audio:'raute'}
+    ]},
+  emotions:{title:'Gefühle',icon:'😊',questions:8,promptAudio:'frage-gefuehl',
+    all:[
+      {name:'Fröhlich',img:'images/peppa/peppa-happy.png',audio:'froehlich'},
+      {name:'Traurig',img:'images/peppa/peppa-cry.png',audio:'traurig'},
+      {name:'Wütend',img:'images/peppa/peppa-angry.png',audio:'wuetend'},
+      {name:'Angst',img:'images/peppa/peppa-scared.png',audio:'angst'},
+      {name:'Überrascht',img:'images/peppa/peppa-surprised.png',audio:'ueberrascht'},
+      {name:'Müde',img:'images/peppa/peppa-sleep.png',audio:'muede'},
+      {name:'Verliebt',img:'images/peppa/peppa-love.png',audio:'verliebt'},
+      {name:'Lustig',img:'images/peppa/peppa-laugh.png',audio:'lustig'}
     ]}
 };
 
@@ -1099,6 +1110,16 @@ function nextQuestion(){
     area.innerHTML=renderProgress()+`<div class="g-prompt">${promptText}</div>${visualHTML}<div class="g-options" id="gOpts"></div>`;
     renderOptions(correct,options);
     playGameAudio(cfg.promptAudio);
+  }else if(currentGame.type==='emotions'){
+    const emoObj=cfg.all[Math.floor(Math.random()*cfg.all.length)];
+    correct=emoObj.name;
+    promptText='Wie fühlt sich Peppa?';
+    visualHTML=`<div class="g-visual"><img src="${emoObj.img}" style="width:180px;height:180px;object-fit:contain;filter:drop-shadow(0 4px 12px rgba(0,0,0,0.3))"></div>`;
+    const wrongs=pickUnique(cfg.all.map(e=>e.name),3,correct);
+    options=[correct,...wrongs];
+    area.innerHTML=renderProgress()+`<div class="g-prompt">${promptText}</div>${visualHTML}<div class="g-options" id="gOpts"></div>`;
+    renderOptions(correct,options);
+    playGameAudio(cfg.promptAudio);
   }
   bubbleSay(promptText);
 }
@@ -1109,6 +1130,7 @@ function optionAudioFile(opt){
   if(t==='letters')return opt.toLowerCase();
   if(t==='colors'){const c=gameConfigs.colors.all.find(x=>x.name===opt);return c?c.audio:null}
   if(t==='shapes'){const s=gameConfigs.shapes.all.find(x=>x.name===opt);return s?s.audio:null}
+  if(t==='emotions'){const e=gameConfigs.emotions.all.find(x=>x.name===opt);return e?e.audio:null}
   return null;
 }
 
@@ -1189,7 +1211,7 @@ function endGameRound(){
 }
 
 function updateLearnStars(){
-  const map={numbers:'sN',letters:'sL',counting:'sC',colors:'sF',shapes:'sS'};
+  const map={numbers:'sN',letters:'sL',counting:'sC',colors:'sF',shapes:'sS',emotions:'sE'};
   Object.entries(map).forEach(([type,id])=>{
     const el=document.getElementById(id);
     if(!el)return;
