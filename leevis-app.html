@@ -3007,6 +3007,37 @@ window.addEventListener('load',()=>{
 document.addEventListener('touchmove',e=>{if(e.scale!==1)e.preventDefault()},{passive:false});
 document.addEventListener('gesturestart',e=>e.preventDefault(),{passive:false});
 
+// ===== FULLSCREEN MODUS =====
+function goFullscreen(){
+  const el=document.documentElement;
+  if(document.fullscreenElement||document.webkitFullscreenElement)return;
+  if(el.requestFullscreen)el.requestFullscreen().catch(()=>{});
+  else if(el.webkitRequestFullscreen)el.webkitRequestFullscreen();
+  else if(el.msRequestFullscreen)el.msRequestFullscreen();
+}
+// Beim ersten Touch/Klick automatisch Vollbild
+document.addEventListener('click',function fsOnce(){
+  goFullscreen();
+  document.removeEventListener('click',fsOnce);
+},{once:true});
+// Falls Vollbild verlassen wird, beim nächsten Touch wieder aktivieren
+document.addEventListener('fullscreenchange',()=>{
+  if(!document.fullscreenElement){
+    document.addEventListener('click',function fsAgain(){
+      goFullscreen();
+      document.removeEventListener('click',fsAgain);
+    },{once:true});
+  }
+});
+document.addEventListener('webkitfullscreenchange',()=>{
+  if(!document.webkitFullscreenElement){
+    document.addEventListener('click',function fsAgain(){
+      goFullscreen();
+      document.removeEventListener('click',fsAgain);
+    },{once:true});
+  }
+});
+
 // ===== EDGE AI: KI-GEHÖR (Lokale Audio-Erkennung) =====
 // Modular und austauschbar. Keine Cloud-APIs — alles läuft on-device im Browser.
 // Verwendet TensorFlow.js Speech Commands Modell (18KHz, ~1s Fenster).
