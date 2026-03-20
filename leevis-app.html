@@ -2975,7 +2975,21 @@ function doInstall(){
 
 // Service Worker
 if('serviceWorker' in navigator){
-  navigator.serviceWorker.register('sw.js').catch(()=>{});
+  navigator.serviceWorker.register('sw.js').then(reg=>{
+    // Alle 60 Sekunden auf Updates prüfen
+    setInterval(()=>reg.update().catch(()=>{}),60000);
+    // Bei neuem SW automatisch neu laden
+    reg.addEventListener('updatefound',()=>{
+      const nw=reg.installing;
+      if(nw){
+        nw.addEventListener('statechange',()=>{
+          if(nw.state==='activated'&&navigator.serviceWorker.controller){
+            location.reload();
+          }
+        });
+      }
+    });
+  }).catch(()=>{});
 }
 
 // ===== PWA: BACK BUTTON / EXIT =====
