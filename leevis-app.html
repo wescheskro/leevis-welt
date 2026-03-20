@@ -216,7 +216,8 @@ body{
 /* ===== YOUTUBE SCREEN ===== */
 .yt-cats{display:flex;gap:8px;flex:1;flex-wrap:nowrap;padding:0;background:none;border:none;transition:none;overflow-x:auto;-webkit-overflow-scrolling:touch}
 .yt-cats.hidden-scroll{opacity:1;margin-top:0;pointer-events:auto}
-.yt-cat{background:rgba(255,255,255,0.15);border:2px solid rgba(255,255,255,0.25);border-radius:10px;padding:3px 10px;font-size:0.85em;cursor:pointer;color:#fff;transition:all 0.15s;touch-action:manipulation;display:flex;align-items:center;justify-content:center;text-align:center;line-height:1;flex-shrink:0;white-space:nowrap;height:30px}
+.yt-cat{background:rgba(255,255,255,0.15);border:2px solid rgba(255,255,255,0.25);border-radius:10px;width:70px;height:70px;font-size:0.55em;font-weight:700;cursor:pointer;color:#fff;transition:all 0.15s;touch-action:manipulation;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;flex-shrink:0;white-space:nowrap}
+.yt-cat .cat-icon{font-size:2.8em;line-height:1}
 .yt-cat:active{transform:scale(0.95)}
 .yt-cat.active{background:rgba(255,255,255,0.35);color:#fff;border-color:#fff;box-shadow:0 0 10px rgba(255,255,255,0.3)}
 .yt-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(clamp(140px,28vw,280px),1fr));gap:clamp(8px,1.5vw,14px);padding:clamp(8px,1.5vw,14px);flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;align-content:start;min-height:0;grid-auto-rows:min-content}
@@ -1917,7 +1918,12 @@ function initYouTube(){
   allCats.forEach((cat,i)=>{
     const btn=document.createElement('div');
     btn.className='yt-cat'+(i===0?' active':'');
-    btn.textContent=cat;
+    const parts=cat.match(/^(\S+)\s+(.+)$/);
+    if(parts){
+      btn.innerHTML=`<span class="cat-icon">${parts[1]}</span>${parts[2]}`;
+    }else{
+      btn.textContent=cat;
+    }
     btn.onclick=()=>{
       document.querySelectorAll('.yt-cat').forEach(b=>b.classList.remove('active'));
       btn.classList.add('active');
@@ -1931,7 +1937,7 @@ function initYouTube(){
   const micBtn=document.createElement('div');
   micBtn.className='yt-cat yt-voice-cat';
   micBtn.id='ytVoiceCatBtn';
-  micBtn.textContent='🎙️';
+  micBtn.innerHTML='<span class="cat-icon">🎙️</span>Suche';
   micBtn.onclick=()=>startYTVoiceSearch();
   catsDiv.appendChild(micBtn);
 
