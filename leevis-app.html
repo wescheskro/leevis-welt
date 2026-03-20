@@ -415,7 +415,7 @@ body{
     <div class="home-grid">
       <div class="home-btn" onclick="go('aac');playSound('click');speak('Sprechen');bubbleSay('Sprechen')"><img class="icon" src="https://static.arasaac.org/pictograms/6517/6517_500.png"><span class="label">Sprechen</span></div>
       <div class="home-btn" onclick="go('learn');playSound('click');bubbleSay('Lernen')"><img class="icon" src="https://static.arasaac.org/pictograms/37810/37810_500.png"><span class="label">Lernen</span></div>
-      <div class="home-btn" onclick="openYouTubeKids();playSound('click');speak('Videos');bubbleSay('Videos')"><span class="icon" style="display:flex;align-items:center;justify-content:center"><svg viewBox="0 0 48 48" style="width:100%;height:100%"><rect x="2" y="8" width="44" height="32" rx="8" fill="#FF0000"/><polygon points="20,15 35,24 20,33" fill="#fff"/></svg></span><span class="label">Videos</span></div>
+      <div class="home-btn" onclick="go('youtube');playSound('click');speak('Videos');bubbleSay('Videos')"><span class="icon" style="display:flex;align-items:center;justify-content:center"><svg viewBox="0 0 48 48" style="width:100%;height:100%"><rect x="2" y="8" width="44" height="32" rx="8" fill="#FF0000"/><polygon points="20,15 35,24 20,33" fill="#fff"/></svg></span><span class="label">Videos</span></div>
       <div class="home-btn" onclick="go('music');playSound('click');speak('Musik');bubbleSay('Musik')"><img class="icon" src="https://static.arasaac.org/pictograms/24791/24791_500.png"><span class="label">Musik</span></div>
       <div class="home-btn" onclick="go('credits');playSound('click');speak('Kino');bubbleSay('Kino')"><img class="icon" src="https://static.arasaac.org/pictograms/30387/30387_500.png"><span class="label">Kino</span></div>
       <div class="home-btn" onclick="go('sensory');playSound('click');speak('Spielen');bubbleSay('Spielen')"><img class="icon" src="https://static.arasaac.org/pictograms/23392/23392_500.png"><span class="label">Spielen</span></div>
@@ -448,17 +448,22 @@ body{
 
 <!-- YOUTUBE SCREEN -->
 <div class="screen" id="youtube">
-  <div class="topbar red"><button class="back-btn" onclick="go('home')">←</button>📺 Videos</div>
+  <div class="topbar red" id="ytTopbar"><button class="back-btn" id="ytBackBtn" onclick="ytGoBack()">←</button><span id="ytTitle">📺 Videos</span></div>
+  <!-- Category Grid -->
   <div style="flex:1;overflow-y:scroll;-webkit-overflow-scrolling:touch;touch-action:pan-y;min-height:0;padding:clamp(10px,2vw,20px);padding-bottom:76px;display:grid;grid-template-columns:repeat(auto-fill,minmax(clamp(120px,28vw,200px),1fr));gap:clamp(10px,2vw,18px);align-content:start" id="ytGrid">
-    <div class="home-btn" onclick="openYouTube('Zahlen lernen Kinder deutsch');playSound('click')"><span style="font-size:2.5em">🔢</span><span class="label">Zahlen</span></div>
-    <div class="home-btn" onclick="openYouTube('ABC Buchstaben lernen Kinder deutsch');playSound('click')"><span style="font-size:2.5em">🔤</span><span class="label">ABC</span></div>
-    <div class="home-btn" onclick="openYouTube('Peppa Wutz deutsch ganze Folgen');playSound('click')"><span style="font-size:2.5em">🐷</span><span class="label">Peppa</span></div>
-    <div class="home-btn" onclick="openYouTube('Kinderlieder deutsch zum Mitsingen');playSound('click')"><span style="font-size:2.5em">🎵</span><span class="label">Lieder</span></div>
-    <div class="home-btn" onclick="openYouTube('movie end credits rolling');playSound('click')"><span style="font-size:2.5em">🎬</span><span class="label">Abspänne</span></div>
-    <div class="home-btn" onclick="openYouTube('Baby Sensory calming relaxing');playSound('click')"><span style="font-size:2.5em">🌙</span><span class="label">Ruhe</span></div>
-    <div class="home-btn" onclick="openYouTube('BabyBus deutsch');playSound('click')"><span style="font-size:2.5em">🚌</span><span class="label">BabyBus</span></div>
-    <div class="home-btn" onclick="openYouTube('Disney Kinder deutsch');playSound('click')"><span style="font-size:2.5em">🏰</span><span class="label">Disney</span></div>
-    <div class="home-btn" onclick="openYouTubeKids();playSound('click')" style="background:var(--category-red)"><span style="font-size:2.5em">📺</span><span class="label">YouTube Kids</span></div>
+    <div class="home-btn" onclick="ytEmbed('Zahlen lernen Kinder deutsch','🔢 Zahlen');playSound('click')"><span style="font-size:2.5em">🔢</span><span class="label">Zahlen</span></div>
+    <div class="home-btn" onclick="ytEmbed('ABC Buchstaben lernen Kinder deutsch','🔤 ABC');playSound('click')"><span style="font-size:2.5em">🔤</span><span class="label">ABC</span></div>
+    <div class="home-btn" onclick="ytEmbed('Peppa Wutz deutsch ganze Folgen','🐷 Peppa');playSound('click')"><span style="font-size:2.5em">🐷</span><span class="label">Peppa</span></div>
+    <div class="home-btn" onclick="ytEmbed('Kinderlieder deutsch zum Mitsingen','🎵 Lieder');playSound('click')"><span style="font-size:2.5em">🎵</span><span class="label">Lieder</span></div>
+    <div class="home-btn" onclick="ytEmbed('movie end credits rolling','🎬 Abspänne');playSound('click')"><span style="font-size:2.5em">🎬</span><span class="label">Abspänne</span></div>
+    <div class="home-btn" onclick="ytEmbed('Baby Sensory calming relaxing','🌙 Ruhe');playSound('click')"><span style="font-size:2.5em">🌙</span><span class="label">Ruhe</span></div>
+    <div class="home-btn" onclick="ytEmbed('BabyBus deutsch','🚌 BabyBus');playSound('click')"><span style="font-size:2.5em">🚌</span><span class="label">BabyBus</span></div>
+    <div class="home-btn" onclick="ytEmbed('Disney Kinder deutsch','🏰 Disney');playSound('click')"><span style="font-size:2.5em">🏰</span><span class="label">Disney</span></div>
+    <div class="home-btn" onclick="ytEmbedKids();playSound('click')" style="background:var(--category-red)"><span style="font-size:2.5em">📺</span><span class="label">YouTube Kids</span></div>
+  </div>
+  <!-- Embedded YouTube Frame -->
+  <div id="ytFrameWrap" style="display:none;flex:1;min-height:0;position:relative">
+    <iframe id="ytFrame" style="width:100%;height:100%;border:none" allow="autoplay;encrypted-media;fullscreen" allowfullscreen></iframe>
   </div>
 </div>
 
@@ -725,6 +730,15 @@ function go(screen){
     if(pf){pf.contentWindow?.postMessage('{"event":"command","func":"pauseVideo","args":""}','*');pf.src='about:blank';pf.src='';}
     document.getElementById('ytPlayer').style.display='none';
     ytPlayerActive=false;
+  }
+  // YouTube Embed aufräumen wenn man weg navigiert
+  if(currentScreen==='youtube'&&ytEmbedActive){
+    const frame=document.getElementById('ytFrame');
+    if(frame)frame.src='about:blank';
+    document.getElementById('ytFrameWrap').style.display='none';
+    document.getElementById('ytGrid').style.display='';
+    document.getElementById('ytTitle').textContent='📺 Videos';
+    ytEmbedActive=false;
   }
 
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
@@ -2243,6 +2257,48 @@ function openYouTube(query){
 }
 function openYouTubeKids(){
   window.open('https://www.youtubekids.com/','_blank');
+}
+
+let ytEmbedActive=false;
+
+function ytEmbed(query,title){
+  const grid=document.getElementById('ytGrid');
+  const wrap=document.getElementById('ytFrameWrap');
+  const frame=document.getElementById('ytFrame');
+  const titleEl=document.getElementById('ytTitle');
+  grid.style.display='none';
+  wrap.style.display='flex';
+  frame.src='https://www.youtube.com/results?search_query='+encodeURIComponent(query)+'&app=desktop';
+  titleEl.textContent=title||'📺 Videos';
+  ytEmbedActive=true;
+}
+
+function ytEmbedKids(){
+  const grid=document.getElementById('ytGrid');
+  const wrap=document.getElementById('ytFrameWrap');
+  const frame=document.getElementById('ytFrame');
+  const titleEl=document.getElementById('ytTitle');
+  grid.style.display='none';
+  wrap.style.display='flex';
+  frame.src='https://www.youtubekids.com/';
+  titleEl.textContent='📺 YouTube Kids';
+  ytEmbedActive=true;
+}
+
+function ytGoBack(){
+  if(ytEmbedActive){
+    const grid=document.getElementById('ytGrid');
+    const wrap=document.getElementById('ytFrameWrap');
+    const frame=document.getElementById('ytFrame');
+    const titleEl=document.getElementById('ytTitle');
+    frame.src='about:blank';
+    wrap.style.display='none';
+    grid.style.display='';
+    titleEl.textContent='📺 Videos';
+    ytEmbedActive=false;
+  }else{
+    go('home');
+  }
 }
 
 function ytBack(){
