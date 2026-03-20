@@ -1,0 +1,23 @@
+============================================
+  API KEYS - Leevis Welt
+============================================
+
+--- ElevenLabs (Text-to-Speech) ---
+API Key: sk_e5776d625f7b02442416b5d6abeadea388db262dd01f46eb
+Voice: Gigi (n7Wi4g1bhpw4Bs8HK5ph)
+Model: eleven_multilingual_v2
+Website: https://elevenlabs.io
+
+--- Leonardo AI (Bildgenerierung) ---
+API Key: d737f263-a817-4e5d-94d5-b4b8421180b6
+Username: wescheskro
+Website: https://app.leonardo.ai
+
+--- YouTube Data API v3 ---
+API Key: AIzaSyCkMpSeYSoEbI9wnEm-cMn9U15YFSgUX60
+Website: https://console.cloud.google.com
+
+--- GitHub ---
+Username: wescheskro
+Repo: https://github.com/wescheskro/leevis-welt
+Pages: https://wescheskro.github.io/leevis-welt/leevis-app.html
