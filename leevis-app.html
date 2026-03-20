@@ -125,18 +125,18 @@ body{
  * MOTOR PLANNING: Categories in fixed 5-column grid.
  * Each category ALWAYS occupies the same spatial position.
  * DO NOT use overflow-x:auto or scrolling. */
-.aac-cats{display:flex;gap:8px;flex:1;flex-wrap:nowrap;padding:0;background:none;border:none;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;-ms-overflow-style:none}
+.aac-cats{display:flex;gap:8px;flex:1;flex-wrap:nowrap;padding:0;background:none;border:none;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;-ms-overflow-style:none;touch-action:pan-x}
 .aac-cats::-webkit-scrollbar{display:none}
-.aac-cat{background:rgba(255,255,255,0.15);border:2px solid rgba(255,255,255,0.25);border-radius:14px;width:140px;height:140px;font-size:0.65em;font-weight:700;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;transition:all 0.15s;color:#fff;touch-action:manipulation;min-width:0;flex-shrink:0}
+.aac-cat{background:rgba(255,255,255,0.15);border:2px solid rgba(255,255,255,0.25);border-radius:14px;width:140px;height:140px;font-size:0.65em;font-weight:700;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;transition:all 0.15s;color:#fff;touch-action:pan-x;min-width:0;flex-shrink:0}
 .aac-cat:active{transform:scale(0.95)}
 .aac-cat .cat-icon{font-size:5.6em;line-height:1}
 .aac-cat.active{border-width:3px;box-shadow:0 0 10px rgba(255,255,255,0.3);background:rgba(255,255,255,0.35);border-color:#fff}
 .aac-cat.pink.active,.aac-cat.orange.active,.aac-cat.green.active,.aac-cat.blue.active,.aac-cat.purple.active,.aac-cat.red.active{background:rgba(255,255,255,0.35);border-color:#fff}
 
 /* ===== MUSIC CATEGORIES ===== */
-.music-cats{display:flex;gap:8px;flex:1;flex-wrap:nowrap;padding:0;background:none;border:none;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;-ms-overflow-style:none}
+.music-cats{display:flex;gap:8px;flex:1;flex-wrap:nowrap;padding:0;background:none;border:none;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;-ms-overflow-style:none;touch-action:pan-x}
 .music-cats::-webkit-scrollbar{display:none}
-.music-cat{background:rgba(255,255,255,0.15);border:2px solid rgba(255,255,255,0.25);border-radius:14px;width:140px;height:140px;font-size:0.65em;font-weight:700;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;transition:all 0.15s;color:#fff;touch-action:manipulation;min-width:0;flex-shrink:0}
+.music-cat{background:rgba(255,255,255,0.15);border:2px solid rgba(255,255,255,0.25);border-radius:14px;width:140px;height:140px;font-size:0.65em;font-weight:700;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;transition:all 0.15s;color:#fff;touch-action:pan-x;min-width:0;flex-shrink:0}
 .music-cat:active{transform:scale(0.95)}
 .music-cat .cat-icon{font-size:5.6em;line-height:1}
 .music-cat.active{border-width:3px;box-shadow:0 0 10px rgba(255,255,255,0.3);background:rgba(255,255,255,0.35);border-color:#fff}
@@ -145,8 +145,8 @@ body{
 /* MOTOR PLANNING: AAC grid is always 2 columns. Items within a category
  * are NEVER reordered. The item at position [row,col] is always the same
  * pictogram for a given category. */
-.aac-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(clamp(80px,15vw,130px),1fr));gap:clamp(6px,1.2vw,10px);padding:clamp(6px,1.2vw,10px);flex:1;overflow-y:auto;align-content:start}
-.aac-card{background:var(--card-bg);border-radius:clamp(10px,2vw,16px);padding:clamp(6px,1.5vw,14px) clamp(4px,1vw,8px);display:flex;flex-direction:column;align-items:center;gap:clamp(4px,1vw,8px);cursor:pointer;transition:all 0.15s;box-shadow:0 3px 12px rgba(0,0,0,0.3);border:2px solid var(--border);justify-content:center;touch-action:manipulation}
+.aac-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(clamp(80px,15vw,130px),1fr));gap:clamp(6px,1.2vw,10px);padding:clamp(6px,1.2vw,10px);flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;align-content:start;touch-action:pan-y}
+.aac-card{background:var(--card-bg);border-radius:clamp(10px,2vw,16px);padding:clamp(6px,1.5vw,14px) clamp(4px,1vw,8px);display:flex;flex-direction:column;align-items:center;gap:clamp(4px,1vw,8px);cursor:pointer;transition:all 0.15s;box-shadow:0 3px 12px rgba(0,0,0,0.3);border:2px solid var(--border);justify-content:center;touch-action:pan-y}
 .aac-card:active{transform:scale(0.93);background:var(--card-bg2)}
 .aac-card .pic{width:clamp(60px,18vw,140px);height:clamp(60px,18vw,140px);object-fit:contain}
 .aac-card .text{font-size:clamp(0.7em,2vw,1em);font-weight:700;color:var(--text-primary);text-align:center;line-height:1.2}
@@ -161,15 +161,15 @@ body{
 .clear-btn:active{transform:scale(0.9)}
 
 /* ===== LEARN CATEGORIES ===== */
-.learn-cats{display:flex;gap:8px;flex:1;flex-wrap:nowrap;padding:0;background:none;border:none;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;-ms-overflow-style:none}
+.learn-cats{display:flex;gap:8px;flex:1;flex-wrap:nowrap;padding:0;background:none;border:none;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;-ms-overflow-style:none;touch-action:pan-x}
 .learn-cats::-webkit-scrollbar{display:none}
-.learn-cat{background:rgba(255,255,255,0.15);border:2px solid rgba(255,255,255,0.25);border-radius:14px;width:140px;height:140px;font-size:0.65em;font-weight:700;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;transition:all 0.15s;color:#fff;touch-action:manipulation;min-width:0;flex-shrink:0}
+.learn-cat{background:rgba(255,255,255,0.15);border:2px solid rgba(255,255,255,0.25);border-radius:14px;width:140px;height:140px;font-size:0.65em;font-weight:700;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;transition:all 0.15s;color:#fff;touch-action:pan-x;min-width:0;flex-shrink:0}
 .learn-cat:active{transform:scale(0.95)}
 .learn-cat .cat-icon{font-size:5.6em;line-height:1}
 .learn-cat.active{border-width:3px;box-shadow:0 0 10px rgba(255,255,255,0.3);background:rgba(255,255,255,0.35);border-color:#fff}
 
 /* ===== GAME SCREEN ===== */
-.game-area{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px;overflow-y:auto;gap:8px}
+.game-area{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:16px;overflow-y:auto;-webkit-overflow-scrolling:touch;gap:8px;touch-action:pan-y}
 .g-progress{display:flex;gap:6px;margin-bottom:4px}
 .g-dot{width:14px;height:14px;border-radius:50%;background:rgba(255,255,255,0.15);transition:all 0.3s}
 .g-dot.done{background:var(--green);box-shadow:0 0 6px var(--green)}
@@ -178,7 +178,7 @@ body{
 .g-visual{margin:8px 0;display:flex;align-items:center;justify-content:center}
 .g-big{font-size:4.5em;display:block;font-weight:900;text-shadow:0 4px 15px rgba(0,0,0,0.3)}
 .g-options{display:grid;grid-template-columns:1fr 1fr;gap:clamp(6px,1.5vw,12px);width:100%;max-width:min(420px,90vw)}
-.g-opt{background:var(--card-bg);border:3px solid var(--border);border-radius:clamp(12px,2.5vw,20px);padding:clamp(10px,2.5vw,22px);font-size:clamp(1.2em,4vw,2.2em);font-weight:800;cursor:pointer;transition:all 0.2s;text-align:center;color:var(--text-primary);touch-action:manipulation;min-height:clamp(50px,10vh,80px);display:flex;align-items:center;justify-content:center}
+.g-opt{background:var(--card-bg);border:3px solid var(--border);border-radius:clamp(12px,2.5vw,20px);padding:clamp(10px,2.5vw,22px);font-size:clamp(1.2em,4vw,2.2em);font-weight:800;cursor:pointer;transition:all 0.2s;text-align:center;color:var(--text-primary);touch-action:pan-y;min-height:clamp(50px,10vh,80px);display:flex;align-items:center;justify-content:center}
 .g-opt:active{transform:scale(0.95)}
 .g-opt.ok{border-color:var(--green);background:#1B5E20;animation:pop 0.5s}
 .g-opt.no{border-color:var(--red);background:#B71C1C;animation:shake 0.5s}
@@ -204,10 +204,10 @@ body{
 .music-box{background:var(--card-bg);border-radius:clamp(10px,2.5vw,18px);padding:clamp(10px,2vw,16px);box-shadow:0 3px 12px rgba(0,0,0,0.3);border:1px solid var(--border)}
 .music-box h3{font-size:clamp(0.8em,2vw,1em);color:var(--text-primary);margin-bottom:clamp(6px,1.2vw,10px)}
 .snd-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(clamp(100px,20vw,160px),1fr));gap:clamp(8px,1.5vw,14px)}
-.snd{background:var(--card-bg2);border:2px solid var(--border);border-radius:clamp(12px,2.5vw,18px);padding:clamp(10px,2vw,16px) clamp(6px,1.2vw,10px);font-size:clamp(2em,5vw,3em);cursor:pointer;transition:all 0.15s;display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--text-primary);aspect-ratio:1/1;justify-content:center;touch-action:manipulation}
+.snd{background:var(--card-bg2);border:2px solid var(--border);border-radius:clamp(12px,2.5vw,18px);padding:clamp(10px,2vw,16px) clamp(6px,1.2vw,10px);font-size:clamp(2em,5vw,3em);cursor:pointer;transition:all 0.15s;display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--text-primary);aspect-ratio:1/1;justify-content:center;touch-action:pan-y}
 .snd .sl{font-size:clamp(0.3em,0.8vw,0.4em);font-weight:700}
 .snd:active{transform:scale(0.9);background:var(--category-blue);border-color:var(--blue)}
-.piano{display:flex;gap:clamp(1px,0.4vw,3px);justify-content:center;padding:clamp(4px,1vw,8px);overflow-x:auto;flex-wrap:wrap}
+.piano{display:flex;gap:clamp(1px,0.4vw,3px);justify-content:center;padding:clamp(4px,1vw,8px);overflow-x:auto;-webkit-overflow-scrolling:touch;flex-wrap:wrap;touch-action:pan-y}
 .pkey{width:clamp(28px,6vw,44px);height:clamp(70px,16vh,120px);background:#e0e0e0;border:2px solid #999;border-radius:0 0 clamp(6px,1.2vw,10px) clamp(6px,1.2vw,10px);cursor:pointer;display:flex;align-items:flex-end;justify-content:center;padding-bottom:clamp(4px,1vw,8px);font-weight:700;color:#666;font-size:clamp(0.6em,1.5vw,0.85em);transition:all 0.1s;touch-action:manipulation}
 .pkey:active{background:#c0c0c0;transform:translateY(2px)}
 .pkey.bk{background:#333;color:transparent;height:clamp(45px,10vh,75px);width:clamp(18px,4vw,30px);margin:0 clamp(-9px,-2vw,-15px);z-index:2;border-color:#111;border-radius:0 0 6px 6px}
@@ -442,7 +442,7 @@ body{
 <!-- MUSIC SCREEN -->
 <div class="screen" id="music">
   <div class="topbar orange" style="flex-wrap:nowrap"><button class="back-btn" onclick="go('home')">←</button><div class="music-cats" id="musicCats"></div></div>
-  <div class="music-content" id="musicContent" style="flex:1;overflow-y:auto;padding:10px"></div>
+  <div class="music-content" id="musicContent" style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:10px;touch-action:pan-y"></div>
 </div>
 
 <!-- YOUTUBE SCREEN -->
