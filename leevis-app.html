@@ -415,7 +415,7 @@ body{
     <div class="home-grid">
       <div class="home-btn" onclick="go('aac');playSound('click');speak('Sprechen');bubbleSay('Sprechen')"><img class="icon" src="https://static.arasaac.org/pictograms/6517/6517_500.png"><span class="label">Sprechen</span></div>
       <div class="home-btn" onclick="go('learn');playSound('click');bubbleSay('Lernen')"><img class="icon" src="https://static.arasaac.org/pictograms/37810/37810_500.png"><span class="label">Lernen</span></div>
-      <div class="home-btn" onclick="openYTScreen();playSound('click');speak('Videos');bubbleSay('Videos')"><span class="icon" style="display:flex;align-items:center;justify-content:center"><svg viewBox="0 0 48 48" style="width:100%;height:100%"><rect x="2" y="8" width="44" height="32" rx="8" fill="#FF0000"/><polygon points="20,15 35,24 20,33" fill="#fff"/></svg></span><span class="label">Videos</span></div>
+      <div class="home-btn" onclick="launchYouTube();playSound('click');speak('Videos');bubbleSay('Videos')"><span class="icon" style="display:flex;align-items:center;justify-content:center"><svg viewBox="0 0 48 48" style="width:100%;height:100%"><rect x="2" y="8" width="44" height="32" rx="8" fill="#FF0000"/><polygon points="20,15 35,24 20,33" fill="#fff"/></svg></span><span class="label">Videos</span></div>
       <div class="home-btn" onclick="go('music');playSound('click');speak('Musik');bubbleSay('Musik')"><img class="icon" src="https://static.arasaac.org/pictograms/24791/24791_500.png"><span class="label">Musik</span></div>
       <div class="home-btn" onclick="go('credits');playSound('click');speak('Kino');bubbleSay('Kino')"><img class="icon" src="https://static.arasaac.org/pictograms/30387/30387_500.png"><span class="label">Kino</span></div>
       <div class="home-btn" onclick="go('sensory');playSound('click');speak('Spielen');bubbleSay('Spielen')"><img class="icon" src="https://static.arasaac.org/pictograms/23392/23392_500.png"><span class="label">Spielen</span></div>
@@ -447,17 +447,6 @@ body{
 </div>
 
 <!-- YOUTUBE SCREEN -->
-<div class="screen" id="youtube">
-  <div class="topbar red"><button class="back-btn" onclick="ytGoBack()">←</button><span id="ytTitle">📺 Videos</span></div>
-  <!-- Video Grid -->
-  <div id="ytGrid" style="flex:1;overflow-y:scroll;-webkit-overflow-scrolling:touch;touch-action:pan-y;min-height:0;padding:clamp(8px,2vw,16px);padding-bottom:76px;display:grid;grid-template-columns:repeat(auto-fill,minmax(clamp(140px,42vw,220px),1fr));gap:clamp(8px,1.5vw,14px);align-content:start">
-    <div id="ytLoading" style="grid-column:1/-1;text-align:center;padding:2em;color:var(--text-secondary);font-size:1.2em">Videos laden...</div>
-  </div>
-  <!-- Embedded Player -->
-  <div id="ytPlayerWrap" style="display:none;flex:1;min-height:0">
-    <iframe id="ytPlayerFrame" style="width:100%;height:100%;border:none" allow="autoplay;encrypted-media;fullscreen;picture-in-picture" allowfullscreen></iframe>
-  </div>
-</div>
 
 <!-- CREDITS SCREEN (CINEMATIC FULLSCREEN) -->
 <div class="screen" id="credits">
@@ -716,22 +705,6 @@ function go(screen){
   // Stop loops from previous screen
   if(currentScreen==='credits')stopCreditsLoops();
   if(currentScreen==='sensory')stopSensory();
-  // YouTube Video stoppen wenn man weg navigiert
-  if(currentScreen==='youtube'&&ytPlayerActive){
-    const pf=document.getElementById('ytPlayerFrame');
-    if(pf){pf.contentWindow?.postMessage('{"event":"command","func":"pauseVideo","args":""}','*');pf.src='about:blank';pf.src='';}
-    document.getElementById('ytPlayer').style.display='none';
-    ytPlayerActive=false;
-  }
-  // YouTube Player aufräumen wenn man weg navigiert
-  if(currentScreen==='youtube'&&ytPlaying){
-    const frame=document.getElementById('ytPlayerFrame');
-    if(frame)frame.src='about:blank';
-    document.getElementById('ytPlayerWrap').style.display='none';
-    document.getElementById('ytGrid').style.display='';
-    document.getElementById('ytTitle').textContent='📺 Videos';
-    ytPlaying=false;
-  }
 
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById(screen).classList.add('active');
@@ -2244,106 +2217,15 @@ function playYTVideo(v){
 }
 
 // --- YouTube direkt öffnen (echte App auf Tablet) ---
-// ===== YOUTUBE EMBEDDED SYSTEM =====
-const YT_CHANNELS=[
-  {id:'UCNclt7O1bO7hz8Mari68neg',name:'Peppa Deutsch'},
-  {id:'UCooPit08nD5lkSjgc5Gjxqw',name:'Sing Kinderlieder'},
-  {id:'UCctbi1Jw2jiVhj2ogdwiFdA',name:'Kinderlieder Mitsingen'},
-  {id:'UCpYye8D5fFMUPf9nSfgd4bA',name:'BabyBus'},
-  {id:'UCtf9cFBJkHVAf2qMqF01xYg',name:'Hey Bear Sensory'},
-  {id:'UCswHAbaWV6tsed5J5E8vBgg',name:'Disney Channel DE'}
-];
-let ytVideos=[];
-let ytLoaded=false;
-let ytPlaying=false;
-
-async function fetchViaProxy(url,timeout){
-  const proxies=[
-    u=>'https://api.codetabs.com/v1/proxy?quest='+encodeURIComponent(u),
-    u=>'https://api.allorigins.win/raw?url='+encodeURIComponent(u)
-  ];
-  for(const p of proxies){
-    try{
-      const ctrl=new AbortController();
-      const t=setTimeout(()=>ctrl.abort(),timeout||6000);
-      const r=await fetch(p(url),{signal:ctrl.signal});
-      clearTimeout(t);
-      if(r.ok)return await r.text();
-    }catch(e){}
-  }
-  return null;
-}
-
-async function loadYTVideos(){
-  if(ytLoaded&&ytVideos.length>0)return;
-  const grid=document.getElementById('ytGrid');
-  grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:2em;color:var(--text-secondary);font-size:1.2em">Videos laden...</div>';
-  ytVideos=[];
-  const promises=YT_CHANNELS.map(async ch=>{
-    try{
-      const rssUrl='https://www.youtube.com/feeds/videos.xml?channel_id='+ch.id;
-      const xml=await fetchViaProxy(rssUrl,6000);
-      if(!xml)return[];
-      const ids=[...xml.matchAll(/<yt:videoId>([^<]+)<\/yt:videoId>/g)].map(m=>m[1]);
-      const titles=[...xml.matchAll(/<media:title>([^<]+)<\/media:title>/g)].map(m=>m[1]);
-      return ids.slice(0,5).map((id,i)=>({id,title:titles[i]||'Video',thumb:'https://img.youtube.com/vi/'+id+'/mqdefault.jpg',channel:ch.name}));
-    }catch(e){return[];}
-  });
-  const results=await Promise.all(promises);
-  results.forEach(r=>ytVideos.push(...r));
-  // Shuffle
-  for(let i=ytVideos.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[ytVideos[i],ytVideos[j]]=[ytVideos[j],ytVideos[i]];}
-  renderYTGrid();
-  ytLoaded=true;
-}
-
-function renderYTGrid(){
-  const grid=document.getElementById('ytGrid');
-  if(ytVideos.length===0){
-    grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:2em;color:var(--text-secondary);font-size:1.2em">Keine Videos gefunden</div>';
-    return;
-  }
-  grid.innerHTML=ytVideos.map((v,i)=>`
-    <div onclick="ytPlay('${v.id}','${v.title.replace(/'/g,"\\'")}');playSound('click')" style="cursor:pointer;border-radius:12px;overflow:hidden;background:var(--card-bg);box-shadow:0 2px 8px rgba(0,0,0,0.3)">
-      <img src="${v.thumb}" style="width:100%;aspect-ratio:16/9;object-fit:cover;display:block" loading="lazy">
-      <div style="padding:6px 8px;font-size:clamp(0.7em,2.5vw,0.85em);color:var(--text-primary);line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${v.title}</div>
-    </div>
-  `).join('');
-}
-
-function ytPlay(videoId,title){
-  const grid=document.getElementById('ytGrid');
-  const wrap=document.getElementById('ytPlayerWrap');
-  const frame=document.getElementById('ytPlayerFrame');
-  grid.style.display='none';
-  wrap.style.display='flex';
-  frame.src='https://www.youtube-nocookie.com/embed/'+videoId+'?autoplay=1&rel=0&modestbranding=1';
-  document.getElementById('ytTitle').textContent=title||'📺 Video';
-  ytPlaying=true;
-}
-
-function ytGoBack(){
-  if(ytPlaying){
-    const grid=document.getElementById('ytGrid');
-    const wrap=document.getElementById('ytPlayerWrap');
-    const frame=document.getElementById('ytPlayerFrame');
-    frame.src='about:blank';
-    wrap.style.display='none';
-    grid.style.display='';
-    document.getElementById('ytTitle').textContent='📺 Videos';
-    ytPlaying=false;
-  }else{
-    go('home');
-  }
-}
-
-function openYTScreen(){
-  go('youtube');
-  loadYTVideos();
-}
-
-function ytBack(){
-  go('home');
+// ===== YOUTUBE APP LAUNCHER =====
+function launchYouTube(){
+  // Android Intent: öffnet die echte YouTube-App
+  const intentUrl='intent://www.youtube.com/#Intent;package=com.google.android.youtube;scheme=https;end';
+  const a=document.createElement('a');
+  a.href=intentUrl;
+  a.click();
+  // Fallback: wenn Intent nicht funktioniert (z.B. iOS oder Desktop), öffne im neuen Tab
+  setTimeout(()=>{window.open('https://www.youtube.com/','_blank');},500);
 }
 
 // ===== YOUTUBE VOICE SEARCH =====
