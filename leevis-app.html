@@ -3071,8 +3071,8 @@ window.addEventListener('load',()=>{
   setInterval(updateUsageTime,1000);
 });
 
-// Prevent zoom
-document.addEventListener('touchmove',e=>{if(e.scale!==1)e.preventDefault()},{passive:false});
+// Prevent zoom (only block actual pinch-zoom with 2+ fingers, allow normal scrolling)
+document.addEventListener('touchmove',e=>{if(e.touches&&e.touches.length>1)e.preventDefault()},{passive:false});
 document.addEventListener('gesturestart',e=>e.preventDefault(),{passive:false});
 
 // ===== KIOSK MODUS (Vollbild + Zurück blockieren + kein Verlassen) =====
