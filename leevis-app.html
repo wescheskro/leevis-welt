@@ -1821,11 +1821,26 @@ function updateKeyCountDisplay(){
   el.textContent='Aktiv: Key '+(idx+1)+' von '+keys.length;
 }
 
-// --- YouTube Data API v3 Suche (mit Key-Rotation) ---
+// --- Piped API Instanzen (kostenlos, kein Key nötig) ---
+const PIPED_INSTANCES=[
+  'https://pipedapi.kavin.rocks',
+  'https://pipedapi.adminforge.de',
+  'https://pipedapi.in.projectsegfau.lt',
+  'https://api.piped.privacydev.net'
+];
+
+// --- YouTube Suche: Piped API zuerst, dann Google API als Fallback ---
 async function searchYouTube(query,maxResults,pageToken){
+  // 1. Piped API versuchen (kein Key nötig, kein Limit)
+  const pipedResult=await searchViaPiped(query,maxResults||12);
+  if(pipedResult&&pipedResult.videos.length>0){
+    console.log('[YT] Piped API erfolgreich:',pipedResult.videos.length,'Videos');
+    return pipedResult;
+  }
+
+  // 2. Fallback: Google YouTube Data API v3 mit Key-Rotation
   const keys=getYTApiKeys();
   if(keys.length===0)return null;
-  // Versuche jeden Key einmal bei Quota-Fehler
   for(let attempt=0;attempt<keys.length;attempt++){
     const key=getYTApiKey();
     if(!key)return null;
@@ -1853,14 +1868,12 @@ async function searchYouTube(query,maxResults,pageToken){
           nextPageToken:data.nextPageToken||null
         };
       }
-      const err=await r.json().catch(()=>({}));
-      // 403 = Quota überschritten → nächsten Key versuchen
       if(r.status===403&&keys.length>1){
-        console.warn('YT Key Quota voll, rotiere...',err);
+        console.warn('YT Key Quota voll, rotiere...');
         rotateYTApiKey();
         continue;
       }
-      console.warn('YouTube API Fehler:',r.status,err);
+      console.warn('YouTube API Fehler:',r.status);
       return null;
     }catch(e){
       console.warn('YouTube API Netzwerk-Fehler:',e);
@@ -1868,6 +1881,36 @@ async function searchYouTube(query,maxResults,pageToken){
     }
   }
   console.warn('Alle YT API Keys aufgebraucht');
+  return null;
+}
+
+// --- Piped API Suche (durchläuft mehrere Instanzen) ---
+async function searchViaPiped(query,maxResults){
+  for(const instance of PIPED_INSTANCES){
+    try{
+      const url=instance+'/search?q='+encodeURIComponent(query)+'&filter=videos';
+      const r=await fetch(url,{signal:AbortSignal.timeout(5000)});
+      if(!r.ok)continue;
+      const data=await r.json();
+      const items=data.items||data;
+      if(!Array.isArray(items)||items.length===0)continue;
+      const videos=items
+        .filter(item=>item.url&&item.url.startsWith('/watch'))
+        .slice(0,maxResults)
+        .map(item=>{
+          const videoId=item.url.replace('/watch?v=','');
+          return{
+            id:videoId,
+            title:item.title||'Video',
+            thumb:item.thumbnail||('https://img.youtube.com/vi/'+videoId+'/mqdefault.jpg')
+          };
+        });
+      if(videos.length>0)return{videos,nextPageToken:null};
+    }catch(e){
+      console.warn('[Piped] Instanz fehlgeschlagen:',instance,e.message);
+      continue;
+    }
+  }
   return null;
 }
 
