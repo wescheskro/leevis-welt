@@ -448,19 +448,17 @@ body{
 
 <!-- YOUTUBE SCREEN -->
 <div class="screen" id="youtube">
-  <div class="topbar red" style="flex-wrap:nowrap"><button class="back-btn" onclick="ytBack()">←</button><div class="yt-cats" id="ytCats"></div></div>
-  <div class="yt-grid" id="ytGrid" style="padding-bottom:76px"></div>
-  <div class="yt-player" id="ytPlayer" style="display:none;flex-direction:column;height:100%;position:relative">
-    <button id="ytCloseBtn" onclick="ytBack()" style="position:absolute;top:8px;left:8px;z-index:200;width:120px;height:120px;border-radius:50%;background:rgba(220,30,30,0.9);border:3px solid rgba(255,100,100,0.8);color:#fff;font-size:3.6em;cursor:pointer;display:flex;align-items:center;justify-content:center;touch-action:manipulation;pointer-events:auto;box-shadow:0 4px 15px rgba(0,0,0,0.5)">✕</button>
-    <div style="width:100%;flex-shrink:0">
-      <div style="position:relative;width:100%;padding-bottom:56.25%;background:#000">
-        <iframe id="ytPlayerFrame" style="position:absolute;top:0;left:0;width:100%;height:100%;border:none" allow="autoplay;encrypted-media" sandbox="allow-scripts allow-same-origin allow-presentation allow-popups"></iframe>
-      </div>
-    </div>
-    <div id="ytPlayerInfo" style="padding:12px 16px;background:var(--dark-bg2);border-bottom:1px solid var(--border)">
-      <h3 id="ytPlayerTitle" style="font-size:1.1em;color:var(--text-primary);margin:0"></h3>
-    </div>
-    <div id="ytRelated" class="yt-grid" style="flex:1;overflow-y:scroll;-webkit-overflow-scrolling:touch;touch-action:pan-y;min-height:0;padding:10px;padding-bottom:76px"></div>
+  <div class="topbar red"><button class="back-btn" onclick="go('home')">←</button>📺 Videos</div>
+  <div style="flex:1;overflow-y:scroll;-webkit-overflow-scrolling:touch;touch-action:pan-y;min-height:0;padding:clamp(10px,2vw,20px);padding-bottom:76px;display:grid;grid-template-columns:repeat(auto-fill,minmax(clamp(120px,28vw,200px),1fr));gap:clamp(10px,2vw,18px);align-content:start" id="ytGrid">
+    <div class="home-btn" onclick="openYouTube('Zahlen lernen Kinder deutsch');playSound('click')"><span style="font-size:2.5em">🔢</span><span class="label">Zahlen</span></div>
+    <div class="home-btn" onclick="openYouTube('ABC Buchstaben lernen Kinder deutsch');playSound('click')"><span style="font-size:2.5em">🔤</span><span class="label">ABC</span></div>
+    <div class="home-btn" onclick="openYouTube('Peppa Wutz deutsch ganze Folgen');playSound('click')"><span style="font-size:2.5em">🐷</span><span class="label">Peppa</span></div>
+    <div class="home-btn" onclick="openYouTube('Kinderlieder deutsch zum Mitsingen');playSound('click')"><span style="font-size:2.5em">🎵</span><span class="label">Lieder</span></div>
+    <div class="home-btn" onclick="openYouTube('movie end credits rolling');playSound('click')"><span style="font-size:2.5em">🎬</span><span class="label">Abspänne</span></div>
+    <div class="home-btn" onclick="openYouTube('Baby Sensory calming relaxing');playSound('click')"><span style="font-size:2.5em">🌙</span><span class="label">Ruhe</span></div>
+    <div class="home-btn" onclick="openYouTube('BabyBus deutsch');playSound('click')"><span style="font-size:2.5em">🚌</span><span class="label">BabyBus</span></div>
+    <div class="home-btn" onclick="openYouTube('Disney Kinder deutsch');playSound('click')"><span style="font-size:2.5em">🏰</span><span class="label">Disney</span></div>
+    <div class="home-btn" onclick="openYouTubeKids();playSound('click')" style="background:var(--category-red)"><span style="font-size:2.5em">📺</span><span class="label">YouTube Kids</span></div>
   </div>
 </div>
 
@@ -2239,12 +2237,16 @@ function playYTVideo(v){
   }
 }
 
+// --- YouTube direkt öffnen (echte App auf Tablet) ---
+function openYouTube(query){
+  window.open('https://www.youtube.com/results?search_query='+encodeURIComponent(query),'_blank');
+}
+function openYouTubeKids(){
+  window.open('https://www.youtubekids.com/','_blank');
+}
+
 function ytBack(){
-  if(ytPlayerActive){
-    showYTGrid(currentYTCat);
-  }else{
-    go('home');
-  }
+  go('home');
 }
 
 // ===== YOUTUBE VOICE SEARCH =====
