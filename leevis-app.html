@@ -975,6 +975,17 @@ function clearWords(){words=[];updateSentence();playSound('click');bubbleSay('Ge
 
 // ===== LEARNING GAMES =====
 const gameConfigs={
+  emotions:{title:'Gefühle',icon:'😊',questions:8,promptAudio:'frage-gefuehl',
+    all:[
+      {name:'Fröhlich',emoji:'😊',img:'images/peppa/peppa-emotion-happy.png',audio:'froehlich'},
+      {name:'Traurig',emoji:'😢',img:'images/peppa/peppa-emotion-sad.png',audio:'traurig'},
+      {name:'Wütend',emoji:'😠',img:'images/peppa/peppa-emotion-angry.png',audio:'wuetend'},
+      {name:'Angst',emoji:'😨',img:'images/peppa/peppa-emotion-scared.png',audio:'angst'},
+      {name:'Überrascht',emoji:'😲',img:'images/peppa/peppa-emotion-surprised.png',audio:'ueberrascht'},
+      {name:'Müde',emoji:'😴',img:'images/peppa/peppa-emotion-tired.png',audio:'muede'},
+      {name:'Verliebt',emoji:'😍',img:'images/peppa/peppa-emotion-love.png',audio:'verliebt'},
+      {name:'Lustig',emoji:'😂',img:'images/peppa/peppa-emotion-funny.png',audio:'lustig'}
+    ]},
   numbers:{title:'Zahlen',icon:'🔢',questions:8,promptAudio:'frage-zahl'},
   letters:{title:'Buchstaben',icon:'🔤',letters:'ABCDEFGHIJKLMNOPQRSTUVWXYZ',questions:8,promptAudio:'frage-buchstabe'},
   counting:{title:'Zählen',icon:'🔢',range:[1,8],questions:8,promptAudio:'frage-zaehlen'},
@@ -990,17 +1001,6 @@ const gameConfigs={
       {name:'Kreis',symbol:'⬤',audio:'kreis'},{name:'Dreieck',symbol:'▲',audio:'dreieck'},
       {name:'Quadrat',symbol:'■',audio:'quadrat'},{name:'Stern',symbol:'★',audio:'stern'},
       {name:'Herz',symbol:'♥',audio:'herz'},{name:'Raute',symbol:'◆',audio:'raute'}
-    ]},
-  emotions:{title:'Gefühle',icon:'😊',questions:8,promptAudio:'frage-gefuehl',
-    all:[
-      {name:'Fröhlich',emoji:'😊',img:'images/peppa/peppa-emotion-happy.png',audio:'froehlich'},
-      {name:'Traurig',emoji:'😢',img:'images/peppa/peppa-emotion-sad.png',audio:'traurig'},
-      {name:'Wütend',emoji:'😠',img:'images/peppa/peppa-emotion-angry.png',audio:'wuetend'},
-      {name:'Angst',emoji:'😨',img:'images/peppa/peppa-emotion-scared.png',audio:'angst'},
-      {name:'Überrascht',emoji:'😲',img:'images/peppa/peppa-emotion-surprised.png',audio:'ueberrascht'},
-      {name:'Müde',emoji:'😴',img:'images/peppa/peppa-emotion-tired.png',audio:'muede'},
-      {name:'Verliebt',emoji:'😍',img:'images/peppa/peppa-emotion-love.png',audio:'verliebt'},
-      {name:'Lustig',emoji:'😂',img:'images/peppa/peppa-emotion-funny.png',audio:'lustig'}
     ]}
 };
 
