@@ -1749,16 +1749,22 @@ function initAlphabetGrid(){
 const ytChannelMap={
   '🔢 Zahlen':[
     {id:'UCooPit08nD5lkSjgc5Gjxqw',name:'Sing Kinderlieder'},
-    {id:'UCctbi1Jw2jiVhj2ogdwiFdA',name:'Kinderlieder Mitsingen'}
+    {id:'UCctbi1Jw2jiVhj2ogdwiFdA',name:'Kinderlieder Mitsingen'},
+    {id:'UCpYye8D5fFMUPf9nSfgd4bA',name:'BabyBus'}
   ],
   '🔤 ABC':[
     {id:'UCooPit08nD5lkSjgc5Gjxqw',name:'Sing Kinderlieder'},
-    {id:'UCctbi1Jw2jiVhj2ogdwiFdA',name:'Kinderlieder Mitsingen'}
+    {id:'UCctbi1Jw2jiVhj2ogdwiFdA',name:'Kinderlieder Mitsingen'},
+    {id:'UCpYye8D5fFMUPf9nSfgd4bA',name:'BabyBus'}
   ],
-  '🎬 Abspänne':[],
+  '🎬 Abspänne':[
+    {id:'UCswHAbaWV6tsed5J5E8vBgg',name:'Disney Channel DE'},
+    {id:'UCpYye8D5fFMUPf9nSfgd4bA',name:'BabyBus'}
+  ],
   '🎵 Lieder':[
     {id:'UCooPit08nD5lkSjgc5Gjxqw',name:'Sing Kinderlieder'},
-    {id:'UCctbi1Jw2jiVhj2ogdwiFdA',name:'Kinderlieder Mitsingen'}
+    {id:'UCctbi1Jw2jiVhj2ogdwiFdA',name:'Kinderlieder Mitsingen'},
+    {id:'UCpYye8D5fFMUPf9nSfgd4bA',name:'BabyBus'}
   ],
   '🌙 Ruhe':[
     {id:'UCtf9cFBJkHVAf2qMqF01xYg',name:'Hey Bear Sensory'}
@@ -2005,7 +2011,7 @@ async function loadCategoryVideos(cat,gen){
     grid.innerHTML='';
     ytNextPageToken=cached.nextPageToken;
     appendVideos(grid,cached.videos);
-    setupSentinelObserver(grid,gen);
+    if(ytNextPageToken){setupSentinelObserver(grid,gen)}
     return;
   }
 
@@ -2021,7 +2027,9 @@ async function loadCategoryVideos(cat,gen){
     grid.innerHTML='';
     ytNextPageToken=result.nextPageToken;
     appendVideos(grid,result.videos);
-    setupSentinelObserver(grid,gen);
+    if(ytNextPageToken){
+      setupSentinelObserver(grid,gen);
+    }
     loaded=true;
   }
 
