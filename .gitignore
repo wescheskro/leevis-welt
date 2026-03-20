@@ -1,0 +1,8 @@
+node_modules/
+.claude/
+*.ps1
+test-*.html
+test-*.wav
+generate-*.js
+generate-*.ps1
+ENTWICKLUNGSPLAN.md

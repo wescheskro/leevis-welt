@@ -1,0 +1,2928 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<title>Leevis Welt</title>
+<!-- Edge AI: TensorFlow.js + Speech Commands (lokal, keine Cloud) -->
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/speech-commands@0.5.4/dist/speech-commands.min.js"></script>
+<!-- YouTube Data API v3: Fuer echte Video-Suche wie auf YouTube -->
+<style>
+/* ========================================================================
+ * MOTOR PLANNING (MOTORISCHE PLANUNG) - CORE DESIGN PRINCIPLE
+ * ========================================================================
+ * This app follows strict Motor Planning principles for autistic users,
+ * as perfected in systems like Proloquo2Go.
+ *
+ * RULES (NEVER VIOLATE):
+ * 1. Fixed spatial anchors: Back=top-left, Benny=top-right,
+ *    Mood=bottom-left, Credits=bottom-right, Parent=bottom-center
+ * 2. Home grid order is IMMUTABLE - buttons never change position
+ * 3. AAC pictogram positions within categories are STABLE
+ * 4. Game answer options are sorted deterministically (never random)
+ * 5. The motor-bar is visible on EVERY screen at the SAME position
+ * 6. Benny is NOT draggable - fixed position only
+ * 7. NO usage-based reordering of any element, anywhere, ever
+ * 8. All touch targets are minimum 60x60px
+ *
+ * Reference: Proloquo2Go Motor Planning methodology
+ * Purpose: Motor memory offloads navigation from cortex to motor function,
+ *          freeing cognitive resources for emotional/communicative tasks.
+ * ======================================================================== */
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;scrollbar-width:none;-ms-overflow-style:none}
+*::-webkit-scrollbar{display:none}
+:root{
+  --dark-bg:#0f0f1a;
+  --dark-bg2:#1a1a2e;
+  --dark-bg3:#16213e;
+  --card-bg:#1e1e32;
+  --card-bg2:#252540;
+  --text-primary:#e0e0e0;
+  --text-secondary:#a0a0b0;
+  --border:#2a2a45;
+  --pink:#E91E63;
+  --orange:#FF9800;
+  --green:#4CAF50;
+  --blue:#2196F3;
+  --purple:#9C27B0;
+  --red:#F44336;
+  --category-pink:#C2185B;
+  --category-orange:#E65100;
+  --category-green:#2E7D32;
+  --category-blue:#1565C0;
+  --category-purple:#6A1B9A;
+  --category-red:#C62828
+}
+html,body{height:100%;overflow:hidden}
+body{
+  font-family:'Segoe UI',system-ui,-apple-system,sans-serif;
+  background:var(--dark-bg);
+  color:var(--text-primary);
+  user-select:none;
+  -webkit-user-select:none;
+  -webkit-user-drag:none
+}
+.screen{display:none;height:100vh;width:100vw;position:absolute;top:0;left:0;flex-direction:column;overflow:hidden;background:var(--dark-bg);opacity:0;transition:opacity 0.3s ease;z-index:1}
+.screen.active{display:flex;opacity:1}
+
+/* ===== BENNY FLOATING BUDDY =====
+ * MOTOR PLANNING: Benny is FIXED at top-right. NOT draggable.
+ * This position must NEVER change across any screen or state. */
+.buddy-float{position:fixed;top:8px;right:8px;z-index:80}
+.buddy-float .benny-body{width:80px;height:80px;font-size:4em;line-height:80px;text-align:center;background:rgba(224,224,224,0.95);border-radius:50%;box-shadow:0 6px 20px rgba(0,0,0,0.4);animation:bennyIdle 3s infinite ease-in-out;border:3px solid var(--purple)}
+.buddy-float .benny-body:active{transform:scale(1.15)}
+@keyframes bennyIdle{0%,100%{transform:translateY(0) rotate(0deg)}25%{transform:translateY(-6px) rotate(-3deg)}50%{transform:translateY(0) rotate(0deg)}75%{transform:translateY(-4px) rotate(3deg)}}
+@keyframes bennyWave{0%{transform:rotate(0deg)}15%{transform:rotate(15deg)}30%{transform:rotate(-10deg)}45%{transform:rotate(12deg)}60%{transform:rotate(-5deg)}75%{transform:rotate(8deg)}100%{transform:rotate(0deg)}}
+@keyframes bennyHappy{0%{transform:scale(1) translateY(0)}25%{transform:scale(1.2) translateY(-15px)}50%{transform:scale(1) translateY(0)}75%{transform:scale(1.15) translateY(-10px)}100%{transform:scale(1) translateY(0)}}
+.buddy-float.wave .benny-body{animation:bennyWave 0.8s ease-in-out}
+.buddy-float.happy .benny-body{animation:bennyHappy 0.8s ease-in-out}
+.buddy-bubble{position:absolute;top:90px;right:0;background:rgba(30,30,50,0.98);border-radius:4px 18px 18px 18px;padding:12px 14px;font-size:0.9em;color:var(--text-primary);line-height:1.4;width:240px;box-shadow:0 4px 15px rgba(0,0,0,0.6);animation:bubbleIn 0.3s ease-out;pointer-events:none;border:1px solid var(--border)}
+.buddy-bubble:after{content:'';position:absolute;top:-8px;right:30px;width:0;height:0;border-left:10px solid transparent;border-right:10px solid transparent;border-bottom:10px solid rgba(30,30,50,0.98)}
+.buddy-bubble.hidden{display:none}
+@keyframes bubbleIn{0%{opacity:0;transform:scale(0.8) translateY(10px)}100%{opacity:1;transform:scale(1) translateY(0)}}
+
+/* ===== HOME ===== */
+#home{background:linear-gradient(135deg,var(--dark-bg2) 0%,var(--dark-bg3) 100%);justify-content:center;align-items:center;padding:20px;padding-bottom:76px}
+.home-title{color:var(--text-primary);font-size:3.2em;font-weight:900;text-shadow:2px 2px 4px rgba(0,0,0,0.5)}
+.home-buddy{font-size:5em;margin:10px 0;animation:buddyBounce 2s infinite}
+@keyframes buddyBounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-20px)}}
+.home-subtitle{color:var(--text-secondary);font-size:1.1em;margin-bottom:30px;text-align:center}
+.home-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;width:100%;max-width:600px;padding:0 10px}
+.home-btn{background:var(--card-bg);border:2px solid var(--border);border-radius:20px;cursor:pointer;transition:all 0.2s;box-shadow:0 8px 25px rgba(0,0,0,0.3);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:var(--text-primary);aspect-ratio:1/1}
+.home-btn:active{transform:scale(0.93);background:var(--card-bg2)}
+.home-btn .icon{width:60%;height:60%;object-fit:contain}
+.home-btn .label{font-size:1.2em;font-weight:700}
+/* .parent-btn removed — now in .motor-bar (Motor Planning) */
+
+/* ===== TOP BAR ===== */
+.topbar{display:flex;align-items:center;padding:10px 14px;color:var(--text-primary);font-weight:700;font-size:1.2em;gap:10px;flex-shrink:0;border-bottom:1px solid var(--border)}
+.topbar.blue{background:#1565C0}
+.topbar.green{background:#2E7D32}
+.topbar.orange{background:#E65100}
+.topbar.purple{background:#6A1B9A}
+.topbar.red{background:#C62828}
+.back-btn{background:rgba(224,224,224,0.15);border:1px solid rgba(224,224,224,0.2);color:var(--text-primary);font-size:2.8em;width:120px;height:120px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all 0.2s;touch-action:manipulation}
+.back-btn:active{background:rgba(224,224,224,0.25)}
+
+/* ===== AAC CATEGORIES =====
+ * MOTOR PLANNING: Categories in fixed 5-column grid.
+ * Each category ALWAYS occupies the same spatial position.
+ * DO NOT use overflow-x:auto or scrolling. */
+.aac-cats{display:flex;gap:8px;flex:1;flex-wrap:nowrap;padding:0;background:none;border:none;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;-ms-overflow-style:none}
+.aac-cats::-webkit-scrollbar{display:none}
+.aac-cat{background:rgba(255,255,255,0.15);border:2px solid rgba(255,255,255,0.25);border-radius:16px;width:140px;height:140px;font-size:0.65em;font-weight:700;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;transition:all 0.15s;color:#fff;touch-action:manipulation;min-width:0;flex-shrink:0}
+.aac-cat:active{transform:scale(0.95)}
+.aac-cat .cat-icon{font-size:5.6em;line-height:1}
+.aac-cat.active{border-width:3px;box-shadow:0 0 10px rgba(255,255,255,0.3);background:rgba(255,255,255,0.35);border-color:#fff}
+.aac-cat.pink.active,.aac-cat.orange.active,.aac-cat.green.active,.aac-cat.blue.active,.aac-cat.purple.active,.aac-cat.red.active{background:rgba(255,255,255,0.35);border-color:#fff}
+
+/* ===== MUSIC CATEGORIES ===== */
+.music-cats{display:flex;gap:8px;flex:1;flex-wrap:nowrap;padding:0;background:none;border:none;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;-ms-overflow-style:none}
+.music-cats::-webkit-scrollbar{display:none}
+.music-cat{background:rgba(255,255,255,0.15);border:2px solid rgba(255,255,255,0.25);border-radius:16px;width:140px;height:140px;font-size:0.65em;font-weight:700;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;transition:all 0.15s;color:#fff;touch-action:manipulation;min-width:0;flex-shrink:0}
+.music-cat:active{transform:scale(0.95)}
+.music-cat .cat-icon{font-size:5.6em;line-height:1}
+.music-cat.active{border-width:3px;box-shadow:0 0 10px rgba(255,255,255,0.3);background:rgba(255,255,255,0.35);border-color:#fff}
+
+/* ===== AAC GRID ===== */
+/* MOTOR PLANNING: AAC grid is always 2 columns. Items within a category
+ * are NEVER reordered. The item at position [row,col] is always the same
+ * pictogram for a given category. */
+.aac-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;padding:10px;flex:1;overflow-y:auto;align-content:start}
+.aac-card{background:var(--card-bg);border-radius:16px;padding:14px 8px;display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer;transition:all 0.15s;box-shadow:0 3px 12px rgba(0,0,0,0.3);border:2px solid var(--border);min-height:200px;justify-content:center;touch-action:manipulation}
+.aac-card:active{transform:scale(0.93);background:var(--card-bg2)}
+.aac-card .pic{width:140px;height:140px;object-fit:contain}
+.aac-card .text{font-size:1em;font-weight:700;color:var(--text-primary);text-align:center;line-height:1.2}
+
+/* ===== SENTENCE BAR ===== */
+.sentence-bar{display:flex;align-items:center;gap:8px;padding:8px 14px;background:var(--dark-bg2);border-top:1px solid var(--border);flex-shrink:0}
+.sentence{flex:1;min-height:44px;background:var(--card-bg);border-radius:14px;padding:8px 14px;font-size:1em;display:flex;align-items:center;flex-wrap:wrap;gap:5px;color:var(--text-secondary);border:1px solid var(--border)}
+.sentence .w{background:var(--category-blue);color:#fff;padding:4px 10px;border-radius:8px;font-weight:600;font-size:0.9em}
+.speak-btn{width:60px;height:60px;border-radius:50%;border:none;font-size:1.6em;cursor:pointer;background:var(--category-blue);color:#fff;flex-shrink:0;transition:all 0.2s;touch-action:manipulation}
+.speak-btn:active{transform:scale(0.9)}
+.clear-btn{width:60px;height:60px;border-radius:50%;border:none;font-size:1.4em;cursor:pointer;background:var(--card-bg2);color:var(--text-secondary);flex-shrink:0;transition:all 0.2s;border:1px solid var(--border);touch-action:manipulation}
+.clear-btn:active{transform:scale(0.9)}
+
+/* ===== LEARN CATEGORIES ===== */
+.learn-cats{display:flex;gap:8px;flex:1;flex-wrap:nowrap;padding:0;background:none;border:none;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;-ms-overflow-style:none}
+.learn-cats::-webkit-scrollbar{display:none}
+.learn-cat{background:rgba(255,255,255,0.15);border:2px solid rgba(255,255,255,0.25);border-radius:16px;width:140px;height:140px;font-size:0.65em;font-weight:700;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;transition:all 0.15s;color:#fff;touch-action:manipulation;min-width:0;flex-shrink:0}
+.learn-cat:active{transform:scale(0.95)}
+.learn-cat .cat-icon{font-size:5.6em;line-height:1}
+.learn-cat.active{border-width:3px;box-shadow:0 0 10px rgba(255,255,255,0.3);background:rgba(255,255,255,0.35);border-color:#fff}
+
+/* ===== GAME SCREEN ===== */
+.game-area{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px;overflow-y:auto;gap:8px}
+.g-progress{display:flex;gap:6px;margin-bottom:4px}
+.g-dot{width:14px;height:14px;border-radius:50%;background:rgba(255,255,255,0.15);transition:all 0.3s}
+.g-dot.done{background:var(--green);box-shadow:0 0 6px var(--green)}
+.g-dot.current{background:var(--category-blue);box-shadow:0 0 8px var(--category-blue);transform:scale(1.2)}
+.g-prompt{font-size:1.6em;font-weight:800;color:var(--text-primary);text-align:center;margin-bottom:4px}
+.g-visual{margin:8px 0;display:flex;align-items:center;justify-content:center}
+.g-big{font-size:4.5em;display:block;font-weight:900;text-shadow:0 4px 15px rgba(0,0,0,0.3)}
+.g-options{display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%;max-width:420px}
+.g-opt{background:var(--card-bg);border:3px solid var(--border);border-radius:20px;padding:22px;font-size:2.2em;font-weight:800;cursor:pointer;transition:all 0.2s;text-align:center;color:var(--text-primary);touch-action:manipulation;min-height:80px;display:flex;align-items:center;justify-content:center}
+.g-opt:active{transform:scale(0.95)}
+.g-opt.ok{border-color:var(--green);background:#1B5E20;animation:pop 0.5s}
+.g-opt.no{border-color:var(--red);background:#B71C1C;animation:shake 0.5s}
+.count-area{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:8px 0;max-width:350px}
+.count-item{font-size:2.8em;animation:popIn 0.3s ease-out}
+.g-color-box{width:180px;height:180px;border-radius:24px;box-shadow:0 6px 25px rgba(0,0,0,0.4)}
+.g-shape{font-size:8em;filter:drop-shadow(0 4px 10px rgba(0,0,0,0.3))}
+.g-celebration{display:flex;flex-direction:column;align-items:center;gap:16px;animation:popIn 0.5s ease-out}
+.g-celebration .g-stars{font-size:3.5em;display:flex;gap:8px}
+.g-celebration .g-star{animation:starSpin 0.6s ease-out;animation-fill-mode:both}
+.g-celebration .g-star:nth-child(2){animation-delay:0.2s}
+.g-celebration .g-star:nth-child(3){animation-delay:0.4s}
+.g-celebration .g-msg{font-size:1.8em;font-weight:800;color:var(--text-primary)}
+.g-celebration .g-score-text{font-size:1.2em;color:var(--text-secondary)}
+.g-celebration .g-again{background:var(--green);color:#fff;border:none;border-radius:16px;padding:16px 40px;font-size:1.3em;font-weight:700;cursor:pointer;margin-top:8px;touch-action:manipulation}
+@keyframes pop{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+@keyframes popIn{0%{transform:scale(0);opacity:0}100%{transform:scale(1);opacity:1}}
+@keyframes starSpin{0%{transform:scale(0) rotate(-180deg);opacity:0}100%{transform:scale(1) rotate(0deg);opacity:1}}
+
+/* ===== MUSIC SCREEN ===== */
+.music-list{display:flex;flex-direction:column;gap:12px;padding:16px;flex:1;overflow-y:auto}
+.music-box{background:var(--card-bg);border-radius:18px;padding:16px;box-shadow:0 3px 12px rgba(0,0,0,0.3);border:1px solid var(--border)}
+.music-box h3{font-size:1em;color:var(--text-primary);margin-bottom:10px}
+.snd-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
+.snd{background:var(--card-bg2);border:2px solid var(--border);border-radius:14px;padding:12px 6px;font-size:2em;cursor:pointer;transition:all 0.15s;display:flex;flex-direction:column;align-items:center;gap:3px;color:var(--text-primary);aspect-ratio:1/1;justify-content:center;touch-action:manipulation}
+.snd:active{transform:scale(0.9);background:var(--category-blue);border-color:var(--blue)}
+.snd .sl{font-size:0.35em;font-weight:600;color:var(--text-secondary)}
+.piano{display:flex;gap:3px;justify-content:center;padding:8px;overflow-x:auto;flex-wrap:wrap}
+.pkey{width:44px;height:120px;background:#e0e0e0;border:2px solid #999;border-radius:0 0 10px 10px;cursor:pointer;display:flex;align-items:flex-end;justify-content:center;padding-bottom:8px;font-weight:700;color:#666;font-size:0.85em;transition:all 0.1s;touch-action:manipulation}
+.pkey:active{background:#c0c0c0;transform:translateY(2px)}
+.pkey.bk{background:#333;color:transparent;height:75px;width:30px;margin:0 -15px;z-index:2;border-color:#111;border-radius:0 0 6px 6px}
+.pkey.bk:active{background:#555}
+
+/* ===== YOUTUBE SCREEN ===== */
+.yt-cats{display:flex;gap:8px;flex:1;flex-wrap:wrap;padding:0;background:none;border:none;transition:none}
+.yt-cats.hidden-scroll{opacity:1;margin-top:0;pointer-events:auto}
+.yt-cat{background:rgba(255,255,255,0.15);border:2px solid rgba(255,255,255,0.25);border-radius:16px;width:140px;height:140px;font-size:4.8em;cursor:pointer;color:#fff;transition:all 0.15s;touch-action:manipulation;display:flex;align-items:center;justify-content:center;text-align:center;line-height:1;padding:4px;flex-shrink:0}
+.yt-cat:active{transform:scale(0.95)}
+.yt-cat.active{background:rgba(255,255,255,0.35);color:#fff;border-color:#fff;box-shadow:0 0 10px rgba(255,255,255,0.3)}
+.yt-grid{display:grid;grid-template-columns:1fr;gap:12px;padding:14px;flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;align-content:start;min-height:0;grid-auto-rows:min-content}
+@media (orientation:landscape) and (min-width:600px){
+  .yt-grid{grid-template-columns:1fr 1fr 1fr 1fr;gap:14px;padding:14px 20px}
+}
+.yt-card{background:var(--card-bg);border-radius:16px;overflow:hidden;box-shadow:0 3px 12px rgba(0,0,0,0.3);cursor:pointer;transition:all 0.15s;border:1px solid var(--border);touch-action:manipulation}
+.yt-card:active{transform:scale(0.98)}
+.yt-thumb{width:100%;aspect-ratio:16/9;background:#000;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+.yt-thumb img{width:100%;height:100%;object-fit:cover}
+.yt-play{position:absolute;width:60px;height:42px;background:rgba(198,40,40,0.95);border-radius:10px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.5em}
+.yt-info{display:none}
+.yt-player{flex:1;background:#000;display:flex;flex-direction:column}
+.yt-player iframe{flex:1;width:100%;border:none}
+.yt-player-info{background:var(--dark-bg2);padding:12px 16px;border-top:1px solid var(--border)}
+.yt-player-info h3{font-size:1.1em;color:var(--text-primary)}
+.yt-player-info p{font-size:0.85em;color:var(--text-secondary);margin-top:4px}
+.yt-back-list{background:none;border:none;color:var(--category-red);font-weight:600;font-size:0.95em;cursor:pointer;padding:8px 0;margin-top:6px;transition:all 0.2s;touch-action:manipulation}
+.yt-back-list:active{color:var(--red)}
+.yt-embed-area{flex:1;display:flex;flex-direction:column;overflow:hidden;background:#000}
+.yt-loading{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 20px;gap:16px;color:var(--text-secondary);font-size:1.1em}
+.yt-loading-bounce{width:48px;height:48px;border-radius:50%;background:var(--red);animation:ytBounce 0.6s infinite alternate}
+@keyframes ytBounce{0%{transform:translateY(0) scale(1)}100%{transform:translateY(-20px) scale(1.1)}}
+.scroll-top-btn{position:fixed;bottom:85px;right:16px;width:60px;height:60px;border-radius:50%;border:3px solid var(--red);background:var(--category-red);color:#fff;font-size:2em;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:70;opacity:0;pointer-events:none;transition:opacity 0.3s,transform 0.15s;touch-action:manipulation;box-shadow:0 4px 15px rgba(244,67,54,0.4)}
+.scroll-top-btn.visible{opacity:1;pointer-events:auto}
+.scroll-top-btn:active{transform:scale(0.92)}
+
+/* ===== VOICE SEARCH BUTTON (in Kategorie-Leiste) ===== */
+.yt-voice-cat{background:rgba(255,255,255,0.3)!important;border-color:#fff!important;color:#fff!important}
+.yt-voice-cat.listening{animation:voicePulse 1s infinite;box-shadow:0 0 20px rgba(255,255,255,0.6)}
+@keyframes voicePulse{0%,100%{box-shadow:0 0 0 0 rgba(244,67,54,0.4)}50%{box-shadow:0 0 0 15px rgba(244,67,54,0)}}
+
+/* ===== CREDITS SCREEN (CINEMATIC FULLSCREEN) ===== */
+#credits{overflow:hidden}
+#credits .topbar{position:absolute;top:0;left:0;right:0;z-index:10;background:linear-gradient(to bottom,rgba(5,5,26,0.95),transparent);border:none;padding:8px 14px}
+.credits-container{flex:1;display:flex;flex-direction:column;overflow:hidden;position:relative}
+.credits-bg{position:absolute;inset:0;background:#05051a;z-index:0}
+.credits-container{--cred-bg:#05051a}
+.credits-container::before{content:'';position:absolute;top:0;left:0;right:0;height:100px;background:linear-gradient(to bottom,var(--cred-bg) 20%,transparent);z-index:2;pointer-events:none}
+.credits-container::after{content:'';position:absolute;bottom:56px;left:0;right:0;height:100px;background:linear-gradient(to top,var(--cred-bg) 20%,transparent);z-index:2;pointer-events:none}
+.credits-scroll{flex:1;overflow-y:auto;padding:70px 16px 90px;color:#d4d4e8;font-size:1.3em;line-height:2.2;text-align:center;font-family:'Courier New','Lucida Console',monospace;scrollbar-width:none;-ms-overflow-style:none;position:relative;z-index:1;width:100%;box-sizing:border-box}
+.credits-scroll::-webkit-scrollbar{display:none}
+.credits-title-block{margin:50px 0 60px;padding:20px 0}
+.credits-movie-title{font-size:2.2em;letter-spacing:8px;color:#ffffff;text-transform:uppercase;font-weight:300;text-shadow:0 0 40px rgba(150,130,255,0.3)}
+.credits-studio{font-size:0.85em;color:#7a7a9a;margin-top:10px;letter-spacing:4px;text-transform:uppercase}
+.credits-year{font-size:0.75em;color:#5a5a7a;margin-top:6px}
+.credits-section{margin:10px 0;padding:18px 10px;width:100%}
+.credits-role{color:#8888bb;font-size:0.75em;font-weight:400;margin-top:14px;text-transform:uppercase;letter-spacing:4px;width:100%}
+.credits-name{color:#e8e8f0;font-size:1.1em;margin:5px 0;font-weight:300;letter-spacing:1.5px;width:100%}
+.credits-names-row{display:flex;justify-content:space-between;padding:0 10%;width:100%}
+.credits-names-row .credits-role{text-align:left;flex:1}
+.credits-names-row .credits-name{text-align:right;flex:1}
+.credits-number-row{color:#6a6aaa;font-size:0.85em;letter-spacing:8px;margin:12px 0;font-family:'Courier New',monospace;width:100%;word-spacing:6px}
+.credits-letter-row{color:#7a5aaa;font-size:0.95em;letter-spacing:12px;margin:14px 0;opacity:0.7;width:100%}
+.credits-divider{width:100%;max-width:200px;height:1px;background:linear-gradient(to right,transparent,#4a4a7a,transparent);margin:40px auto}
+.credits-logo{font-size:3.5em;margin:28px 0;opacity:0.6;filter:grayscale(0.3)}
+.credits-thanks{font-size:0.9em;color:#6a6a8a;letter-spacing:2px;font-style:italic;margin:28px 0}
+
+/* Credits bottom speed bar */
+.credits-controls{display:flex;gap:0;padding:0;background:rgba(5,5,26,0.95);flex-shrink:0;align-items:center;z-index:5;position:relative;height:52px}
+.credits-speed-bar{flex:1;display:flex;align-items:center;padding:0 16px;gap:12px;height:100%}
+.credits-speed-slider{-webkit-appearance:none;appearance:none;flex:1;height:8px;background:linear-gradient(to right,#1a1a40,#3a3a6a);border-radius:4px;outline:none;touch-action:none}
+.credits-speed-slider::-webkit-slider-thumb{-webkit-appearance:none;width:36px;height:36px;background:radial-gradient(circle,#6a6aaa,#4a4a7a);border-radius:50%;cursor:pointer;border:2px solid #8888cc;box-shadow:0 0 10px rgba(100,100,200,0.3)}
+.credits-speed-label{color:#5a5a8a;font-size:0.7em;font-family:'Courier New',monospace;flex-shrink:0;letter-spacing:1px}
+.credits-speed-val{color:#a0a0cc;font-size:1em;font-family:'Courier New',monospace;min-width:44px;text-align:center;font-weight:600;flex-shrink:0}
+.credits-settings-btn{background:none;border:none;border-left:1px solid #1a1a40;color:#6a6a9a;font-size:1.3em;cursor:pointer;padding:0 16px;height:100%;display:flex;align-items:center;justify-content:center;transition:all 0.15s;touch-action:manipulation;min-width:52px}
+.credits-settings-btn:active{background:rgba(100,100,200,0.1)}
+.credits-settings-btn.active{color:#a0a0dd;background:rgba(100,100,200,0.08)}
+
+/* Credits settings panel */
+.credits-settings{position:absolute;bottom:56px;left:0;right:0;background:rgba(8,8,28,0.97);border-top:1px solid #1a1a40;z-index:4;padding:16px 20px;display:none;flex-direction:column;gap:14px;max-height:60vh;overflow-y:auto}
+.credits-settings.open{display:flex}
+.cs-row{display:flex;align-items:center;gap:12px}
+.cs-label{color:#8888aa;font-size:0.8em;text-transform:uppercase;letter-spacing:1px;min-width:90px;flex-shrink:0}
+.cs-options{display:flex;gap:8px;flex-wrap:wrap;flex:1}
+.cs-opt{background:#15152a;border:1px solid #2a2a45;color:#8888aa;padding:8px 14px;border-radius:10px;cursor:pointer;font-size:0.85em;transition:all 0.15s;touch-action:manipulation;min-width:60px;min-height:60px;display:flex;align-items:center;justify-content:center}
+.cs-opt:active{transform:scale(0.9)}
+.cs-opt.active{background:#2a2a55;border-color:#6666bb;color:#d0d0f0}
+.cs-color{width:44px;height:44px;border-radius:50%;border:3px solid #2a2a45;cursor:pointer;transition:all 0.15s;touch-action:manipulation}
+.cs-color:active{transform:scale(0.9)}
+.cs-color.active{border-color:#8888cc;box-shadow:0 0 12px rgba(100,100,200,0.4)}
+.cs-slider-wrap{flex:1;display:flex;align-items:center;gap:10px}
+.cs-slider{-webkit-appearance:none;appearance:none;flex:1;height:6px;background:#1a1a35;border-radius:3px;outline:none}
+.cs-slider::-webkit-slider-thumb{-webkit-appearance:none;width:28px;height:28px;background:#4a4a7a;border-radius:50%;cursor:pointer;border:2px solid #6a6aaa}
+.cs-slider-val{color:#7a7a9a;font-size:0.85em;min-width:40px;text-align:center;font-family:'Courier New',monospace}
+
+/* ===== SENSORY PLAYGROUND (NEW) ===== */
+#sensory{overflow:hidden}
+.sensory-container{flex:1;display:flex;flex-direction:column;overflow:hidden}
+#sensoryCanvas{flex:1;width:100%;height:100%;background:var(--dark-bg);display:block;touch-action:none;cursor:crosshair}
+.sensory-mode{display:flex;gap:10px;padding:12px 14px;background:var(--dark-bg2);border-top:1px solid var(--border);flex-shrink:0;justify-content:center}
+.mode-btn{background:var(--card-bg);border:2px solid var(--border);color:var(--text-primary);padding:10px 16px;border-radius:14px;cursor:pointer;font-size:0.95em;transition:all 0.2s;touch-action:manipulation;font-weight:600}
+.mode-btn.active{background:var(--category-blue);border-color:var(--blue);color:#fff}
+.mode-btn:active{transform:scale(0.9)}
+
+/* ===== CALM MODE ===== */
+#calm{background:linear-gradient(135deg,var(--dark-bg2) 0%,var(--dark-bg3) 50%,#0a0a15 100%);overflow:hidden}
+.calm-content{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;padding-bottom:80px;text-align:center;position:relative;overflow-y:auto;overflow-x:hidden}
+.calm-stars{position:absolute;top:0;left:0;right:0;bottom:0;pointer-events:none}
+.calm-star{position:absolute;background:#e0e0e0;border-radius:50%;animation:twinkle 3s infinite ease-in-out}
+@keyframes twinkle{0%,100%{opacity:0.2;transform:scale(0.8)}50%{opacity:1;transform:scale(1.2)}}
+.calm-moon{font-size:6em;margin-bottom:20px;animation:moonFloat 4s infinite ease-in-out}
+@keyframes moonFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-15px)}}
+.calm-text{color:var(--text-primary);font-size:1.3em;font-weight:300;margin-bottom:30px;line-height:1.6}
+.calm-sounds{display:flex;gap:16px;flex-wrap:wrap;justify-content:center}
+.calm-snd{background:rgba(224,224,224,0.1);border:2px solid rgba(224,224,224,0.2);border-radius:20px;padding:18px 16px;font-size:2.2em;cursor:pointer;transition:all 0.2s;display:flex;flex-direction:column;align-items:center;gap:6px;color:rgba(224,224,224,0.8);min-width:80px;touch-action:manipulation}
+.calm-snd:active{background:rgba(224,224,224,0.2);transform:scale(0.95)}
+.calm-snd .csl{font-size:0.35em;font-weight:500}
+.calm-breathing{width:100px;height:100px;border-radius:50%;background:radial-gradient(circle,rgba(100,180,255,0.4),transparent);animation:breathe 6s infinite ease-in-out;margin:20px auto}
+@keyframes breathe{0%,100%{transform:scale(0.6);opacity:0.4}50%{transform:scale(1.3);opacity:0.9}}
+.calm-breathtext{color:var(--text-secondary);font-size:0.95em;animation:breatheText 6s infinite}
+@keyframes breatheText{0%,45%{opacity:1}46%,100%{opacity:0.3}}
+.calm-buttons{display:flex;gap:10px;margin-top:30px;flex-wrap:wrap;justify-content:center}
+.calm-exit{background:rgba(224,224,224,0.15);border:1px solid rgba(224,224,224,0.2);color:var(--text-primary);padding:12px 24px;border-radius:16px;font-size:1em;cursor:pointer;font-weight:600;transition:all 0.2s;touch-action:manipulation}
+.calm-exit:active{background:rgba(224,224,224,0.25)}
+
+/* .mood-quick removed — now in .motor-bar (Motor Planning) */
+.mood-picker{position:fixed;bottom:76px;left:12px;background:var(--card-bg);border-radius:20px;padding:14px;box-shadow:0 8px 30px rgba(0,0,0,0.5);z-index:61;display:none;gap:10px;flex-wrap:wrap;width:50vw;height:50vh;overflow-y:auto;border:1px solid var(--border);align-content:start}
+.mood-picker.show{display:flex}
+.mood-pick{padding:6px;cursor:pointer;border-radius:14px;border:2px solid var(--border);background:var(--card-bg2);transition:all 0.15s;touch-action:manipulation;display:flex;flex-direction:column;align-items:center;gap:4px;width:100px;min-height:100px;justify-content:center}
+.mood-pick:active{transform:scale(0.85);background:var(--category-blue);border-color:var(--blue)}
+.mood-pick img{width:70px;height:70px;object-fit:contain}
+.mood-pick .mood-label{font-size:0.75em;font-weight:700;color:var(--text-primary);text-align:center;line-height:1.1}
+
+/* ===== PARENT DASHBOARD ===== */
+.pin-over{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.85);display:flex;align-items:center;justify-content:center;z-index:1000}
+.pin-box{background:var(--card-bg);border-radius:24px;padding:28px;text-align:center;width:290px;border:1px solid var(--border)}
+.pin-box h2{margin-bottom:6px;color:var(--text-primary)}
+.pin-box p{color:var(--text-secondary);font-size:0.85em;margin-bottom:16px}
+.pin-dots{display:flex;gap:10px;justify-content:center;margin-bottom:16px}
+.pin-dot{width:16px;height:16px;border-radius:50%;border:2px solid var(--border);background:var(--card-bg2)}
+.pin-dot.on{background:var(--category-purple);border-color:var(--purple)}
+.pin-pad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.pin-n{background:var(--card-bg2);border:1px solid var(--border);border-radius:12px;padding:14px;font-size:1.4em;font-weight:700;cursor:pointer;color:var(--text-primary);transition:all 0.15s;touch-action:manipulation}
+.pin-n:active{background:var(--border)}
+.pin-x{background:#5D1C1C;color:var(--red)}
+.pin-d{background:#3E2723;color:var(--orange)}
+
+.dash{flex:1;overflow-y:auto;padding:14px}
+.dcard{background:var(--card-bg);border-radius:16px;padding:16px;margin-bottom:12px;box-shadow:0 3px 12px rgba(0,0,0,0.3);border:1px solid var(--border)}
+.dcard h3{color:var(--text-primary);margin-bottom:10px;font-size:1em}
+.srow{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border)}
+.srow:last-child{border:none}
+.slbl{color:var(--text-secondary);font-size:0.95em}
+.sval{font-weight:700;color:var(--text-primary)}
+.pbar{height:8px;background:var(--card-bg2);border-radius:4px;overflow:hidden;margin-top:4px;border:1px solid var(--border)}
+.pfill{height:100%;border-radius:4px;transition:width 0.5s;background:var(--category-blue)}
+.mentry{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border)}
+.mentry:last-child{border:none}
+.mtime{color:var(--text-secondary);font-size:0.8em;min-width:50px}
+.memoji{font-size:1.4em}
+.mtxt{color:var(--text-secondary);font-size:0.9em}
+.reset-btn{background:var(--category-red);color:#fff;border:none;border-radius:10px;padding:10px 20px;font-size:0.95em;font-weight:600;cursor:pointer;width:100%;margin-top:8px;transition:all 0.2s;touch-action:manipulation}
+.reset-btn:active{transform:scale(0.95);opacity:0.9}
+.close-dash-btn{background:var(--card-bg2);color:var(--text-primary);border:1px solid var(--border);padding:10px 20px;border-radius:10px;font-size:0.95em;font-weight:600;cursor:pointer;margin-top:8px;width:100%;transition:all 0.2s;touch-action:manipulation}
+.close-dash-btn:active{transform:scale(0.95)}
+
+/* ===== MOTOR PLANNING: Persistent Quick-Access Bar =====
+ * DESIGN PRINCIPLE: These buttons must NEVER change position.
+ * The bar is always visible on every screen at the exact same coordinates.
+ * This enables motor memory (motorische Planung) for autistic users.
+ * DO NOT reorder, hide conditionally, or change positions based on usage frequency.
+ */
+.motor-bar{position:fixed;bottom:0;left:0;right:0;display:flex;align-items:center;justify-content:space-between;padding:16px 16px;height:auto;background:none;border:none;z-index:60;padding-bottom:max(16px,env(safe-area-inset-bottom));pointer-events:none}
+.motor-btn{width:120px;height:120px;border-radius:50%;border:2px solid var(--border);background:var(--card-bg);font-size:1.8em;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform 0.15s;touch-action:manipulation;flex-shrink:0;color:var(--text-primary);pointer-events:auto}
+.motor-btn:active{transform:scale(0.9)}
+
+/* Motor-bar bottom spacing for all scrollable content areas */
+.music-list{padding-bottom:76px}
+.calm-content{padding-bottom:0}
+.sentence-bar{margin-bottom:0}
+.sensory-mode{margin-bottom:0}
+.credits-controls{margin-bottom:0}
+
+/* ===== FLASH ===== */
+.flash{position:fixed;top:0;left:0;right:0;bottom:0;pointer-events:none;z-index:999;opacity:0;transition:opacity 0.3s;background:#fff}
+.flash.show{opacity:0.15}
+</style>
+</head>
+<body>
+
+<div class="flash" id="flash"></div>
+
+<!-- HOME SCREEN -->
+<div class="screen active" id="home">
+  <div id="parentSecretBtn" onclick="parentSecretTap()" style="position:absolute;top:12px;left:12px;width:50px;height:50px;border-radius:50%;cursor:pointer;z-index:5;opacity:0.3"></div>
+  <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;padding-bottom:76px">
+    <div class="home-buddy">🐻</div>
+    <div class="home-title">Leevis Welt</div>
+    <div class="home-subtitle">Hallo Leevi! Was machen wir?</div>
+    <!-- MOTOR PLANNING: Button order is FIXED. Do NOT reorder based on usage.
+         Position 1 (top-left): Sprechen | Position 2 (top-right): Lernen
+         Position 3 (mid-left): Videos   | Position 4 (mid-right): Musik
+         Position 5 (bot-left): Abspann  | Position 6 (bot-right): Spielplatz -->
+    <div class="home-grid">
+      <div class="home-btn" onclick="go('aac');playSound('click');speak('Sprechen');bubbleSay('Sprechen')"><img class="icon" src="https://static.arasaac.org/pictograms/6517/6517_500.png"><span class="label">Sprechen</span></div>
+      <div class="home-btn" onclick="go('learn');playSound('click');bubbleSay('Lernen')"><img class="icon" src="https://static.arasaac.org/pictograms/37810/37810_500.png"><span class="label">Lernen</span></div>
+      <div class="home-btn" onclick="go('youtube');playSound('click');speak('Videos');bubbleSay('Videos')"><img class="icon" src="https://static.arasaac.org/pictograms/9183/9183_500.png"><span class="label">Videos</span></div>
+      <div class="home-btn" onclick="go('music');playSound('click');speak('Musik');bubbleSay('Musik')"><img class="icon" src="https://static.arasaac.org/pictograms/24791/24791_500.png"><span class="label">Musik</span></div>
+      <div class="home-btn" onclick="go('credits');playSound('click');speak('Kino');bubbleSay('Kino')"><img class="icon" src="https://static.arasaac.org/pictograms/30387/30387_500.png"><span class="label">Kino</span></div>
+      <div class="home-btn" onclick="go('sensory');playSound('click');speak('Spielen');bubbleSay('Spielen')"><img class="icon" src="https://static.arasaac.org/pictograms/23392/23392_500.png"><span class="label">Spielen</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- AAC (SPRECHEN) SCREEN -->
+<div class="screen" id="aac">
+  <div class="topbar blue" style="flex-wrap:wrap"><button class="back-btn" onclick="go('home')">←</button><div class="aac-cats" id="aacCats"></div></div>
+  <div class="sentence-bar">
+    <div class="sentence" id="sentence">Tippe auf Bilder...</div>
+    <button class="speak-btn" onclick="speakAll()">🔊</button>
+    <button class="clear-btn" onclick="clearWords()">✕</button>
+  </div>
+  <div class="aac-grid" id="aacGrid"></div>
+</div>
+
+<!-- LEARN SCREEN -->
+<div class="screen" id="learn">
+  <div class="topbar green" style="flex-wrap:wrap"><button class="back-btn" onclick="go('home')">←</button><div class="learn-cats" id="learnCats"></div></div>
+  <div class="game-area" id="gArea"></div>
+</div>
+
+<!-- MUSIC SCREEN -->
+<div class="screen" id="music">
+  <div class="topbar orange" style="flex-wrap:wrap"><button class="back-btn" onclick="go('home')">←</button><div class="music-cats" id="musicCats"></div></div>
+  <div class="music-content" id="musicContent" style="flex:1;overflow-y:auto;padding:10px"></div>
+</div>
+
+<!-- YOUTUBE SCREEN -->
+<div class="screen" id="youtube">
+  <div class="topbar red" style="flex-wrap:wrap"><button class="back-btn" onclick="ytBack()">←</button><div class="yt-cats" id="ytCats"></div></div>
+  <div class="yt-grid" id="ytGrid" style="padding-bottom:76px"></div>
+  <div class="yt-player" id="ytPlayer" style="display:none;padding-bottom:68px">
+    <iframe id="ytPlayerFrame" style="flex:1;width:100%;border:none" allow="autoplay;encrypted-media" allowfullscreen></iframe>
+  </div>
+</div>
+
+<!-- CREDITS SCREEN (CINEMATIC FULLSCREEN) -->
+<div class="screen" id="credits">
+  <div class="topbar purple"><button class="back-btn" onclick="go('home')">←</button>🎬 Abspann</div>
+  <div class="credits-container">
+    <div class="credits-bg"></div>
+    <div class="credits-scroll" id="creditsScroll"></div>
+
+    <!-- Settings Panel (hidden by default) -->
+    <div class="credits-settings" id="creditsSettings">
+      <div class="cs-row">
+        <span class="cs-label">Schrift</span>
+        <div class="cs-options">
+          <button class="cs-opt active" onclick="setCreditsFontSize('small')">Klein</button>
+          <button class="cs-opt" onclick="setCreditsFontSize('medium')">Mittel</button>
+          <button class="cs-opt" onclick="setCreditsFontSize('large')">Groß</button>
+        </div>
+      </div>
+      <div class="cs-row">
+        <span class="cs-label">Farbe</span>
+        <div class="cs-options">
+          <div class="cs-color active" style="background:#d4d4e8" onclick="setCreditsColor('#d4d4e8','#05051a')"></div>
+          <div class="cs-color" style="background:#c0e8c0" onclick="setCreditsColor('#c0e8c0','#051a0a')"></div>
+          <div class="cs-color" style="background:#e8d4b0" onclick="setCreditsColor('#e8d4b0','#1a1005')"></div>
+          <div class="cs-color" style="background:#b0d4e8" onclick="setCreditsColor('#b0d4e8','#050f1a')"></div>
+          <div class="cs-color" style="background:#e0b0e0" onclick="setCreditsColor('#e0b0e0','#150520')"></div>
+        </div>
+      </div>
+      <div class="cs-row">
+        <span class="cs-label">Zahlen</span>
+        <div class="cs-options">
+          <button class="cs-opt" onclick="setCreditsContent('numbers','off')">Aus</button>
+          <button class="cs-opt active" onclick="setCreditsContent('numbers','normal')">Normal</button>
+          <button class="cs-opt" onclick="setCreditsContent('numbers','extra')">Viele</button>
+        </div>
+      </div>
+      <div class="cs-row">
+        <span class="cs-label">Buchstaben</span>
+        <div class="cs-options">
+          <button class="cs-opt" onclick="setCreditsContent('letters','off')">Aus</button>
+          <button class="cs-opt active" onclick="setCreditsContent('letters','normal')">Normal</button>
+          <button class="cs-opt" onclick="setCreditsContent('letters','extra')">Viele</button>
+        </div>
+      </div>
+      <div class="cs-row">
+        <span class="cs-label">Musik</span>
+        <div class="cs-options">
+          <button class="cs-opt" onclick="setCreditsMusic('off')">Aus</button>
+          <button class="cs-opt active" onclick="setCreditsMusic('ambient')">Ambient</button>
+          <button class="cs-opt" onclick="setCreditsMusic('piano')">Klavier</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom Speed Bar -->
+    <div class="credits-controls">
+      <div class="credits-speed-bar">
+        <span class="credits-speed-label">🐢</span>
+        <input type="range" class="credits-speed-slider" id="creditsSpeedBar" min="0" max="100" step="1" value="25" oninput="setCreditsSpeedFromBar(this.value)">
+        <span class="credits-speed-label">🐇</span>
+        <span class="credits-speed-val" id="speedDisplay">1.0</span>
+      </div>
+      <button class="credits-settings-btn" onclick="toggleCreditsSettings()" id="creditsSettingsBtn">⚙</button>
+    </div>
+  </div>
+</div>
+
+<!-- SENSORY PLAYGROUND SCREEN (NEW) -->
+<div class="screen" id="sensory">
+  <button class="back-btn" onclick="go('home')" style="position:absolute;top:12px;left:12px;z-index:10">←</button>
+  <div class="sensory-container">
+    <canvas id="sensoryCanvas"></canvas>
+    <div class="sensory-mode">
+      <button class="mode-btn active" data-mode="both" onclick="setSensoryMode('both')">Beide</button>
+      <button class="mode-btn" data-mode="numbers" onclick="setSensoryMode('numbers')">Zahlen</button>
+      <button class="mode-btn" data-mode="letters" onclick="setSensoryMode('letters')">Buchstaben</button>
+    </div>
+  </div>
+</div>
+
+<!-- CALM MODE SCREEN -->
+<div class="screen" id="calm">
+  <div style="flex:1;display:flex;flex-direction:column">
+    <div class="topbar purple"><button class="back-btn" onclick="go('home')">←</button>🌙 Ruhezeit</div>
+    <div class="calm-content">
+      <div class="calm-stars" id="calmStars"></div>
+      <div class="calm-moon">🌙</div>
+      <div class="calm-breathing"></div>
+      <div class="calm-breathtext" id="breathtext">Ein... Aus...</div>
+      <div class="calm-text">Atme langsam und ruhig...</div>
+      <div class="calm-sounds">
+        <button class="calm-snd" onclick="playCalmSound('wind')"><img src="https://static.arasaac.org/pictograms/7259/7259_500.png" style="width:50px;height:50px;object-fit:contain"><span class="csl">Wind</span></button>
+        <button class="calm-snd" onclick="playCalmSound('rain')"><img src="https://static.arasaac.org/pictograms/3123/3123_500.png" style="width:50px;height:50px;object-fit:contain"><span class="csl">Regen</span></button>
+        <button class="calm-snd" onclick="playCalmSound('ocean')"><img src="https://static.arasaac.org/pictograms/2925/2925_500.png" style="width:50px;height:50px;object-fit:contain"><span class="csl">Meer</span></button>
+      </div>
+      <div class="calm-buttons">
+        <button class="calm-exit" onclick="go('home')">← Zurück</button>
+        <button class="calm-exit" onclick="go('credits')">🎬 Abspann</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PARENT DASHBOARD OVERLAY -->
+<div class="pin-over hidden" id="pinOver" style="display:none">
+  <div style="position:absolute;top:20px;right:20px;z-index:1001">
+    <div class="pin-box">
+      <h2>PIN</h2>
+      <p>Geben Sie Ihren PIN ein</p>
+      <div class="pin-dots" id="pinDots"></div>
+      <div class="pin-pad" id="pinPad"></div>
+      <button class="close-dash-btn" onclick="closePin()">Abbrechen</button>
+    </div>
+  </div>
+  <div style="position:absolute;top:20px;left:20px;bottom:20px;right:280px;z-index:1000;overflow:hidden;display:none" id="dashContent">
+    <div class="dash">
+      <h2 style="color:var(--text-primary);margin-bottom:16px">Dashboard</h2>
+
+      <div class="dcard">
+        <h3>⏱️ Nutzer Heute</h3>
+        <div class="srow">
+          <span class="slbl">Gesamtzeit</span>
+          <span class="sval" id="totalTime">0 min</span>
+        </div>
+        <div class="pbar"><div class="pfill" id="timeFill" style="width:0%"></div></div>
+      </div>
+
+      <div class="dcard">
+        <h3>⭐ Lernfortschritt</h3>
+        <div class="srow">
+          <span class="slbl">Zahlen</span>
+          <span class="sval" id="numStars">0%</span>
+        </div>
+        <div class="pbar"><div class="pfill" id="numFill" style="width:0%"></div></div>
+        <div class="srow">
+          <span class="slbl">Buchstaben</span>
+          <span class="sval" id="letStars">0%</span>
+        </div>
+        <div class="pbar"><div class="pfill" id="letFill" style="width:0%"></div></div>
+      </div>
+
+      <div class="dcard">
+        <h3>💙 Stimmung Heute</h3>
+        <div id="moodLog"></div>
+      </div>
+
+      <div class="dcard">
+        <h3>📺 YouTube API Key</h3>
+        <p style="font-size:0.8em;color:var(--text-secondary);margin-bottom:8px">Für automatische Video-Suche. Kostenlos auf console.cloud.google.com erstellen.</p>
+        <input type="text" id="ytApiKeyInput" placeholder="AIza..." style="width:100%;padding:8px 12px;border-radius:8px;border:1px solid var(--border);background:var(--dark-bg2);color:var(--text-primary);font-size:0.9em;box-sizing:border-box;margin-bottom:6px">
+        <button class="close-dash-btn" onclick="saveYTApiKey()" style="background:var(--category-green);color:#fff;border-color:var(--green);margin-top:4px">💾 Speichern</button>
+        <span id="ytApiKeyStatus" style="font-size:0.75em;color:var(--text-secondary);margin-left:8px"></span>
+      </div>
+
+      <div class="dcard">
+        <h3>🧠 KI-Gehör (Edge AI)</h3>
+        <div class="srow">
+          <span class="slbl">Status</span>
+          <span class="sval" id="aiListenStatus">Inaktiv</span>
+        </div>
+        <button class="close-dash-btn" id="aiListenBtn" onclick="toggleAIListener()" style="background:var(--category-purple);color:#fff;border-color:var(--purple);margin-top:4px">🎙️ KI-Gehör aktivieren</button>
+      </div>
+
+      <div class="dcard">
+        <h3>😊 Schnellzugriff-Symbole</h3>
+        <p style="font-size:0.8em;color:var(--text-secondary);margin-bottom:10px">Wähle welche Symbole im Smiley-Menü (unten links) angezeigt werden. Tippe zum An-/Abwählen.</p>
+        <div id="quickSymbolEditor" style="display:flex;flex-wrap:wrap;gap:8px"></div>
+      </div>
+
+      <button class="reset-btn" onclick="resetData()">Daten zurücksetzen</button>
+      <button class="close-dash-btn" onclick="closePin()">Schließen</button>
+    </div>
+  </div>
+</div>
+
+<!-- BENNY FLOATING BUDDY -->
+<div class="buddy-float" id="buddy">
+  <div class="benny-body">🐻</div>
+  <div class="buddy-bubble hidden" id="bubble"></div>
+</div>
+
+<!-- MOTOR PLANNING: Persistent Quick-Access Bar
+     Position: Mood=left, Parent=center, Credits=right
+     These buttons are ALWAYS visible on EVERY screen at the SAME position.
+     DO NOT reorder, hide conditionally, or change positions based on usage. -->
+<button id="ytScrollTopBtn" class="scroll-top-btn" onclick="document.getElementById('ytGrid').scrollTo({top:0,behavior:'smooth'})">▲</button>
+<div class="motor-bar" id="motorBar">
+  <button class="motor-btn" onclick="toggleMoodPicker()" id="moodBtn"><img src="https://static.arasaac.org/pictograms/6517/6517_500.png" style="width:80px;height:80px;object-fit:contain"></button>
+  <button class="motor-btn" onclick="go('credits');playSound('click')"><img src="https://static.arasaac.org/pictograms/9183/9183_500.png" style="width:80px;height:80px;object-fit:contain"></button>
+</div>
+<div class="mood-picker" id="moodPicker">
+  <button class="mood-pick" onclick="quickSpeak('Hilfe',12252)"><img src="https://static.arasaac.org/pictograms/12252/12252_500.png"><span class="mood-label">Hilfe</span></button>
+  <button class="mood-pick" onclick="quickSpeak('Wasser',32464)"><img src="https://static.arasaac.org/pictograms/32464/32464_500.png"><span class="mood-label">Wasser</span></button>
+  <button class="mood-pick" onclick="quickSpeak('Essen',6456)"><img src="https://static.arasaac.org/pictograms/6456/6456_500.png"><span class="mood-label">Essen</span></button>
+  <button class="mood-pick" onclick="quickSpeak('Toilette',5921)"><img src="https://static.arasaac.org/pictograms/5921/5921_500.png"><span class="mood-label">Toilette</span></button>
+  <button class="mood-pick" onclick="quickSpeak('Trinken',6061)"><img src="https://static.arasaac.org/pictograms/6061/6061_500.png"><span class="mood-label">Trinken</span></button>
+  <button class="mood-pick" onclick="quickSpeak('Schmerzen',2367)"><img src="https://static.arasaac.org/pictograms/2367/2367_500.png"><span class="mood-label">Schmerzen</span></button>
+  <button class="mood-pick" onclick="quickSpeak('Ja',5584)"><img src="https://static.arasaac.org/pictograms/5584/5584_500.png"><span class="mood-label">Ja</span></button>
+  <button class="mood-pick" onclick="quickSpeak('Nein',5526)"><img src="https://static.arasaac.org/pictograms/5526/5526_500.png"><span class="mood-label">Nein</span></button>
+  <button class="mood-pick" onclick="quickSpeak('Mama',2458)"><img src="https://static.arasaac.org/pictograms/2458/2458_500.png"><span class="mood-label">Mama</span></button>
+  <button class="mood-pick" onclick="quickSpeak('Papa',31146)"><img src="https://static.arasaac.org/pictograms/31146/31146_500.png"><span class="mood-label">Papa</span></button>
+  <button class="mood-pick" onclick="quickSpeak('Kuscheln',6023)"><img src="https://static.arasaac.org/pictograms/6023/6023_500.png"><span class="mood-label">Kuscheln</span></button>
+  <button class="mood-pick" onclick="quickSpeak('Ruhe',7076)"><img src="https://static.arasaac.org/pictograms/7076/7076_500.png"><span class="mood-label">Ruhe</span></button>
+</div>
+
+<script>
+// ===== APP STATE =====
+let currentScreen='home';
+let currentGame=null;
+let currentAACCat=null;
+let currentYTCat=null;
+let words=[];
+let gameScore=0;
+let sensoryMode='both';
+let creditsSpeed=1;
+
+// ===== STORAGE & STATE =====
+function getState(key,def=''){return localStorage.getItem(key)||def}
+function setState(key,val){localStorage.setItem(key,val)}
+function updateUsageTime(){let t=parseInt(getState('usage_time','0'))+1;setState('usage_time',t)}
+
+// ===== SCREEN NAVIGATION =====
+function go(screen){
+  // Stop loops from previous screen
+  if(currentScreen==='credits')stopCreditsLoops();
+  if(currentScreen==='sensory')stopSensory();
+
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(screen).classList.add('active');
+  currentScreen=screen;
+  playSound('click');
+  if(screen==='calm')initCalmMode();
+  if(screen==='credits')initCredits();
+  if(screen==='sensory')initSensory();
+  if(screen==='learn'){initLearnCats();endGame()}
+}
+
+// ===== TEXT-TO-SPEECH (High-Quality Audio First) =====
+const synth=window.speechSynthesis;
+let deVoice=null;
+
+function findGermanVoice(){
+  const voices=synth.getVoices();
+  // Premium-Stimmen bevorzugen (Siri, Google, Microsoft Neural, Enhanced)
+  const premiumKeywords=['siri','premium','enhanced','neural','natural','google','samantha','anna'];
+  const deVoices=voices.filter(v=>v.lang.startsWith('de')||v.lang.includes('DE'));
+  // Zuerst Premium-Stimme suchen
+  deVoice=deVoices.find(v=>{
+    const n=v.name.toLowerCase();
+    return premiumKeywords.some(k=>n.includes(k));
+  });
+  // Dann lokale (nicht remote) Stimme
+  if(!deVoice) deVoice=deVoices.find(v=>!v.localService===false);
+  // Dann irgendeine deutsche Stimme
+  if(!deVoice) deVoice=deVoices[0]||null;
+  if(deVoice) console.log('[TTS] Stimme gewählt:',deVoice.name,'('+deVoice.lang+')');
+}
+if(synth&&synth.onvoiceschanged!==undefined)synth.onvoiceschanged=findGermanVoice;
+findGermanVoice();
+// Voices laden manchmal verzögert
+setTimeout(findGermanVoice,500);
+setTimeout(findGermanVoice,2000);
+
+let currentSpeechAudio=null;
+
+function stopCurrentAudio(){
+  if(currentSpeechAudio){currentSpeechAudio.pause();currentSpeechAudio.currentTime=0;currentSpeechAudio=null}
+  if(synth)synth.cancel();
+}
+
+function speakWithTTS(text){
+  if(!synth)return;
+  synth.cancel();
+  if(!deVoice)findGermanVoice();
+  const u=new SpeechSynthesisUtterance(text);
+  u.lang='de-DE';
+  u.rate=0.9;
+  u.pitch=1.0;
+  u.volume=1;
+  if(deVoice)u.voice=deVoice;
+  synth.speak(u);
+}
+
+function speak(text){
+  stopCurrentAudio();
+  // 1. Versuche hochwertige MP3 aus audio/speech/
+  const file=text.toLowerCase().replace(/ä/g,'ae').replace(/ö/g,'oe').replace(/ü/g,'ue').replace(/ß/g,'ss').replace(/ /g,'-').replace(/[^a-z0-9\-]/g,'');
+  const mp3=new Audio('audio/speech/'+file+'.mp3');
+  mp3.volume=1;
+  currentSpeechAudio=mp3;
+  mp3.play().then(()=>{}).catch(()=>{
+    // 2. Fallback: WAV aus speech/
+    const wav=new Audio('speech/'+file+'.wav');
+    wav.volume=1;
+    currentSpeechAudio=wav;
+    wav.play().catch(()=>{
+      // 3. Letzter Fallback: System-TTS (optimiert)
+      speakWithTTS(text);
+    });
+  });
+}
+
+function speakAll(){
+  if(words.length===0) return;
+  bubbleSay(words.map(w=>w.text).join(', '));
+  speakSequence(words.map(w=>w.text),0);
+}
+
+function speakSequence(texts,idx){
+  if(idx>=texts.length) return;
+  stopCurrentAudio();
+  const file=texts[idx].toLowerCase().replace(/ä/g,'ae').replace(/ö/g,'oe').replace(/ü/g,'ue').replace(/ß/g,'ss').replace(/ /g,'-').replace(/[^a-z0-9\-]/g,'');
+  const mp3=new Audio('audio/speech/'+file+'.mp3');
+  mp3.volume=1;
+  currentSpeechAudio=mp3;
+  mp3.onended=()=>speakSequence(texts,idx+1);
+  mp3.play().catch(()=>{
+    const wav=new Audio('speech/'+file+'.wav');
+    wav.volume=1;
+    currentSpeechAudio=wav;
+    wav.onended=()=>speakSequence(texts,idx+1);
+    wav.play().catch(()=>speakSequence(texts,idx+1));
+  });
+}
+
+// ===== BENNY BUDDY SYSTEM =====
+function bubbleSay(text){
+  const bubble=document.getElementById('bubble');
+  bubble.textContent=text;
+  bubble.classList.remove('hidden');
+  setTimeout(()=>bubble.classList.add('hidden'),3000);
+}
+
+function bennyReact(emotion){
+  const buddy=document.getElementById('buddy');
+  buddy.classList.add(emotion);
+  setTimeout(()=>buddy.classList.remove(emotion),800);
+}
+
+// MOTOR PLANNING: Benny is fixed at top-right. Dragging removed.
+
+// ===== AAC PICTOGRAMS =====
+const aacData={
+  'Bedürfnisse':{icon:'🖐️',color:'pink',items:[
+    {text:'Hilfe',pid:12252},{text:'Wasser',pid:32464},{text:'Essen',pid:6456},{text:'Ruhe',pid:7076},
+    {text:'Spielen',pid:23392},{text:'Musik',pid:24791},{text:'Mama',pid:2458},{text:'Papa',pid:31146},
+    {text:'Toilette',pid:5921},{text:'Schlafen',pid:6479},{text:'Anziehen',pid:6627},{text:'Ausziehen',pid:11233},
+    {text:'Waschen',pid:34826},{text:'Zähne putzen',pid:2326},{text:'Trinken',pid:6061},{text:'Kuscheln',pid:6023},
+    {text:'Tragen',pid:8983},{text:'Windel',pid:22017},{text:'Medizin',pid:8163},{text:'Durst',pid:7273}
+  ]},
+  'Gefühle':{icon:'💙',color:'orange',items:[
+    {text:'Glücklich',pid:35547},{text:'Traurig',pid:35545},{text:'Müde',pid:35537},{text:'Wütend',pid:35539},
+    {text:'Angst',pid:10261},{text:'Ja',pid:5584},{text:'Nein',pid:5526},{text:'Mehr',pid:34312},
+    {text:'Liebe',pid:8020},{text:'Stolz',pid:31408},{text:'Überraschung',pid:8517},{text:'Langeweile',pid:35553},
+    {text:'Aufgeregt',pid:8582},{text:'Krank',pid:3308},{text:'Schmerzen',pid:2367},{text:'Heiß',pid:2300},
+    {text:'Kalt',pid:4652},{text:'Laut',pid:7157},{text:'Leise',pid:2528},{text:'Schön',pid:26114}
+  ]},
+  'Essen':{icon:'🍽️',color:'green',items:[
+    {text:'Brot',pid:2494},{text:'Milch',pid:2445},{text:'Obst',pid:28339},{text:'Gemüse',pid:29131},
+    {text:'Kuchen',pid:2502},{text:'Käse',pid:2541},{text:'Fleisch',pid:2316},{text:'Ei',pid:2427},
+    {text:'Apfel',pid:2462},{text:'Banane',pid:2530},{text:'Nudeln',pid:8652},{text:'Reis',pid:39387},
+    {text:'Suppe',pid:2573},{text:'Keks',pid:8312},{text:'Schokolade',pid:25940},{text:'Saft',pid:11461},
+    {text:'Tee',pid:2429},{text:'Joghurt',pid:2618},{text:'Pizza',pid:2527},{text:'Pommes',pid:10227},
+    {text:'Wurst',pid:8554},{text:'Eis',pid:7128}
+  ]},
+  'Aktivitäten':{icon:'⚽',color:'blue',items:[
+    {text:'Spaziergang',pid:8651},{text:'Draußen',pid:5475},{text:'Fernsehen',pid:29123},{text:'Auto fahren',pid:2339},
+    {text:'Tanzen',pid:35747},{text:'Laufen',pid:6465},{text:'Schwimmen',pid:6568},{text:'Lesen',pid:7141},
+    {text:'Malen',pid:5574},{text:'Basteln',pid:7794},{text:'Schaukeln',pid:5430},{text:'Rutschen',pid:7016},
+    {text:'Klettern',pid:8226},{text:'Fahrrad',pid:6935},{text:'Singen',pid:6960},{text:'Bauen',pid:2713},
+    {text:'Puzzle',pid:2540},{text:'Ball',pid:35371},{text:'Turnen',pid:10156},{text:'Baden',pid:6058},
+    {text:'Kochen',pid:2342}
+  ]},
+  'Personen':{icon:'👨‍👩‍👦',color:'purple',items:[
+    {text:'Lehrer',pid:6556},{text:'Freund',pid:38939},{text:'Bruder',pid:2423},{text:'Schwester',pid:2422},
+    {text:'Opa',pid:23718},{text:'Oma',pid:23710},{text:'Arzt',pid:6561},{text:'Leevi',pid:7176},
+    {text:'Baby',pid:6060},{text:'Mädchen',pid:27509},{text:'Kind',pid:36560},{text:'Familie',pid:38351},
+    {text:'Therapeut',pid:24680},{text:'Nachbar',pid:26529},{text:'Polizist',pid:37367},{text:'Feuerwehr',pid:6066}
+  ]},
+  'Orte':{icon:'🏠',color:'red',items:[
+    {text:'Schule',pid:32446},{text:'Kindergarten',pid:31470},{text:'Zuhause',pid:6964},{text:'Spielplatz',pid:33064},
+    {text:'Supermarkt',pid:3389},{text:'Krankenhaus',pid:36210},{text:'Schwimmbad',pid:30516},{text:'Park',pid:35863},
+    {text:'Kirche',pid:3118},{text:'Bauernhof',pid:32482}
+  ]},
+  'Tiere':{icon:'🐾',color:'green',items:[
+    {text:'Hund',pid:7202},{text:'Katze',pid:7114},{text:'Pferd',pid:2294},{text:'Vogel',pid:2490},
+    {text:'Fisch',pid:2520},{text:'Hase',pid:2351},{text:'Bär',pid:2488},{text:'Schmetterling',pid:26200},
+    {text:'Kuh',pid:2609},{text:'Schwein',pid:24972}
+  ]},
+  'Kleidung':{icon:'👕',color:'blue',items:[
+    {text:'Hose',pid:2565},{text:'Jacke',pid:2319},{text:'Schuhe',pid:2622},{text:'Mütze',pid:39395},
+    {text:'Socken',pid:2298},{text:'Pullover',pid:2436},{text:'Kleid',pid:2613},{text:'Handschuhe',pid:2415},
+    {text:'Brille',pid:3329},{text:'Rucksack',pid:2475}
+  ]},
+  'Körper':{icon:'🫀',color:'orange',items:[
+    {text:'Kopf',pid:10386},{text:'Bauch',pid:2786},{text:'Hand',pid:37077},{text:'Fuß',pid:25327},
+    {text:'Auge',pid:6573},{text:'Ohr',pid:2871},{text:'Mund',pid:2663},{text:'Nase',pid:2887},
+    {text:'Zahn',pid:10267},{text:'Herz',pid:4613}
+  ]}
+};
+
+function initAAC(){
+  const cats=Object.keys(aacData);
+  const allCats=['⭐ Favoriten',...cats];
+  const catsDiv=document.getElementById('aacCats');
+  catsDiv.innerHTML='';
+  allCats.forEach((cat,i)=>{
+    const btn=document.createElement('div');
+    if(cat==='⭐ Favoriten'){
+      btn.className='aac-cat red';
+      btn.innerHTML='<div class="cat-icon">⭐</div>';
+    }else{
+      btn.className=`aac-cat ${aacData[cat].color}`;
+      btn.innerHTML=`<div class="cat-icon">${aacData[cat].icon}</div>`;
+    }
+    btn.onclick=()=>selectAACCat(cat,btn);
+    catsDiv.appendChild(btn);
+  });
+  // Starte mit erster "echten" Kategorie (nicht Favoriten wenn leer)
+  const favs=getAACFavorites();
+  if(favs.length>0){
+    selectAACCat(allCats[0],catsDiv.firstChild);
+  }else{
+    selectAACCat(allCats[1],catsDiv.children[1]);
+  }
+}
+
+function selectAACCat(cat,btn){
+  document.querySelectorAll('.aac-cat').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  currentAACCat=cat;
+  displayAACCards();
+  bubbleSay('Wähle ein Bild!');
+}
+
+function displayAACCards(){
+  const grid=document.getElementById('aacGrid');
+  const items=currentAACCat==='⭐ Favoriten'?getAACFavorites():aacData[currentAACCat].items;
+  if(currentAACCat==='⭐ Favoriten'&&items.length===0){
+    grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text-secondary);font-size:1.1em">Noch keine Favoriten – benutze ein paar Symbole!</div>';
+    return;
+  }
+  grid.innerHTML='';
+  items.forEach(item=>{
+    const card=document.createElement('div');
+    card.className='aac-card';
+    card.innerHTML=`<img class="pic" src="https://static.arasaac.org/pictograms/${item.pid}/${item.pid}_500.png" onerror="this.style.display='none'">
+      <div class="text">${item.text}</div>`;
+    card.onclick=()=>{words.push({text:item.text,pid:item.pid});updateSentence();speak(item.text);bennyReact('wave');playSound('click');trackAACUsage(item)};
+    grid.appendChild(card);
+  });
+}
+
+// AAC Favoriten-Tracking
+function trackAACUsage(item){
+  let usage={};
+  try{usage=JSON.parse(localStorage.getItem('aac_usage')||'{}')}catch(e){}
+  const key=item.pid.toString();
+  if(!usage[key])usage[key]={text:item.text,pid:item.pid,count:0};
+  usage[key].count++;
+  usage[key].text=item.text;
+  localStorage.setItem('aac_usage',JSON.stringify(usage));
+}
+
+function getAACFavorites(){
+  let usage={};
+  try{usage=JSON.parse(localStorage.getItem('aac_usage')||'{}')}catch(e){}
+  return Object.values(usage)
+    .sort((a,b)=>b.count-a.count)
+    .slice(0,18);
+}
+
+function updateSentence(){
+  const sentDiv=document.getElementById('sentence');
+  if(words.length===0){sentDiv.textContent='Tippe auf Bilder...';sentDiv.style.color='var(--text-secondary)'}
+  else{
+    sentDiv.innerHTML=words.map(w=>`<span class="w">${w.text}</span>`).join('');
+    sentDiv.style.color='var(--text-primary)'
+  }
+}
+
+function clearWords(){words=[];updateSentence();playSound('click');bubbleSay('Gelöscht!')}
+
+// ===== LEARNING GAMES =====
+const gameConfigs={
+  numbers:{title:'Zahlen',icon:'🔢',questions:8,promptAudio:'frage-zahl'},
+  letters:{title:'Buchstaben',icon:'🔤',letters:'ABCDEFGHIJKLMNOPQRSTUVWXYZ',questions:8,promptAudio:'frage-buchstabe'},
+  counting:{title:'Zählen',icon:'🐻',range:[1,8],questions:8,promptAudio:'frage-zaehlen'},
+  colors:{title:'Farben',icon:'🎨',questions:8,promptAudio:'frage-farbe',
+    all:[
+      {name:'Rot',hex:'#C62828',audio:'rot'},{name:'Blau',hex:'#1565C0',audio:'blau'},
+      {name:'Grün',hex:'#2E7D32',audio:'gruen'},{name:'Gelb',hex:'#F9A825',audio:'gelb'},
+      {name:'Orange',hex:'#E65100',audio:'orange'},{name:'Rosa',hex:'#D81B60',audio:'rosa'},
+      {name:'Lila',hex:'#6A1B9A',audio:'lila'},{name:'Braun',hex:'#4E342E',audio:'braun'}
+    ]},
+  shapes:{title:'Formen',icon:'⬟',questions:8,promptAudio:'frage-form',
+    all:[
+      {name:'Kreis',symbol:'⬤',audio:'kreis'},{name:'Dreieck',symbol:'▲',audio:'dreieck'},
+      {name:'Quadrat',symbol:'■',audio:'quadrat'},{name:'Stern',symbol:'★',audio:'stern'},
+      {name:'Herz',symbol:'♥',audio:'herz'},{name:'Raute',symbol:'◆',audio:'raute'}
+    ]}
+};
+
+const countEmojis=['🐻','🐱','🐶','🐸','🐧','🦊','🐰','🐷','🐮','🦁','🐵','🐔'];
+const feedbackCorrect=['richtig','super','toll-gemacht'];
+const feedbackWrong=['nein-falsch','nein-probier-nochmal'];
+
+function playGameAudio(file){
+  stopCurrentAudio();
+  const mp3=new Audio('audio/speech/'+file+'.mp3');
+  mp3.volume=1;currentSpeechAudio=mp3;
+  mp3.play().catch(()=>{});
+}
+
+let currentLearnCat=null;
+
+function initLearnCats(){
+  const catsDiv=document.getElementById('learnCats');
+  if(!catsDiv)return;
+  catsDiv.innerHTML='';
+  Object.entries(gameConfigs).forEach(([key,cfg])=>{
+    const btn=document.createElement('button');
+    btn.className='learn-cat'+(currentLearnCat===key?' active':'');
+    btn.innerHTML=`<span class="cat-icon">${cfg.icon}</span>${cfg.title}`;
+    btn.onclick=()=>{currentLearnCat=key;initLearnCats();startGame(key);playSound('click')};
+    catsDiv.appendChild(btn);
+  });
+}
+
+function startGame(type){
+  currentGame={type,score:0,q:0,total:gameConfigs[type].questions};
+  currentLearnCat=type;
+  initLearnCats();
+  nextQuestion();
+}
+
+function renderProgress(){
+  let dots='';
+  for(let i=0;i<currentGame.total;i++){
+    const cls=i<currentGame.q?'done':i===currentGame.q?'current':'';
+    dots+=`<div class="g-dot ${cls}"></div>`;
+  }
+  return `<div class="g-progress">${dots}</div>`;
+}
+
+function pickUnique(arr,count,exclude){
+  const pool=arr.filter(x=>x!==exclude);
+  const result=[];
+  while(result.length<count&&pool.length>0){
+    const idx=Math.floor(Math.random()*pool.length);
+    result.push(pool.splice(idx,1)[0]);
+  }
+  return result;
+}
+
+function nextQuestion(){
+  if(currentGame.q>=currentGame.total){endGameRound();return}
+  const cfg=gameConfigs[currentGame.type];
+  const area=document.getElementById('gArea');
+  let correct,options=[],visualHTML='',promptText='';
+
+  if(currentGame.type==='numbers'){
+    correct=Math.floor(Math.random()*20)+1;
+    promptText='Welche Zahl ist das?';
+    visualHTML=`<div class="g-visual"><span class="g-big">${correct}</span></div>`;
+    const wrongs=pickUnique(Array.from({length:20},(_,i)=>i+1),3,correct);
+    options=[correct,...wrongs];
+    area.innerHTML=renderProgress()+`<div class="g-prompt">${promptText}</div>${visualHTML}<div class="g-options" id="gOpts"></div>`;
+    renderOptions(correct,options);
+    playGameAudio(cfg.promptAudio);
+  }else if(currentGame.type==='letters'){
+    const letters=cfg.letters;
+    correct=letters[Math.floor(Math.random()*letters.length)];
+    promptText='Welcher Buchstabe ist das?';
+    visualHTML=`<div class="g-visual"><span class="g-big">${correct}</span></div>`;
+    const wrongs=pickUnique(letters.split(''),3,correct);
+    options=[correct,...wrongs];
+    area.innerHTML=renderProgress()+`<div class="g-prompt">${promptText}</div>${visualHTML}<div class="g-options" id="gOpts"></div>`;
+    renderOptions(correct,options);
+    playGameAudio(cfg.promptAudio);
+  }else if(currentGame.type==='counting'){
+    const count=Math.floor(Math.random()*(cfg.range[1]-cfg.range[0]+1))+cfg.range[0];
+    correct=count;
+    promptText='Wie viele siehst du?';
+    const emoji=countEmojis[Math.floor(Math.random()*countEmojis.length)];
+    let items='';for(let i=0;i<count;i++)items+=`<span class="count-item" style="animation-delay:${i*0.08}s">${emoji}</span>`;
+    const wrongs=pickUnique(Array.from({length:cfg.range[1]},(_,i)=>i+1),3,correct);
+    options=[correct,...wrongs];
+    area.innerHTML=renderProgress()+`<div class="g-prompt">${promptText}</div><div class="count-area">${items}</div><div class="g-options" id="gOpts"></div>`;
+    renderOptions(correct,options);
+    playGameAudio(cfg.promptAudio);
+  }else if(currentGame.type==='colors'){
+    const colorObj=cfg.all[Math.floor(Math.random()*cfg.all.length)];
+    correct=colorObj.name;
+    promptText='Welche Farbe ist das?';
+    visualHTML=`<div class="g-visual"><div class="g-color-box" style="background:${colorObj.hex}"></div></div>`;
+    const wrongs=pickUnique(cfg.all.map(c=>c.name),3,correct);
+    options=[correct,...wrongs];
+    area.innerHTML=renderProgress()+`<div class="g-prompt">${promptText}</div>${visualHTML}<div class="g-options" id="gOpts"></div>`;
+    renderOptions(correct,options);
+    playGameAudio(cfg.promptAudio);
+  }else if(currentGame.type==='shapes'){
+    const shapeObj=cfg.all[Math.floor(Math.random()*cfg.all.length)];
+    correct=shapeObj.name;
+    promptText='Welche Form ist das?';
+    visualHTML=`<div class="g-visual"><span class="g-shape">${shapeObj.symbol}</span></div>`;
+    const wrongs=pickUnique(cfg.all.map(s=>s.name),3,correct);
+    options=[correct,...wrongs];
+    area.innerHTML=renderProgress()+`<div class="g-prompt">${promptText}</div>${visualHTML}<div class="g-options" id="gOpts"></div>`;
+    renderOptions(correct,options);
+    playGameAudio(cfg.promptAudio);
+  }
+  bubbleSay(promptText);
+}
+
+function optionAudioFile(opt){
+  const t=currentGame.type;
+  if(t==='numbers'||t==='counting')return opt.toString();
+  if(t==='letters')return opt.toLowerCase();
+  if(t==='colors'){const c=gameConfigs.colors.all.find(x=>x.name===opt);return c?c.audio:null}
+  if(t==='shapes'){const s=gameConfigs.shapes.all.find(x=>x.name===opt);return s?s.audio:null}
+  return null;
+}
+
+function renderOptions(correct,opts){
+  /* MOTOR PLANNING: Options sorted deterministically (smaller/earlier always left).
+   * DO NOT randomize — child builds motor memory for spatial answer patterns. */
+  opts=[...new Set(opts)].filter(o=>o!==undefined&&o!==null).slice(0,4);
+  while(opts.length<4){
+    const filler=typeof correct==='number'?correct+opts.length+1:'?';
+    if(!opts.includes(filler))opts.push(filler);
+  }
+  opts.sort((a,b)=>{if(typeof a==='number'&&typeof b==='number')return a-b;return String(a).localeCompare(String(b))});
+  const opsDiv=document.getElementById('gOpts');
+  opsDiv.innerHTML='';
+  currentGame.correct=correct;
+  opts.forEach(opt=>{
+    const btn=document.createElement('div');
+    btn.className='g-opt';
+    btn.textContent=opt;
+    btn.onclick=()=>{
+      if(btn.classList.contains('ok')||btn.classList.contains('no'))return;
+      const af=optionAudioFile(opt);
+      if(af)playGameAudio(af);
+      checkAnswer(opt===correct,btn);
+    };
+    opsDiv.appendChild(btn);
+  });
+}
+
+function checkAnswer(isCorrect,btn){
+  btn.classList.add(isCorrect?'ok':'no');
+  if(isCorrect){
+    currentGame.score++;
+    setTimeout(()=>{
+      const fb=feedbackCorrect[Math.floor(Math.random()*feedbackCorrect.length)];
+      playGameAudio(fb);
+    },900);
+    bennyReact('happy');
+    playSound('correct');
+    currentGame.q++;
+    setTimeout(nextQuestion,2200);
+  }else{
+    setTimeout(()=>{const fw=feedbackWrong[Math.floor(Math.random()*feedbackWrong.length)];playGameAudio(fw)},900);
+    bennyReact('wave');
+    playSound('error');
+  }
+}
+
+function endGame(){currentGame=null;currentLearnCat=null;initLearnCats();document.getElementById('gArea').innerHTML='<div style="flex:1;display:flex;align-items:center;justify-content:center;color:var(--text-secondary);font-size:1.3em">Wähle ein Spiel!</div>';setTimeout(()=>playGameAudio('waehle-ein-spiel'),300)}
+function endGameRound(){
+  const stars=Math.min(3,Math.ceil((currentGame.score/currentGame.total)*3));
+  const typeKey=currentGame.type;
+  let progress=parseInt(getState(typeKey+'_progress','0'));
+  if(stars>progress)setState(typeKey+'_progress',stars);
+
+  const starIcons=Array.from({length:3},(_,i)=>
+    `<span class="g-star">${i<stars?'⭐':'☆'}</span>`
+  ).join('');
+
+  const msgs=['Weiter so!','Du bist toll!','Perfekt!'];
+  const msg=stars>=3?msgs[2]:stars>=2?msgs[1]:msgs[0];
+
+  const area=document.getElementById('gArea');
+  area.innerHTML=`
+    <div class="g-celebration">
+      <div class="g-stars">${starIcons}</div>
+      <div class="g-msg">${msg}</div>
+      <div class="g-score-text">${currentGame.score} von ${currentGame.total} richtig!</div>
+      <button class="g-again" onclick="startGame('${currentGame.type}')">Nochmal!</button>
+      <button class="g-again" style="background:var(--category-blue)" onclick="endGame()">Zurück</button>
+    </div>`;
+
+  playGameAudio('du-bist-toll');
+  bennyReact('happy');
+}
+
+function updateLearnStars(){
+  const map={numbers:'sN',letters:'sL',counting:'sC',colors:'sF',shapes:'sS'};
+  Object.entries(map).forEach(([type,id])=>{
+    const el=document.getElementById(id);
+    if(!el)return;
+    const p=parseInt(getState(type+'_progress','0'));
+    el.textContent=Array.from({length:3},(_,i)=>i<p?'⭐':'☆').join('');
+  });
+}
+
+// ===== MUSIC SCREEN =====
+const audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+
+const pianoNotes=[
+  {note:'C',freq:261.63},{note:'D',freq:293.66},{note:'E',freq:329.63},{note:'F',freq:349.23},
+  {note:'G',freq:392.00},{note:'A',freq:440.00},{note:'B',freq:493.88},{note:'C',freq:523.25}
+];
+
+const blackKeys=[1,2,4,5,6];
+
+function initPiano(){
+  const piano=document.getElementById('piano');
+  piano.innerHTML='';
+  pianoNotes.forEach((n,i)=>{
+    const key=document.createElement('div');
+    key.className='pkey';
+    key.textContent=n.note;
+    key.style.width='44px';
+    key.onclick=()=>playTone(n.freq);
+    piano.appendChild(key);
+    if(blackKeys.includes(i)){
+      const bk=document.createElement('div');
+      bk.className='pkey bk';
+      bk.onclick=()=>playTone(n.freq*1.05946);
+      piano.appendChild(bk);
+    }
+  });
+}
+
+function playTone(freq){
+  const osc=audioCtx.createOscillator();
+  const gain=audioCtx.createGain();
+  osc.connect(gain);
+  gain.connect(audioCtx.destination);
+  osc.frequency.value=freq;
+  osc.type='sine';
+  gain.gain.setValueAtTime(0.3,audioCtx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.01,audioCtx.currentTime+0.5);
+  osc.start(audioCtx.currentTime);
+  osc.stop(audioCtx.currentTime+0.5);
+}
+
+function playSound(type){
+  const now=audioCtx.currentTime;
+  const gain=audioCtx.createGain();
+  gain.connect(audioCtx.destination);
+
+  const osc=audioCtx.createOscillator();
+  osc.connect(gain);
+
+  if(type==='click'){
+    // Soft, warm click - pentatonic descending
+    osc.type='sine';
+    osc.frequency.setValueAtTime(523,now);
+    osc.frequency.exponentialRampToValueAtTime(392,now+0.08);
+    gain.gain.setValueAtTime(0.08,now);
+    gain.gain.exponentialRampToValueAtTime(0.001,now+0.1);
+    osc.start(now);
+    osc.stop(now+0.1);
+  }else if(type==='correct'){
+    // Happy ascending chime
+    osc.type='sine';
+    osc.frequency.setValueAtTime(392,now);
+    osc.frequency.setValueAtTime(523,now+0.1);
+    osc.frequency.setValueAtTime(659,now+0.2);
+    gain.gain.setValueAtTime(0.1,now);
+    gain.gain.setValueAtTime(0.1,now+0.2);
+    gain.gain.exponentialRampToValueAtTime(0.001,now+0.4);
+    osc.start(now);
+    osc.stop(now+0.4);
+  }else if(type==='error'){
+    // Gentle low hum instead of harsh buzz - encourages retry
+    osc.type='sine';
+    osc.frequency.setValueAtTime(220,now);
+    osc.frequency.linearRampToValueAtTime(196,now+0.3);
+    gain.gain.setValueAtTime(0.05,now);
+    gain.gain.exponentialRampToValueAtTime(0.001,now+0.3);
+    osc.start(now);
+    osc.stop(now+0.3);
+  }
+}
+
+// ===== MUSIC CATEGORY SYSTEM =====
+const musicData={
+  'Tiere':{icon:'🐾',animals:[
+    {name:'Küken',sound:'Piep piep!',pid:2533},{name:'Hund',sound:'Wau wau!',pid:7202},
+    {name:'Kuh',sound:'Muuuh!',pid:2609},{name:'Ente',sound:'Quak quak!',pid:28479},
+    {name:'Schaf',sound:'Määäh!',pid:2489},{name:'Schwein',sound:'Oink!',pid:24972},
+    {name:'Pferd',sound:'Wiieher!',pid:2294},{name:'Frosch',sound:'Quaaak!',pid:28473},
+    {name:'Huhn',sound:'Gack gack!',pid:2403},{name:'Bär',sound:'Grrrr!',pid:2488},
+    {name:'Affe',sound:'Uuh uuh!',pid:2477},{name:'Elefant',sound:'Törööö!',pid:2372},
+    {name:'Eule',sound:'Schuhu!',pid:2671},{name:'Schlange',sound:'Zzzisch!',pid:2568},
+    {name:'Hase',sound:'Schnüffel!',pid:2351},{name:'Pinguin',sound:'Tröt!',pid:3243}
+  ]},
+  'Xylophon':{icon:'🎵'},
+  'Klavier':{icon:'🎹'},
+  'Zahlen':{icon:'🔢'},
+  'Buchstaben':{icon:'🔤'}
+};
+
+let currentMusicCat='Tiere';
+
+function initMusic(){
+  const catsDiv=document.getElementById('musicCats');
+  catsDiv.innerHTML='';
+  Object.keys(musicData).forEach((cat,i)=>{
+    const btn=document.createElement('div');
+    btn.className='music-cat';
+    btn.innerHTML=`<div class="cat-icon">${musicData[cat].icon}</div>`;
+    btn.onclick=()=>selectMusicCat(cat,btn);
+    catsDiv.appendChild(btn);
+    if(i===0) btn.classList.add('active');
+  });
+  showMusicContent('Tiere');
+}
+
+function selectMusicCat(cat,btn){
+  document.querySelectorAll('.music-cat').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  currentMusicCat=cat;
+  showMusicContent(cat);
+}
+
+function showMusicContent(cat){
+  const content=document.getElementById('musicContent');
+  content.innerHTML='';
+  if(cat==='Tiere'){
+    const grid=document.createElement('div');
+    grid.className='snd-grid';
+    musicData.Tiere.animals.forEach(a=>{
+      const btn=document.createElement('button');
+      btn.className='snd';
+      btn.innerHTML=`<img src="https://static.arasaac.org/pictograms/${a.pid}/${a.pid}_500.png" style="width:70%;height:70%;object-fit:contain"><span class="sl">${a.name}</span>`;
+      btn.onclick=()=>animalSpeak(a.name,a.sound);
+      grid.appendChild(btn);
+    });
+    content.appendChild(grid);
+  }else if(cat==='Xylophon'){
+    const xyloColors=['#e74c3c','#e67e22','#f39c12','#f1c40f','#2ecc71','#1abc9c','#3498db','#2980b9','#9b59b6','#8e44ad','#e91e63','#e74c3c','#e67e22'];
+    const xyloNotes=[261.63,293.66,329.63,349.23,392.00,440.00,493.88,523.25,587.33,659.25,698.46,783.99,880.00];
+    const xyloLabels=['C','D','E','F','G','A','H','C','D','E','F','G','A'];
+    // Rahmen
+    const frame=document.createElement('div');
+    frame.style.cssText='position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;padding:30px 20px';
+    // Holzrahmen (zwei Seitenbalken)
+    const frameInner=document.createElement('div');
+    frameInner.style.cssText='position:relative;width:95%';
+    // Oberer Rahmenbalken
+    const topRail=document.createElement('div');
+    topRail.style.cssText='position:absolute;top:8px;left:0;right:0;height:14px;background:linear-gradient(180deg,#d4a056,#b8863e,#a0722e);border-radius:7px;z-index:0;box-shadow:0 2px 4px rgba(0,0,0,0.3)';
+    // Unterer Rahmenbalken
+    const bottomRail=document.createElement('div');
+    bottomRail.style.cssText='position:absolute;bottom:8px;left:0;right:0;height:14px;background:linear-gradient(180deg,#d4a056,#b8863e,#a0722e);border-radius:7px;z-index:0;box-shadow:0 2px 4px rgba(0,0,0,0.3)';
+    frameInner.appendChild(topRail);
+    frameInner.appendChild(bottomRail);
+    // Klangplatten-Container
+    const barsDiv=document.createElement('div');
+    barsDiv.style.cssText='display:flex;gap:0;justify-content:space-evenly;align-items:center;padding:24px 5px;position:relative;z-index:1;width:100%';
+    xyloNotes.forEach((freq,i)=>{
+      const barWrap=document.createElement('div');
+      barWrap.style.cssText='display:flex;flex-direction:column;align-items:center;gap:0';
+      // Klangplatte
+      const bar=document.createElement('div');
+      const w=80-i*3;
+      bar.style.cssText=`width:${w}px;height:280px;background:linear-gradient(180deg,${xyloColors[i]},${xyloColors[i]}dd,${xyloColors[i]}aa);border-radius:6px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1.6em;font-weight:bold;color:rgba(255,255,255,0.8);transition:transform 0.08s;touch-action:manipulation;box-shadow:0 3px 6px rgba(0,0,0,0.3),inset 0 1px 2px rgba(255,255,255,0.3);border:1px solid rgba(0,0,0,0.15)`;
+      bar.textContent=xyloLabels[i];
+      // Befestigungspunkte (Schrauben)
+      const screwTop=document.createElement('div');
+      screwTop.style.cssText='width:8px;height:8px;border-radius:50%;background:radial-gradient(circle,#ccc,#888);border:1px solid #666;margin-bottom:-4px;z-index:2';
+      const screwBot=document.createElement('div');
+      screwBot.style.cssText='width:8px;height:8px;border-radius:50%;background:radial-gradient(circle,#ccc,#888);border:1px solid #666;margin-top:-4px;z-index:2';
+      const normalShadow='0 3px 6px rgba(0,0,0,0.3),inset 0 1px 2px rgba(255,255,255,0.3)';
+      bar.onclick=()=>{
+        bar.style.transform='scale(0.93)';
+        bar.style.boxShadow='0 1px 3px rgba(0,0,0,0.4),inset 0 1px 2px rgba(255,255,255,0.3)';
+        setTimeout(()=>{bar.style.transform='scale(1)';bar.style.boxShadow=normalShadow},150);
+        playTone(freq);
+      };
+      barWrap.appendChild(screwTop);
+      barWrap.appendChild(bar);
+      barWrap.appendChild(screwBot);
+      barsDiv.appendChild(barWrap);
+    });
+    frameInner.appendChild(barsDiv);
+    // Seitliche Beine
+    const legL=document.createElement('div');
+    legL.style.cssText='position:absolute;bottom:-30px;left:20px;width:18px;height:40px;background:linear-gradient(180deg,#b8863e,#8b6530);border-radius:0 0 6px 6px;box-shadow:2px 2px 4px rgba(0,0,0,0.3)';
+    const legR=document.createElement('div');
+    legR.style.cssText='position:absolute;bottom:-30px;right:20px;width:18px;height:40px;background:linear-gradient(180deg,#b8863e,#8b6530);border-radius:0 0 6px 6px;box-shadow:2px 2px 4px rgba(0,0,0,0.3)';
+    frameInner.appendChild(legL);
+    frameInner.appendChild(legR);
+    frame.appendChild(frameInner);
+    content.appendChild(frame);
+  }else if(cat==='Klavier'){
+    const pianoFrame=document.createElement('div');
+    pianoFrame.style.cssText='display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;padding:20px 10px';
+    const pianoBody=document.createElement('div');
+    pianoBody.style.cssText='position:relative;width:95%;background:linear-gradient(180deg,#1a1a1a,#111);border-radius:12px 12px 8px 8px;padding:20px 10px 15px;box-shadow:0 8px 20px rgba(0,0,0,0.5),inset 0 1px 0 rgba(255,255,255,0.1)';
+    const keysDiv=document.createElement('div');
+    keysDiv.style.cssText='position:relative;display:flex;width:100%;height:260px';
+    const whiteNotes=[
+      {note:'C',freq:261.63},{note:'D',freq:293.66},{note:'E',freq:329.63},{note:'F',freq:349.23},
+      {note:'G',freq:392.00},{note:'A',freq:440.00},{note:'H',freq:493.88},{note:'C',freq:523.25},
+      {note:'D',freq:587.33},{note:'E',freq:659.25},{note:'F',freq:698.46},{note:'G',freq:783.99},
+      {note:'A',freq:880.00}
+    ];
+    const blackPattern=[1,1,0,1,1,1,0,1,1,0,1,1,1];
+    // Weiße Tasten
+    whiteNotes.forEach((n,i)=>{
+      const key=document.createElement('div');
+      key.style.cssText='flex:1;background:linear-gradient(180deg,#fafafa,#e8e8e8,#d0d0d0);border:1px solid #999;border-radius:0 0 6px 6px;margin:0 1px;cursor:pointer;display:flex;align-items:flex-end;justify-content:center;padding-bottom:10px;font-size:1.1em;font-weight:bold;color:#888;transition:background 0.08s;touch-action:manipulation;box-shadow:0 4px 6px rgba(0,0,0,0.2),inset 0 -2px 3px rgba(0,0,0,0.1)';
+      key.textContent=n.note;
+      const whiteNormal='linear-gradient(180deg,#fafafa,#e8e8e8,#d0d0d0)';
+      const whitePressed='linear-gradient(180deg,#ddd,#ccc,#bbb)';
+      key.onclick=()=>{
+        key.style.background=whitePressed;
+        setTimeout(()=>{key.style.background=whiteNormal},150);
+        playTone(n.freq);
+      };
+      keysDiv.appendChild(key);
+    });
+    // Schwarze Tasten (absolut positioniert)
+    const totalWhite=whiteNotes.length;
+    blackPattern.forEach((hasBlack,i)=>{
+      if(!hasBlack||i>=totalWhite-1) return;
+      const blackKey=document.createElement('div');
+      const leftPct=((i+1)/totalWhite*100)-2.5;
+      const blackFreq=whiteNotes[i].freq*1.05946;
+      blackKey.style.cssText=`position:absolute;left:${leftPct}%;width:5%;height:60%;background:linear-gradient(180deg,#2a2a2a,#1a1a1a,#111);border:1px solid #000;border-radius:0 0 4px 4px;cursor:pointer;z-index:2;transition:background 0.08s;touch-action:manipulation;box-shadow:0 4px 6px rgba(0,0,0,0.4),inset 0 -2px 3px rgba(0,0,0,0.3)`;
+      const blackNormal='linear-gradient(180deg,#2a2a2a,#1a1a1a,#111)';
+      const blackPressed='linear-gradient(180deg,#444,#333,#222)';
+      blackKey.onclick=()=>{
+        blackKey.style.background=blackPressed;
+        setTimeout(()=>{blackKey.style.background=blackNormal},150);
+        playTone(blackFreq);
+      };
+      keysDiv.appendChild(blackKey);
+    });
+    pianoBody.appendChild(keysDiv);
+    pianoFrame.appendChild(pianoBody);
+    content.appendChild(pianoFrame);
+  }else if(cat==='Zahlen'){
+    // Anzeige-Leiste
+    const display=document.createElement('div');
+    display.id='numDisplay';
+    display.style.cssText='display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--card-bg2);border:2px solid var(--border);border-radius:14px;margin-bottom:10px;min-height:50px;flex-wrap:wrap';
+    const numText=document.createElement('div');
+    numText.id='numText';
+    numText.style.cssText='flex:1;font-size:3.5em;font-weight:bold;color:var(--text-primary);min-height:60px;line-height:1.2';
+    numText.textContent='';
+    const speakBtn=document.createElement('button');
+    speakBtn.innerHTML='🔊';
+    speakBtn.style.cssText='width:60px;height:60px;border-radius:50%;border:2px solid var(--border);background:var(--category-blue);color:#fff;font-size:1.8em;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;touch-action:manipulation';
+    speakBtn.onclick=()=>{const t=document.getElementById('numText').textContent;if(t)speak(t)};
+    const clearBtn=document.createElement('button');
+    clearBtn.innerHTML='✕';
+    clearBtn.style.cssText='width:60px;height:60px;border-radius:50%;border:2px solid var(--border);background:var(--card-bg);color:var(--text-primary);font-size:1.8em;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;touch-action:manipulation';
+    clearBtn.onclick=()=>{document.getElementById('numText').textContent=''};
+    display.appendChild(numText);
+    display.appendChild(speakBtn);
+    display.appendChild(clearBtn);
+    content.appendChild(display);
+    const grid=document.createElement('div');
+    grid.className='snd-grid';
+    grid.style.gridTemplateColumns='repeat(10,1fr)';
+    for(let n=0;n<=100;n++){
+      const btn=document.createElement('button');
+      btn.className='snd';
+      btn.style.cssText='font-size:2.4em;aspect-ratio:1/1;min-height:0;padding:4px';
+      btn.innerHTML=`${n}`;
+      btn.onclick=()=>{
+        sayNumber(n);
+        const dt=document.getElementById('numText');
+        dt.textContent=(dt.textContent?dt.textContent+' ':'')+n;
+      };
+      grid.appendChild(btn);
+    }
+    content.appendChild(grid);
+  }else if(cat==='Buchstaben'){
+    // Anzeige-Leiste
+    const display=document.createElement('div');
+    display.style.cssText='display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--card-bg2);border:2px solid var(--border);border-radius:14px;margin-bottom:8px;min-height:50px;flex-wrap:wrap';
+    const alphaText=document.createElement('div');
+    alphaText.id='alphaText';
+    alphaText.style.cssText='flex:1;font-size:3.5em;font-weight:bold;color:var(--text-primary);min-height:60px;line-height:1.2;letter-spacing:4px';
+    const speakBtn2=document.createElement('button');
+    speakBtn2.innerHTML='🔊';
+    speakBtn2.style.cssText='width:60px;height:60px;border-radius:50%;border:2px solid var(--border);background:var(--category-blue);color:#fff;font-size:1.8em;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;touch-action:manipulation';
+    speakBtn2.onclick=()=>{const t=document.getElementById('alphaText').textContent;if(t){speakSequence(t.split(''),0)}};
+    const clearBtn2=document.createElement('button');
+    clearBtn2.innerHTML='✕';
+    clearBtn2.style.cssText='width:60px;height:60px;border-radius:50%;border:2px solid var(--border);background:var(--card-bg);color:var(--text-primary);font-size:1.8em;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;touch-action:manipulation';
+    clearBtn2.onclick=()=>{document.getElementById('alphaText').textContent=''};
+    display.appendChild(alphaText);
+    display.appendChild(speakBtn2);
+    display.appendChild(clearBtn2);
+    content.appendChild(display);
+    const grid=document.createElement('div');
+    grid.className='snd-grid';
+    grid.style.cssText='grid-template-columns:repeat(9,1fr);gap:6px';
+    for(let i=65;i<=90;i++){
+      const letter=String.fromCharCode(i);
+      const btn=document.createElement('button');
+      btn.className='snd';
+      btn.style.cssText='font-size:2.2em;aspect-ratio:1/1;min-height:0;padding:2px';
+      btn.textContent=letter;
+      btn.onclick=()=>{
+        sayLetter(letter);
+        document.getElementById('alphaText').textContent+=letter;
+      };
+      grid.appendChild(btn);
+    }
+    content.appendChild(grid);
+  }
+}
+
+function animal(name,sound){animalSpeak(name,sound)}
+
+function animalSpeak(name,sound){
+  playSound('click');
+  bubbleSay(name+' – '+sound);
+  stopCurrentAudio();
+  const soundFile=name.toLowerCase().replace(/ä/g,'ae').replace(/ö/g,'oe').replace(/ü/g,'ue').replace(/ß/g,'ss');
+  // 1. Erst echtes Tiergeräusch aus audio/animals/
+  const animalSound=new Audio('audio/animals/'+soundFile+'.mp3');
+  animalSound.volume=1;
+  currentSpeechAudio=animalSound;
+  animalSound.onended=function(){
+    // 2. Danach den Namen sprechen (nutzt High-Quality Audio First Logik)
+    speak(name);
+  };
+  animalSound.play().catch(()=>{
+    // Fallback: Nur den Namen sprechen
+    speak(name);
+  });
+}
+function sayNumber(n){
+  stopCurrentAudio();
+  const mp3=new Audio('audio/speech/'+n+'.mp3');
+  mp3.volume=1;
+  currentSpeechAudio=mp3;
+  mp3.play().catch(()=>speak(n.toString()));
+  bubbleSay(n.toString());
+  playSound('click');
+}
+function sayLetter(l){
+  stopCurrentAudio();
+  const mp3=new Audio('audio/speech/'+l.toLowerCase()+'.mp3');
+  mp3.volume=1;
+  currentSpeechAudio=mp3;
+  mp3.play().catch(()=>speak(l));
+  bubbleSay(l);
+  playSound('click');
+}
+
+function initAlphabetGrid(){
+  const grid=document.getElementById('alphaGrid');
+  grid.innerHTML='';
+  for(let i=65;i<=90;i++){
+    const letter=String.fromCharCode(i);
+    const btn=document.createElement('button');
+    btn.className='snd';
+    btn.textContent=letter;
+    btn.onclick=()=>{speak(letter);bubbleSay(letter);playSound('click')};
+    grid.appendChild(btn);
+  }
+}
+
+// ===== YOUTUBE - SUCH-SYSTEM (YouTube Data API v3) =====
+// Jede Kategorie hat Suchbegriffe. Die App sucht wie YouTube selbst.
+// Ergebnisse werden 24h in localStorage gecacht.
+// API-Key wird einmalig im Eltern-Dashboard eingegeben (kostenlos).
+
+const ytCategories={
+  '🔢 Zahlen':{query:'Zahlen lernen Kinder deutsch Lied'},
+  '🔤 ABC':{query:'ABC Buchstaben lernen Kinder deutsch Lied'},
+  '🎬 Abspänne':{query:'movie studio logo intro animation'},
+  '🎵 Lieder':{query:'Kinderlieder deutsch zum Mitsingen'},
+  '🌙 Ruhe':{query:'Baby Sensory calming relaxing video'},
+  '🐻 Hey Bear':{query:'Hey Bear Sensory'}
+};
+
+let ytPlayerActive=false;
+let ytLoadGeneration=0;
+
+// --- API Key Management ---
+function getYTApiKey(){return localStorage.getItem('yt_api_key')||''}
+function saveYTApiKey(){
+  const input=document.getElementById('ytApiKeyInput');
+  const status=document.getElementById('ytApiKeyStatus');
+  const key=input.value.trim();
+  if(key){
+    localStorage.setItem('yt_api_key',key);
+    status.textContent='Gespeichert!';
+    status.style.color='var(--green)';
+  }else{
+    localStorage.removeItem('yt_api_key');
+    status.textContent='Entfernt';
+    status.style.color='var(--red)';
+  }
+  setTimeout(()=>{status.textContent=''},3000);
+}
+
+// --- YouTube Data API v3 Suche ---
+async function searchYouTube(query,maxResults,pageToken){
+  const key=getYTApiKey();
+  if(!key)return null;
+  const params=new URLSearchParams({
+    part:'snippet',
+    type:'video',
+    maxResults:String(maxResults||12),
+    q:query,
+    safeSearch:'strict',
+    relevanceLanguage:'de',
+    key:key
+  });
+  if(pageToken)params.set('pageToken',pageToken);
+  const r=await fetch('https://www.googleapis.com/youtube/v3/search?'+params);
+  if(!r.ok){
+    const err=await r.json().catch(()=>({}));
+    console.warn('YouTube API Fehler:',r.status,err);
+    return null;
+  }
+  const data=await r.json();
+  return{
+    videos:(data.items||[]).map(item=>({
+      id:item.id.videoId,
+      title:item.snippet.title,
+      thumb:item.snippet.thumbnails.medium?item.snippet.thumbnails.medium.url:('https://img.youtube.com/vi/'+item.id.videoId+'/mqdefault.jpg')
+    })),
+    nextPageToken:data.nextPageToken||null
+  };
+}
+
+// --- localStorage Cache (24h) ---
+function getCachedSearch(query){
+  try{
+    const raw=localStorage.getItem('yt_search_'+query);
+    if(!raw)return null;
+    const d=JSON.parse(raw);
+    if(Date.now()-d.timestamp>24*60*60*1000)return null;
+    return{videos:d.videos,nextPageToken:d.nextPageToken||null};
+  }catch(e){return null}
+}
+function setCachedSearch(query,videos,nextPageToken){
+  try{localStorage.setItem('yt_search_'+query,JSON.stringify({timestamp:Date.now(),videos,nextPageToken:nextPageToken||null}))}catch(e){}
+}
+
+// --- Favoriten-System ---
+// Migration: Alte Playlist-IDs entfernen
+(function(){
+  try{
+    const favs=JSON.parse(localStorage.getItem('yt_favorites')||'{}');
+    const cleaned={};let changed=false;
+    for(const[id,data]of Object.entries(favs)){
+      if(!id.startsWith('PL')&&!id.startsWith('UU')){cleaned[id]=data}else{changed=true}
+    }
+    if(changed)localStorage.setItem('yt_favorites',JSON.stringify(cleaned));
+  }catch(e){}
+})();
+function getYTFavorites(){
+  try{return JSON.parse(localStorage.getItem('yt_favorites')||'{}')}catch(e){return{}}
+}
+function trackYTView(v){
+  const favs=getYTFavorites();
+  if(!favs[v.id])favs[v.id]={title:v.title||'',count:0};
+  favs[v.id].count++;
+  favs[v.id].title=v.title||favs[v.id].title;
+  if(v.thumb)favs[v.id].thumb=v.thumb;
+  favs[v.id].lastWatched=Date.now();
+  localStorage.setItem('yt_favorites',JSON.stringify(favs));
+}
+function getFavoriteVideos(){
+  const favs=getYTFavorites();
+  return Object.entries(favs)
+    .map(([id,data])=>({id,title:data.title||id,thumb:data.thumb||'',count:data.count,lastWatched:data.lastWatched||0}))
+    .sort((a,b)=>b.count-a.count)
+    .slice(0,12);
+}
+
+// --- Kategorie-Videos laden ---
+let ytCurrentQuery=null; // Aktuelle Suchanfrage fuer Infinite Scroll
+let ytNextPageToken=null; // Token fuer naechste Seite
+let ytLoadingMore=false; // Verhindert doppeltes Nachladen
+let ytSeenIds=new Set(); // Bereits angezeigte Video-IDs
+
+async function loadCategoryVideos(cat,gen){
+  const grid=document.getElementById('ytGrid');
+  ytCurrentQuery=null;
+  ytNextPageToken=null;
+  ytLoadingMore=false;
+  ytSeenIds=new Set();
+  if(ytObserver){ytObserver.disconnect();ytObserver=null}
+
+  // Favoriten
+  if(cat==='⭐ Favoriten'){
+    const favs=getFavoriteVideos();
+    if(favs.length===0){
+      grid.innerHTML='<div style="text-align:center;padding:40px;color:var(--text-secondary);font-size:1.1em">Noch keine Favoriten — schau ein paar Videos!</div>';
+    }else{
+      grid.innerHTML='';
+      appendVideos(grid,favs);
+    }
+    return;
+  }
+
+  const catData=ytCategories[cat];
+  if(!catData)return;
+
+  // Kein API Key?
+  if(!getYTApiKey()){
+    grid.innerHTML='<div style="text-align:center;padding:40px;color:var(--text-secondary);font-size:1em;line-height:1.6">Bitte YouTube API Key im Eltern-Dashboard eingeben.<br><span style="font-size:0.85em">Eltern-Button unten → 📺 YouTube API Key</span></div>';
+    return;
+  }
+
+  ytCurrentQuery=catData.query;
+
+  // Cache pruefen
+  const cached=getCachedSearch(catData.query);
+  if(cached&&cached.videos.length>0){
+    grid.innerHTML='';
+    ytNextPageToken=cached.nextPageToken;
+    appendVideos(grid,cached.videos);
+    setupSentinelObserver(grid,gen);
+    return;
+  }
+
+  // Lade-Animation
+  grid.innerHTML='<div class="yt-loading"><div class="yt-loading-bounce"></div><span>Videos laden...</span></div>';
+
+  // YouTube-Suche
+  const result=await searchYouTube(catData.query,24);
+  if(ytLoadGeneration!==gen)return;
+
+  if(result&&result.videos.length>0){
+    setCachedSearch(catData.query,result.videos,result.nextPageToken);
+    grid.innerHTML='';
+    ytNextPageToken=result.nextPageToken;
+    appendVideos(grid,result.videos);
+    setupSentinelObserver(grid,gen);
+  }else{
+    grid.innerHTML='<div style="text-align:center;padding:40px;color:var(--text-secondary)">Videos konnten nicht geladen werden.<br><span style="font-size:0.85em">API Key prüfen oder später erneut versuchen.</span></div>';
+  }
+}
+
+// --- Einzelne Video-Karte erstellen ---
+function createVideoCard(v){
+  const card=document.createElement('div');
+  card.className='yt-card';
+  const favs=getYTFavorites();
+  const vc=favs[v.id]?favs[v.id].count:0;
+  const hb=vc>0?'<span style="color:var(--red);font-size:0.75em;margin-left:4px">\u2665'+vc+'</span>':'';
+  const thumbUrl=v.thumb||('https://img.youtube.com/vi/'+v.id+'/mqdefault.jpg');
+  const displayTitle=v.title||'Video';
+  card.innerHTML='<div class="yt-thumb"><img src="'+thumbUrl+'" alt="" loading="lazy" onerror="this.src=\'https://img.youtube.com/vi/'+v.id+'/mqdefault.jpg\'"><div class="yt-play">\u25B6</div></div><div class="yt-info"><h4>'+displayTitle+hb+'</h4></div>';
+  card.onclick=()=>{playYTVideo(v);playSound('click')};
+  return card;
+}
+
+// --- Videos ans Grid anhaengen (dedupliziert) ---
+function appendVideos(grid,videos){
+  // Sentinel vor dem Anhaengen entfernen (wird danach neu angehaengt)
+  const oldSentinel=document.getElementById('ytSentinel');
+  if(oldSentinel)oldSentinel.remove();
+
+  videos.forEach(v=>{
+    if(!v.id||ytSeenIds.has(v.id))return;
+    ytSeenIds.add(v.id);
+    grid.appendChild(createVideoCard(v));
+  });
+
+  // Sentinel immer ganz unten anhaengen wenn es noch Seiten gibt
+  if(ytNextPageToken&&ytCurrentQuery){
+    const sentinel=document.createElement('div');
+    sentinel.id='ytSentinel';
+    sentinel.style.cssText='grid-column:1/-1;height:4px;pointer-events:none';
+    grid.appendChild(sentinel);
+  }
+}
+
+// --- IntersectionObserver: Naechste Seite laden wenn Sentinel sichtbar ---
+let ytObserver=null;
+
+function setupSentinelObserver(grid,gen){
+  // Alten Observer aufräumen
+  if(ytObserver){ytObserver.disconnect();ytObserver=null}
+
+  ytObserver=new IntersectionObserver((entries)=>{
+    const entry=entries[0];
+    if(!entry||!entry.isIntersecting)return;
+    if(ytLoadGeneration!==gen){ytObserver.disconnect();return}
+    loadMoreVideos(grid,gen);
+  },{root:grid,rootMargin:'0px 0px 200px 0px',threshold:0});
+
+  // Sentinel erst NACH Layout-Berechnung beobachten (verhindert sofortiges Feuern)
+  requestAnimationFrame(()=>{
+    requestAnimationFrame(()=>{
+      const sentinel=document.getElementById('ytSentinel');
+      if(sentinel&&ytObserver)ytObserver.observe(sentinel);
+    });
+  });
+}
+
+async function loadMoreVideos(grid,gen){
+  if(ytLoadingMore||!ytNextPageToken||!ytCurrentQuery)return;
+  if(ytLoadGeneration!==gen)return;
+  ytLoadingMore=true;
+
+  // Lade-Indikator vor dem Sentinel
+  const sentinel=document.getElementById('ytSentinel');
+  const loader=document.createElement('div');
+  loader.className='yt-loading';
+  loader.id='ytLoader';
+  loader.style.cssText='grid-column:1/-1;padding:20px 0';
+  loader.innerHTML='<div class="yt-loading-bounce" style="width:32px;height:32px"></div>';
+  if(sentinel)grid.insertBefore(loader,sentinel);else grid.appendChild(loader);
+
+  const result=await searchYouTube(ytCurrentQuery,12,ytNextPageToken);
+  if(ytLoadGeneration!==gen){ytLoadingMore=false;return}
+
+  const ldr=document.getElementById('ytLoader');
+  if(ldr)ldr.remove();
+
+  if(result&&result.videos.length>0){
+    ytNextPageToken=result.nextPageToken;
+    appendVideos(grid,result.videos);
+    // Cache aktualisieren
+    const cached=getCachedSearch(ytCurrentQuery);
+    const merged=cached?[...cached.videos,...result.videos]:result.videos;
+    setCachedSearch(ytCurrentQuery,merged,ytNextPageToken);
+    // Observer auf neues Sentinel umschalten (nach Layout)
+    requestAnimationFrame(()=>{
+      requestAnimationFrame(()=>{
+        const newSentinel=document.getElementById('ytSentinel');
+        if(newSentinel&&ytObserver)ytObserver.observe(newSentinel);
+      });
+    });
+  }else{
+    ytNextPageToken=null;
+    // Sentinel entfernen wenn keine Seiten mehr
+    if(sentinel)sentinel.remove();
+  }
+  ytLoadingMore=false;
+}
+
+// --- YouTube UI Steuerung ---
+function initYouTube(){
+  const catsDiv=document.getElementById('ytCats');
+  catsDiv.innerHTML='';
+  const favVideos=getFavoriteVideos();
+  const allCats=favVideos.length>0?['⭐ Favoriten',...Object.keys(ytCategories)]:Object.keys(ytCategories);
+
+  allCats.forEach((cat,i)=>{
+    const btn=document.createElement('div');
+    btn.className='yt-cat'+(i===0?' active':'');
+    btn.textContent=cat.split(' ')[0];
+    btn.onclick=()=>{
+      document.querySelectorAll('.yt-cat').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      currentYTCat=cat;
+      showYTGrid(cat);
+      playSound('click');
+    };
+    catsDiv.appendChild(btn);
+  });
+  // Mikrofon-Button als letzter Button in der Kategorie-Leiste
+  const micBtn=document.createElement('div');
+  micBtn.className='yt-cat yt-voice-cat';
+  micBtn.id='ytVoiceCatBtn';
+  micBtn.textContent='🎙️';
+  micBtn.onclick=()=>startYTVoiceSearch();
+  catsDiv.appendChild(micBtn);
+
+  currentYTCat=allCats[0];
+  showYTGrid(allCats[0]);
+}
+
+function showYTGrid(cat){
+  ytPlayerActive=false;
+  const grid=document.getElementById('ytGrid');
+  const player=document.getElementById('ytPlayer');
+  const playerFrame=document.getElementById('ytPlayerFrame');
+  grid.style.display='';
+  player.style.display='none';
+  playerFrame.src='';
+  const cats=document.getElementById('ytCats');
+  cats.style.display='';
+  cats.classList.remove('hidden-scroll');
+  grid.scrollTop=0;
+  // Kategorie-Leiste bei Scroll ausblenden + Scroll-to-Top Button
+  const scrollTopBtn=document.getElementById('ytScrollTopBtn');
+  if(scrollTopBtn)scrollTopBtn.classList.remove('visible');
+  grid.onscroll=()=>{
+    if(grid.scrollTop>80)cats.classList.add('hidden-scroll');
+    else cats.classList.remove('hidden-scroll');
+    if(scrollTopBtn){
+      if(grid.scrollTop>400)scrollTopBtn.classList.add('visible');
+      else scrollTopBtn.classList.remove('visible');
+    }
+  };
+  const gen=++ytLoadGeneration;
+  loadCategoryVideos(cat,gen);
+  bubbleSay(cat==='⭐ Favoriten'?'Deine Lieblingsvideos!':'Wähle ein Video!');
+}
+
+function playYTVideo(v){
+  ytPlayerActive=true;
+  trackYTView(v);
+  document.getElementById('ytGrid').style.display='none';
+  document.getElementById('ytCats').style.display='none';
+  const player=document.getElementById('ytPlayer');
+  player.style.display='flex';
+  document.getElementById('ytPlayerFrame').src='https://www.youtube.com/embed/'+v.id+'?autoplay=1&rel=0&modestbranding=1';
+  bubbleSay(v.title||'Video');
+}
+
+function ytBack(){
+  if(ytPlayerActive){
+    showYTGrid(currentYTCat);
+  }else{
+    go('home');
+  }
+}
+
+// ===== YOUTUBE VOICE SEARCH =====
+let ytVoiceRecognition=null;
+
+function startYTVoiceSearch(){
+  const SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SpeechRecognition){
+    bubbleSay('Sprachsuche wird hier leider nicht unterstützt.');
+    return;
+  }
+  // Falls bereits aktiv, stoppen
+  if(ytVoiceRecognition){
+    ytVoiceRecognition.abort();
+    ytVoiceRecognition=null;
+    return;
+  }
+  const recognition=new SpeechRecognition();
+  recognition.lang='de-DE';
+  recognition.continuous=false;
+  recognition.interimResults=false;
+  recognition.maxAlternatives=1;
+  ytVoiceRecognition=recognition;
+  const btn=document.getElementById('ytVoiceCatBtn');
+
+  recognition.onstart=()=>{
+    if(btn)btn.classList.add('listening');
+    bubbleSay('Ich höre zu... sag mir, was du sehen willst!');
+    playSound('click');
+  };
+  recognition.onresult=(e)=>{
+    const transcript=e.results[0][0].transcript.trim();
+    if(transcript){
+      bubbleSay('Suche nach: '+transcript);
+      showVoiceSearchResults(transcript);
+    }
+  };
+  recognition.onerror=(e)=>{
+    if(btn)btn.classList.remove('listening');
+    ytVoiceRecognition=null;
+    if(e.error==='no-speech'){
+      bubbleSay('Ich habe nichts gehört. Versuch es nochmal!');
+    }else if(e.error!=='aborted'){
+      bubbleSay('Ups, das hat nicht geklappt.');
+    }
+  };
+  recognition.onend=()=>{
+    if(btn)btn.classList.remove('listening');
+    ytVoiceRecognition=null;
+  };
+  recognition.start();
+}
+
+async function showVoiceSearchResults(query){
+  // Kategorie-Buttons deselektieren
+  document.querySelectorAll('.yt-cat').forEach(b=>b.classList.remove('active'));
+  const grid=document.getElementById('ytGrid');
+  const cats=document.getElementById('ytCats');
+  cats.style.display='';
+  cats.classList.remove('hidden-scroll');
+  grid.style.display='';
+  document.getElementById('ytPlayer').style.display='none';
+  document.getElementById('ytPlayerFrame').src='';
+  ytPlayerActive=false;
+
+  // Grid leeren und Ladeanimation
+  grid.innerHTML='<div class="yt-loading"><div class="yt-loading-bounce"></div>Suche Videos...</div>';
+  grid.scrollTop=0;
+
+  // Scroll-Listener einrichten
+  const scrollTopBtn=document.getElementById('ytScrollTopBtn');
+  if(scrollTopBtn)scrollTopBtn.classList.remove('visible');
+  grid.onscroll=()=>{
+    if(grid.scrollTop>80)cats.classList.add('hidden-scroll');
+    else cats.classList.remove('hidden-scroll');
+    if(scrollTopBtn){
+      if(grid.scrollTop>400)scrollTopBtn.classList.add('visible');
+      else scrollTopBtn.classList.remove('visible');
+    }
+  };
+
+  // Suche starten
+  const gen=++ytLoadGeneration;
+  ytCurrentQuery=query;
+  ytNextPageToken=null;
+  ytLoadingMore=false;
+  ytSeenIds=new Set();
+
+  const result=await searchYouTube(query,24);
+  if(ytLoadGeneration!==gen)return;
+
+  if(result&&result.videos.length>0){
+    grid.innerHTML='';
+    appendVideos(grid,result.videos);
+    ytNextPageToken=result.nextPageToken;
+    setCachedSearch(query,result.videos,result.nextPageToken);
+    setupSentinelObserver(grid,gen);
+    bennyReact('happy');
+  }else{
+    grid.innerHTML='<div style="text-align:center;padding:40px;color:var(--text-secondary)">Keine Videos gefunden.<br><span style="font-size:0.85em">Versuch einen anderen Begriff!</span></div>';
+  }
+}
+
+// ===== ENDLESS CREDITS GENERATOR (NEW) =====
+let creditsAutoScroll=null;
+let creditsAmbientTimer=null;
+let creditsBennyTimer=null;
+
+const germanFirstNames=['Anna','Max','Leevi','Sophie','Finn','Emma','Luca','Mia','Noah','Ella','Ben','Lina','Jonas','Hanna','Leon','Marie','Paul','Clara','Felix','Ida','Tim','Lisa','Tom','Julia','Theo','Sarah','Nico','Laura','Jan','Lea','Elias','Charlotte','Oscar','Amelie','Henrik','Greta','Lukas','Frieda','Moritz','Emilia'];
+const germanLastNames=['Schmidt','Müller','Weber','Meyer','Wagner','Becker','Schulz','Hoffmann','Koch','Bauer','Klein','Schröder','König','Huber','Ritter','Hartmann','Kaufmann','Stark','Braun','Lange','Fischer','Wolf','Berger','Frank','Kaiser','Krüger','Neumann','Schwarz','Zimmermann','Richter'];
+const creditsRoles=['Regie','Kamera','Schnitt','Musik','Drehbuch','Ton','Darsteller','Licht','Set Design','Produktion','Executive Producer','Casting','Visual Effects','Animationen','Grafik Design','Sound Design','Kostüme','Maske','Requisite','Regieassistenz','Aufnahmeleitung','Oberbeleuchter','Colorist','Dialogregie','Originalmusik','Orchestrierung','Tonmischung','Farbkorrektur','Titelgestaltung'];
+const movieTitles=['Der große Bär','Zahlenland','Buchstabenreise','Sternennacht','Der kleine Held','Farbenzauber','Mondlicht','Traumfabrik','Abenteuerland','Zauberwald','Die Zahlenmeister','ABC Odyssee','Leevis Reise','Nachthimmel','Der goldene Buchstabe','Sieben Sterne','Planetenträume','Das Zahlenrätsel'];
+const studioLogos=['🎬','🎥','🌟','⭐','🎭','🎪','🏔️','🌙','🎞️','📽️'];
+const studioNames=['Leevi Studios','Bärchen Film','Sternenlicht Pictures','Zahlenwerk','Buchstaben & Co.','Mondschein Film','Traumland Studios','Nordlicht Film'];
+
+function generateNumberRow(){
+  const len=12+Math.floor(Math.random()*10);
+  let nums='';
+  for(let i=0;i<len;i++) nums+=(Math.floor(Math.random()*10)).toString()+' ';
+  return `<div class="credits-number-row">${nums.trim()}</div>`;
+}
+
+function generateLetterRow(){
+  const letters='ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  const len=8+Math.floor(Math.random()*8);
+  let row='';
+  for(let i=0;i<len;i++) row+=letters[Math.floor(Math.random()*26)]+' ';
+  return `<div class="credits-letter-row">${row.trim()}</div>`;
+}
+
+function generateCreditsBlock(){
+  const movieTitle=movieTitles[Math.floor(Math.random()*movieTitles.length)];
+  const year=2018+Math.floor(Math.random()*9);
+  const studio=studioNames[Math.floor(Math.random()*studioNames.length)];
+  const logo=studioLogos[Math.floor(Math.random()*studioLogos.length)];
+
+  let html=`<div class="credits-divider"></div>`;
+  html+=`<div class="credits-logo">${logo}</div>`;
+  html+=`<div class="credits-title-block"><div class="credits-movie-title">${movieTitle}</div>`;
+  html+=`<div class="credits-studio">${studio}</div>`;
+  html+=`<div class="credits-year">${year}</div></div>`;
+
+  // Sometimes start with a number sequence (Leevi loves numbers)
+  if(Math.random()>0.4) html+=generateNumberRow();
+
+  const numDensity=creditsConfig.numberDensity;
+  const letDensity=creditsConfig.letterDensity;
+  const numFreq=numDensity==='extra'?2:numDensity==='normal'?3:999;
+  const letFreq=letDensity==='extra'?2:letDensity==='normal'?4:999;
+
+  const usedRoles=[...creditsRoles].sort(()=>Math.random()-0.5).slice(0,14+Math.floor(Math.random()*8));
+  let sectionCount=0;
+  usedRoles.forEach(role=>{
+    const nameCount=role==='Darsteller'?Math.floor(Math.random()*5)+3:Math.random()>0.7?2:1;
+    if(nameCount===1){
+      // Single person: side-by-side layout (role left, name right) like real credits
+      const first=germanFirstNames[Math.floor(Math.random()*germanFirstNames.length)];
+      const last=germanLastNames[Math.floor(Math.random()*germanLastNames.length)];
+      html+=`<div class="credits-names-row"><div class="credits-role" style="text-align:left;margin:0;display:flex;align-items:center">${role}</div><div class="credits-name" style="text-align:right;margin:0">${first} ${last}</div></div>`;
+    }else{
+      // Multiple people: centered block
+      let names='';
+      for(let n=0;n<nameCount;n++){
+        const first=germanFirstNames[Math.floor(Math.random()*germanFirstNames.length)];
+        const last=germanLastNames[Math.floor(Math.random()*germanLastNames.length)];
+        names+=`<div class="credits-name">${first} ${last}</div>`;
+      }
+      html+=`<div class="credits-section"><div class="credits-role">${role}</div>${names}</div>`;
+    }
+    sectionCount++;
+
+    // Sprinkle number and letter rows based on density setting
+    if(sectionCount%numFreq===0 && numDensity!=='off'){
+      html+=generateNumberRow();
+      if(numDensity==='extra') html+=generateNumberRow();
+    }
+    if(sectionCount%letFreq===0 && letDensity!=='off'){
+      html+=generateLetterRow();
+      if(letDensity==='extra') html+=generateLetterRow();
+    }
+  });
+
+  // End block with thanks and decorative elements
+  html+=`<div class="credits-divider"></div>`;
+  html+=generateNumberRow();
+  html+=`<div class="credits-thanks">Besonderer Dank an alle Mitwirkenden</div>`;
+  html+=generateLetterRow();
+  html+=`<div class="credits-logo">${studioLogos[Math.floor(Math.random()*studioLogos.length)]}</div>`;
+  html+=`<div style="height:60px"></div>`;
+  return html;
+}
+
+function initCredits(){
+  stopCreditsLoops();
+  const scroll=document.getElementById('creditsScroll');
+  scroll.innerHTML='';
+  creditsSliderVal=25;
+  creditsSpeed=sliderToSpeed(25);
+  syncSpeedDisplays();
+  document.getElementById('creditsSettings').classList.remove('open');
+  const sBtn=document.getElementById('creditsSettingsBtn');
+  if(sBtn) sBtn.classList.remove('active');
+
+  let html='<div style="height:40px"></div>';
+  html+=`<div class="credits-logo">🎬</div>`;
+  html+=`<div class="credits-movie-title" style="margin:20px 0">LEEVIS WELT</div>`;
+  html+=`<div class="credits-studio">Leevi Studios präsentiert</div>`;
+  html+='<div style="height:60px"></div>';
+  if(creditsConfig.numberDensity!=='off') html+=generateNumberRow();
+  html+=generateCreditsBlock();
+  html+=generateCreditsBlock();
+  html+=generateCreditsBlock();
+  scroll.innerHTML=html;
+  scroll.scrollTop=0;
+
+  // Endless: add more credits well before bottom
+  scroll.onscroll=function(){
+    if(scroll.scrollTop+scroll.clientHeight>=scroll.scrollHeight-500){
+      scroll.insertAdjacentHTML('beforeend',generateCreditsBlock());
+    }
+  };
+
+  // Smooth auto-scroll using requestAnimationFrame with sub-pixel accumulation
+  let lastTime=0;
+  let scrollAccum=0;
+  function smoothScroll(timestamp){
+    if(currentScreen!=='credits'){creditsAutoScroll=null;return}
+    if(lastTime){
+      const dt=timestamp-lastTime; // ms since last frame
+      // creditsSpeed is already in pixels per second
+      scrollAccum+=creditsSpeed*(dt/1000);
+      if(scrollAccum>=1){
+        const px=Math.floor(scrollAccum);
+        scroll.scrollTop+=px;
+        scrollAccum-=px;
+      }
+    }
+    lastTime=timestamp;
+    creditsAutoScroll=requestAnimationFrame(smoothScroll);
+  }
+  creditsAutoScroll=requestAnimationFrame(smoothScroll);
+
+  bubbleSay('Schau die Abspänne an!');
+  playAmbientCreditsMusic();
+
+  // Contextual Benny comments - references numbers, letters, names
+  creditsBennyTimer=setInterval(()=>{
+    if(currentScreen!=='credits')return;
+    const nums=Math.floor(Math.random()*10);
+    const letter='ABCDEFGHIJKLMNOPQRSTUVWXYZ'[Math.floor(Math.random()*26)];
+    const name=germanFirstNames[Math.floor(Math.random()*germanFirstNames.length)];
+    const bennyComments=[
+      `Schau mal, eine ${nums}!`,
+      `Da ist der Buchstabe ${letter}!`,
+      `L wie Leevi!`,
+      `${letter}... ${letter}... ${letter}!`,
+      `Eins, zwei, drei, vier, fünf!`,
+      `${name} steht da!`,
+      `So viele Namen!`,
+      `Noch ein Film!`,
+      `Die Zahlen sind toll!`,
+      `Kannst du das ${letter} finden?`,
+      `${nums}... ${nums+1}... ${nums+2}!`,
+      `Wunderschöne Abspänne!`,
+      `🌟 Sterne!`,
+      `Schau, wie es scrollt!`,
+      `Buchstaben überall!`
+    ];
+    const comment=bennyComments[Math.floor(Math.random()*bennyComments.length)];
+    bubbleSay(comment);
+    bennyReact('wave');
+  },10000);
+}
+
+function stopCreditsLoops(){
+  if(creditsAutoScroll){cancelAnimationFrame(creditsAutoScroll);creditsAutoScroll=null}
+  if(creditsAmbientTimer){clearTimeout(creditsAmbientTimer);creditsAmbientTimer=null}
+  if(creditsBennyTimer){clearInterval(creditsBennyTimer);creditsBennyTimer=null}
+  stopAmbientMusic();
+}
+
+// Credits settings state
+let creditsConfig={
+  fontSize:'small',
+  textColor:'#d4d4e8',
+  bgColor:'#05051a',
+  numberDensity:'normal',  // off, normal, extra
+  letterDensity:'normal',  // off, normal, extra
+  musicMode:'ambient'      // off, ambient, piano
+};
+
+// creditsSliderVal: 0-100 integer (slider position)
+// creditsSpeed: actual pixels per second used by scroll engine
+let creditsSliderVal=25;
+
+function sliderToSpeed(sliderVal){
+  // 0 = stopped, 1-100 = 5 to 300 px/s
+  // Linear + cubic blend: every step is visibly different
+  if(sliderVal<=0) return 0;
+  const t=sliderVal/100;
+  return 5 + t*45 + 250*t*t*t;
+}
+
+function syncSpeedDisplays(){
+  const disp=document.getElementById('speedDisplay');
+  const bar=document.getElementById('creditsSpeedBar');
+  if(disp) disp.textContent=creditsSliderVal;
+  if(bar) bar.value=creditsSliderVal;
+}
+
+function setCreditsSpeedFromBar(val){
+  creditsSliderVal=parseInt(val);
+  creditsSpeed=sliderToSpeed(creditsSliderVal);
+  syncSpeedDisplays();
+}
+
+function adjustCreditsSpeed(delta){
+  // not used anymore but keep for compatibility
+  creditsSliderVal=Math.max(0,Math.min(100,creditsSliderVal+delta));
+  creditsSpeed=sliderToSpeed(creditsSliderVal);
+  syncSpeedDisplays();
+  playSound('click');
+}
+
+function setCreditsSpeed(val){
+  creditsSliderVal=parseInt(val);
+  creditsSpeed=sliderToSpeed(creditsSliderVal);
+  syncSpeedDisplays();
+}
+
+function toggleCreditsSettings(){
+  const panel=document.getElementById('creditsSettings');
+  const btn=document.getElementById('creditsSettingsBtn');
+  panel.classList.toggle('open');
+  btn.classList.toggle('active');
+  playSound('click');
+}
+
+function setCreditsFontSize(size){
+  creditsConfig.fontSize=size;
+  const scroll=document.getElementById('creditsScroll');
+  const sizes={small:'1.3em',medium:'1.6em',large:'2em'};
+  scroll.style.fontSize=sizes[size]||'1.3em';
+  updateSettingsButtons('Schrift',size,['small','medium','large'],['Klein','Mittel','Groß']);
+  playSound('click');
+}
+
+function setCreditsColor(textColor,bgColor){
+  creditsConfig.textColor=textColor;
+  creditsConfig.bgColor=bgColor;
+  const scroll=document.getElementById('creditsScroll');
+  const bg=document.querySelector('.credits-bg');
+  const container=document.querySelector('.credits-container');
+  scroll.style.color=textColor;
+  bg.style.background=bgColor;
+  // Update fade gradients
+  container.style.setProperty('--cred-bg',bgColor);
+  // Update color buttons
+  document.querySelectorAll('.cs-color').forEach(c=>c.classList.remove('active'));
+  event.target.classList.add('active');
+  playSound('click');
+}
+
+function setCreditsContent(type,level){
+  if(type==='numbers') creditsConfig.numberDensity=level;
+  if(type==='letters') creditsConfig.letterDensity=level;
+  const label=type==='numbers'?'Zahlen':'Buchstaben';
+  updateSettingsButtons(label,level,['off','normal','extra'],['Aus','Normal','Viele']);
+  // Regenerate credits with new settings
+  regenerateCredits();
+  playSound('click');
+}
+
+function setCreditsMusic(mode){
+  creditsConfig.musicMode=mode;
+  updateSettingsButtons('Musik',mode,['off','ambient','piano'],['Aus','Ambient','Klavier']);
+  stopAmbientMusic();
+  if(mode!=='off'&&currentScreen==='credits') playAmbientCreditsMusic();
+  playSound('click');
+}
+
+function updateSettingsButtons(labelText,activeVal,vals,labels){
+  document.querySelectorAll('.cs-row').forEach(row=>{
+    const lbl=row.querySelector('.cs-label');
+    if(lbl&&lbl.textContent===labelText){
+      const opts=row.querySelectorAll('.cs-opt');
+      opts.forEach((opt,i)=>{
+        opt.classList.toggle('active',vals[i]===activeVal);
+      });
+    }
+  });
+}
+
+function regenerateCredits(){
+  const scroll=document.getElementById('creditsScroll');
+  const scrollPos=scroll.scrollTop;
+  scroll.innerHTML='';
+  let html='<div style="height:40px"></div>';
+  html+=`<div class="credits-logo">🎬</div>`;
+  html+=`<div class="credits-movie-title" style="margin:20px 0">LEEVIS WELT</div>`;
+  html+=`<div class="credits-studio">Leevi Studios präsentiert</div>`;
+  html+='<div style="height:60px"></div>';
+  if(creditsConfig.numberDensity!=='off') html+=generateNumberRow();
+  html+=generateCreditsBlock();
+  html+=generateCreditsBlock();
+  html+=generateCreditsBlock();
+  scroll.innerHTML=html;
+  scroll.scrollTop=Math.min(scrollPos,scroll.scrollHeight);
+}
+
+// Multi-layered cinematic ambient music for credits
+let ambientNodes=[];
+
+function stopAmbientMusic(){
+  ambientNodes.forEach(n=>{try{n.stop()}catch(e){}});
+  ambientNodes=[];
+}
+
+function playAmbientCreditsMusic(){
+  if(currentScreen!=='credits'||creditsConfig.musicMode==='off'){return}
+  stopAmbientMusic();
+
+  const now=audioCtx.currentTime;
+
+  if(creditsConfig.musicMode==='piano'){
+    // Gentle piano-style: single notes with soft attack and long decay
+    const pianoScale=[261.63,293.66,329.63,392,440,523.25,587.33,659.25];
+    const pattern=[0,4,2,5,1,6,3,7,4,2,5,0]; // wandering melody
+    pattern.forEach((noteIdx,i)=>{
+      const osc=audioCtx.createOscillator();
+      const g=audioCtx.createGain();
+      const flt=audioCtx.createBiquadFilter();
+      osc.type='triangle';
+      osc.frequency.setValueAtTime(pianoScale[noteIdx],now+i*1.2);
+      flt.type='lowpass';
+      flt.frequency.setValueAtTime(1200,now);
+      osc.connect(flt);
+      flt.connect(g);
+      g.connect(audioCtx.destination);
+      g.gain.setValueAtTime(0,now+i*1.2);
+      g.gain.linearRampToValueAtTime(0.04,now+i*1.2+0.05);
+      g.gain.exponentialRampToValueAtTime(0.001,now+i*1.2+1.1);
+      osc.start(now+i*1.2);
+      osc.stop(now+i*1.2+1.2);
+      ambientNodes.push(osc);
+    });
+
+    // Subtle bass
+    const bass=audioCtx.createOscillator();
+    const bassG=audioCtx.createGain();
+    bass.type='sine';
+    bass.frequency.setValueAtTime(130.81,now);
+    bass.connect(bassG);
+    bassG.connect(audioCtx.destination);
+    bassG.gain.setValueAtTime(0,now);
+    bassG.gain.linearRampToValueAtTime(0.03,now+1);
+    bassG.gain.setValueAtTime(0.03,now+12);
+    bassG.gain.linearRampToValueAtTime(0,now+14);
+    bass.start(now);
+    bass.stop(now+14);
+    ambientNodes.push(bass);
+
+    creditsAmbientTimer=setTimeout(()=>{
+      if(currentScreen==='credits') playAmbientCreditsMusic();
+    },14000);
+
+  }else{
+    // Ambient mode: multi-layered cinematic soundscape
+
+    // Layer 1: Deep warm pad
+    const pad=audioCtx.createOscillator();
+    const padGain=audioCtx.createGain();
+    const padFilter=audioCtx.createBiquadFilter();
+    pad.type='sine';
+    pad.frequency.setValueAtTime(110,now);
+    padFilter.type='lowpass';
+    padFilter.frequency.setValueAtTime(400,now);
+    pad.connect(padFilter);
+    padFilter.connect(padGain);
+    padGain.connect(audioCtx.destination);
+    padGain.gain.setValueAtTime(0,now);
+    padGain.gain.linearRampToValueAtTime(0.06,now+2);
+    padGain.gain.setValueAtTime(0.06,now+10);
+    padGain.gain.linearRampToValueAtTime(0,now+14);
+    pad.start(now);
+    pad.stop(now+14);
+    ambientNodes.push(pad);
+
+    // Layer 2: Gentle fifth harmony
+    const fifth=audioCtx.createOscillator();
+    const fifthGain=audioCtx.createGain();
+    fifth.type='sine';
+    fifth.frequency.setValueAtTime(165,now);
+    fifth.connect(fifthGain);
+    fifthGain.connect(audioCtx.destination);
+    fifthGain.gain.setValueAtTime(0,now);
+    fifthGain.gain.linearRampToValueAtTime(0.03,now+3);
+    fifthGain.gain.setValueAtTime(0.03,now+9);
+    fifthGain.gain.linearRampToValueAtTime(0,now+13);
+    fifth.start(now);
+    fifth.stop(now+13);
+    ambientNodes.push(fifth);
+
+    // Layer 3: Slow pentatonic melody
+    const pentatonic=[220,261.63,293.66,329.63,392,440];
+    const melodyNotes=[0,2,4,3,1,5,4,2];
+    melodyNotes.forEach((noteIdx,i)=>{
+      const mel=audioCtx.createOscillator();
+      const melGain=audioCtx.createGain();
+      const melFilter=audioCtx.createBiquadFilter();
+      mel.type='triangle';
+      mel.frequency.setValueAtTime(pentatonic[noteIdx],now+i*1.5);
+      melFilter.type='lowpass';
+      melFilter.frequency.setValueAtTime(800,now);
+      mel.connect(melFilter);
+      melFilter.connect(melGain);
+      melGain.connect(audioCtx.destination);
+      melGain.gain.setValueAtTime(0,now+i*1.5);
+      melGain.gain.linearRampToValueAtTime(0.02,now+i*1.5+0.3);
+      melGain.gain.exponentialRampToValueAtTime(0.001,now+i*1.5+1.4);
+      mel.start(now+i*1.5);
+      mel.stop(now+i*1.5+1.5);
+      ambientNodes.push(mel);
+    });
+
+    // Layer 4: Subtle shimmer
+    const shimmer=audioCtx.createOscillator();
+    const shimGain=audioCtx.createGain();
+    shimmer.type='sine';
+    shimmer.frequency.setValueAtTime(880,now);
+    shimmer.frequency.linearRampToValueAtTime(660,now+12);
+    shimmer.connect(shimGain);
+    shimGain.connect(audioCtx.destination);
+    shimGain.gain.setValueAtTime(0,now);
+    shimGain.gain.linearRampToValueAtTime(0.008,now+4);
+    shimGain.gain.linearRampToValueAtTime(0,now+12);
+    shimmer.start(now);
+    shimmer.stop(now+12);
+    ambientNodes.push(shimmer);
+
+    creditsAmbientTimer=setTimeout(()=>{
+      if(currentScreen==='credits') playAmbientCreditsMusic();
+    },12000);
+  }
+}
+
+// ===== SENSORY PLAYGROUND (NEW) =====
+let sensoryCanvas,sensoryCtx;
+let sensoryChars=[];
+let sensoryAnimFrame=null;
+let sensoryInitialized=false;
+
+function stopSensory(){
+  if(sensoryAnimFrame){cancelAnimationFrame(sensoryAnimFrame);sensoryAnimFrame=null}
+}
+
+function initSensory(){
+  sensoryCanvas=document.getElementById('sensoryCanvas');
+  sensoryCtx=sensoryCanvas.getContext('2d');
+  sensoryCanvas.width=window.innerWidth;
+  sensoryCanvas.height=window.innerHeight-120;
+  sensoryChars=[];
+  sensoryMode='both';
+  updateSensoryModeButtons();
+  sensoryAnimFrame=requestAnimationFrame(animateSensory);
+
+  if(!sensoryInitialized){
+    sensoryInitialized=true;
+    sensoryCanvas.addEventListener('pointerdown',(e)=>{
+      e.preventDefault();
+      const rect=sensoryCanvas.getBoundingClientRect();
+      spawnSensoryChar(e.clientX-rect.left,e.clientY-rect.top);
+    });
+  }
+}
+
+function spawnSensoryChar(x,y){
+  let char;
+  if(sensoryMode==='both'){
+    char=Math.random()>0.5?Math.floor(Math.random()*10).toString():'ABCDEFGHIJKLMNOPQRSTUVWXYZ'[Math.floor(Math.random()*26)];
+  }else if(sensoryMode==='numbers'){
+    char=Math.floor(Math.random()*10).toString();
+  }else{
+    char='ABCDEFGHIJKLMNOPQRSTUVWXYZ'[Math.floor(Math.random()*26)];
+  }
+
+  // Pentatonic tones for pleasant sound
+  const pentatonic=[261.63,293.66,329.63,392.00,440.00,523.25,587.33,659.25];
+  const tone=pentatonic[Math.floor(Math.random()*pentatonic.length)];
+  playTone(tone);
+  speak(char);
+  bubbleSay(char);
+
+  // Random bright color
+  const colors=['#E91E63','#2196F3','#4CAF50','#9C27B0','#FF5722','#00BCD4','#FF9800','#8BC34A'];
+  const color=colors[Math.floor(Math.random()*colors.length)];
+
+  sensoryChars.push({
+    char,x,y,size:50,opacity:1,life:180,color,
+    vx:(Math.random()-0.5)*3,vy:-Math.random()*2-1
+  });
+}
+
+function updateSensoryModeButtons(){
+  document.querySelectorAll('.mode-btn').forEach(btn=>btn.classList.remove('active'));
+  document.querySelector(`.mode-btn[data-mode="${sensoryMode}"]`).classList.add('active');
+}
+
+function setSensoryMode(mode){sensoryMode=mode;updateSensoryModeButtons()}
+
+function animateSensory(){
+  if(currentScreen!=='sensory'){sensoryAnimFrame=null;return}
+
+  sensoryCtx.fillStyle='rgba(15,15,26,0.15)';
+  sensoryCtx.fillRect(0,0,sensoryCanvas.width,sensoryCanvas.height);
+
+  sensoryChars=sensoryChars.filter(c=>c.life>0);
+  sensoryChars.forEach(c=>{
+    c.x+=c.vx;
+    c.y+=c.vy;
+    c.size+=0.3;
+    c.opacity=c.life/180;
+    c.life--;
+
+    sensoryCtx.save();
+    sensoryCtx.globalAlpha=c.opacity;
+    sensoryCtx.fillStyle=c.color||'#e0e0e0';
+    sensoryCtx.font=`bold ${c.size}px Arial`;
+    sensoryCtx.textAlign='center';
+    sensoryCtx.textBaseline='middle';
+    sensoryCtx.shadowColor=c.color||'#e0e0e0';
+    sensoryCtx.shadowBlur=10*c.opacity;
+    sensoryCtx.fillText(c.char,c.x,c.y);
+    sensoryCtx.restore();
+  });
+
+  sensoryAnimFrame=requestAnimationFrame(animateSensory);
+}
+
+// ===== CALM MODE =====
+function initCalmMode(){
+  const starsDiv=document.getElementById('calmStars');
+  starsDiv.innerHTML='';
+  for(let i=0;i<30;i++){
+    const star=document.createElement('div');
+    star.className='calm-star';
+    star.style.left=Math.random()*100+'%';
+    star.style.top=Math.random()*100+'%';
+    star.style.width=(Math.random()*3+1)+'px';
+    star.style.height=star.style.width;
+    star.style.animationDelay=(Math.random()*3)+'s';
+    starsDiv.appendChild(star);
+  }
+
+  speak('Atme langsam und ruhig');
+  bubbleSay('Lass dich entspannen...');
+}
+
+function playCalmSound(type){
+  let freq=200,duration=2;
+  if(type==='wind')freq=180;
+  else if(type==='rain')freq=150;
+  else if(type==='ocean')freq=120;
+
+  const osc=audioCtx.createOscillator();
+  const gain=audioCtx.createGain();
+  osc.connect(gain);
+  gain.connect(audioCtx.destination);
+  osc.type='sine';
+  osc.frequency.setValueAtTime(freq,audioCtx.currentTime);
+  osc.frequency.linearRampToValueAtTime(freq-20,audioCtx.currentTime+duration);
+  gain.gain.setValueAtTime(0.08,audioCtx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.01,audioCtx.currentTime+duration);
+  osc.start(audioCtx.currentTime);
+  osc.stop(audioCtx.currentTime+duration);
+
+  speak(type);
+  playSound('click');
+}
+
+// ===== MOOD TRACKING / SCHNELLZUGRIFF =====
+
+// Alle verfügbaren Schnellzugriff-Symbole
+const allQuickSymbols=[
+  {text:'Hilfe',pid:12252},{text:'Wasser',pid:32464},{text:'Essen',pid:6456},{text:'Toilette',pid:5921},
+  {text:'Trinken',pid:6061},{text:'Schmerzen',pid:2367},{text:'Ja',pid:5584},{text:'Nein',pid:5526},
+  {text:'Mama',pid:2458},{text:'Papa',pid:31146},{text:'Kuscheln',pid:6023},{text:'Ruhe',pid:7076},
+  {text:'Schlafen',pid:6479},{text:'Müde',pid:35537},{text:'Wütend',pid:35539},{text:'Angst',pid:10261},
+  {text:'Krank',pid:3308},{text:'Mehr',pid:34312},{text:'Musik',pid:24791},{text:'Spielen',pid:23392},
+  {text:'Windel',pid:22017},{text:'Medizin',pid:8163},{text:'Glücklich',pid:35547},{text:'Traurig',pid:35545},
+  {text:'Durst',pid:7273},{text:'Fernsehen',pid:29123},{text:'Draußen',pid:5475},{text:'Baden',pid:6058},
+  {text:'Milch',pid:2445},{text:'Brot',pid:2494},{text:'Obst',pid:28339},{text:'Saft',pid:11461}
+];
+
+// Standard-Auswahl (PIDs)
+const defaultQuickPids=[12252,32464,6456,5921,6061,2367,5584,5526,2458,31146,6023,7076];
+
+function getQuickSymbolPids(){
+  try{return JSON.parse(localStorage.getItem('quick_symbol_pids'))||defaultQuickPids}catch(e){return defaultQuickPids}
+}
+function saveQuickSymbolPids(pids){
+  localStorage.setItem('quick_symbol_pids',JSON.stringify(pids));
+}
+
+function buildMoodPicker(){
+  const picker=document.getElementById('moodPicker');
+  const pids=getQuickSymbolPids();
+  picker.innerHTML='';
+  allQuickSymbols.filter(s=>pids.includes(s.pid)).forEach(s=>{
+    const btn=document.createElement('button');
+    btn.className='mood-pick';
+    btn.onclick=()=>quickSpeak(s.text,s.pid);
+    btn.innerHTML=`<img src="https://static.arasaac.org/pictograms/${s.pid}/${s.pid}_500.png"><span class="mood-label">${s.text}</span>`;
+    picker.appendChild(btn);
+  });
+}
+
+function buildQuickSymbolEditor(){
+  const editor=document.getElementById('quickSymbolEditor');
+  if(!editor)return;
+  const pids=getQuickSymbolPids();
+  editor.innerHTML='';
+  allQuickSymbols.forEach(s=>{
+    const active=pids.includes(s.pid);
+    const btn=document.createElement('div');
+    btn.style.cssText='display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px;border-radius:12px;cursor:pointer;border:3px solid;width:90px;min-height:90px;justify-content:center;transition:all 0.15s;touch-action:manipulation;'
+      +(active?'border-color:var(--green);background:rgba(76,175,80,0.2);':'border-color:var(--border);background:var(--card-bg2);opacity:0.5;');
+    btn.innerHTML=`<img src="https://static.arasaac.org/pictograms/${s.pid}/${s.pid}_500.png" style="width:50px;height:50px;object-fit:contain">
+      <span style="font-size:0.7em;font-weight:700;color:var(--text-primary);text-align:center">${s.text}</span>
+      <span style="font-size:0.65em;color:${active?'var(--green)':'var(--text-secondary)'}">${active?'✅ Aktiv':'Aus'}</span>`;
+    btn.onclick=()=>{
+      let current=getQuickSymbolPids();
+      if(current.includes(s.pid)){
+        current=current.filter(p=>p!==s.pid);
+      }else{
+        current.push(s.pid);
+      }
+      saveQuickSymbolPids(current);
+      buildQuickSymbolEditor();
+      buildMoodPicker();
+    };
+    editor.appendChild(btn);
+  });
+}
+
+function toggleMoodPicker(){
+  document.getElementById('moodPicker').classList.toggle('show');
+}
+
+function quickSpeak(text,pid){
+  speak(text);
+  playSound('click');
+  bennyReact('wave');
+  bubbleSay(text);
+  document.getElementById('moodPicker').classList.remove('show');
+}
+
+function setMood(mood){
+  const moodEmojis={'happy':'😊','sad':'😢','angry':'😠','tired':'😴','excited':'🤩','calm':'😌'};
+  const emoji=moodEmojis[mood];
+  document.getElementById('moodBtn').textContent=emoji;
+
+  let moodLog=JSON.parse(getState('mood_log','[]'));
+  const now=new Date().toLocaleTimeString('de-DE');
+  moodLog.push({time:now,mood,emoji});
+  if(moodLog.length>20)moodLog.shift();
+  setState('mood_log',JSON.stringify(moodLog));
+
+  document.getElementById('moodPicker').classList.remove('show');
+  bubbleSay(`Du fühlst dich ${mood}!`);
+  playSound('click');
+
+  if(mood==='sad'||mood==='angry'){
+    setTimeout(()=>{
+      bubbleSay('Möchtest du zum Ruhezeit-Modus gehen?');
+      speak('Möchtest du zum Ruhezeit-Modus gehen?');
+    },1000);
+  }
+}
+
+// ===== PARENT SECRET ACCESS (5x Tap) =====
+let parentTapCount=0;
+let parentTapTimer=null;
+function parentSecretTap(){
+  parentTapCount++;
+  if(parentTapTimer)clearTimeout(parentTapTimer);
+  parentTapTimer=setTimeout(()=>{parentTapCount=0},2000);
+  if(parentTapCount>=5){
+    parentTapCount=0;
+    clearTimeout(parentTapTimer);
+    openPin();
+  }
+}
+
+// ===== PARENT DASHBOARD =====
+function openPin(){
+  document.getElementById('pinOver').style.display='flex';
+  const pinPad=document.getElementById('pinPad');
+  pinPad.innerHTML='';
+  for(let i=1;i<=9;i++){
+    const btn=document.createElement('button');
+    btn.className='pin-n';
+    btn.textContent=i;
+    btn.onclick=()=>enterPin(i.toString());
+    pinPad.appendChild(btn);
+  }
+  const del=document.createElement('button');
+  del.className='pin-n pin-d';
+  del.textContent='←';
+  del.onclick=()=>enterPin('del');
+  pinPad.appendChild(del);
+
+  const zero=document.createElement('button');
+  zero.className='pin-n';
+  zero.textContent='0';
+  zero.onclick=()=>enterPin('0');
+  pinPad.appendChild(zero);
+
+  const x=document.createElement('button');
+  x.className='pin-n pin-x';
+  x.textContent='✕';
+  x.onclick=()=>closePin();
+  pinPad.appendChild(x);
+
+  updatePinDots();
+}
+
+let pinAttempt='';
+function enterPin(digit){
+  if(digit==='del'){
+    pinAttempt=pinAttempt.slice(0,-1);
+  }else{
+    pinAttempt+=digit;
+  }
+  updatePinDots();
+
+  if(pinAttempt.length===4){
+    if(pinAttempt==='1234'){
+      showDashboard();
+      pinAttempt='';
+    }else{
+      pinAttempt='';
+      updatePinDots();
+    }
+  }
+}
+
+function updatePinDots(){
+  const dots=document.getElementById('pinDots');
+  dots.innerHTML='';
+  for(let i=0;i<4;i++){
+    const dot=document.createElement('div');
+    dot.className='pin-dot'+(i<pinAttempt.length?' on':'');
+    dots.appendChild(dot);
+  }
+}
+
+function showDashboard(){
+  document.getElementById('pinOver').querySelector('.pin-box').style.display='none';
+  const dash=document.getElementById('dashContent');
+  dash.style.display='block';
+  // API Key Feld vorbelegen
+  const keyInput=document.getElementById('ytApiKeyInput');
+  if(keyInput)keyInput.value=getYTApiKey();
+  updateDashboard();
+  buildQuickSymbolEditor();
+}
+
+function updateDashboard(){
+  const usage=Math.floor(parseInt(getState('usage_time','0'))/60);
+  document.getElementById('totalTime').textContent=usage+' min';
+  const pct=Math.min(100,(usage/120)*100);
+  document.getElementById('timeFill').style.width=pct+'%';
+
+  const nStars=parseInt(getState('numbers_progress','0'));
+  const lStars=parseInt(getState('letters_progress','0'));
+  document.getElementById('numStars').textContent=(nStars/3*100).toFixed(0)+'%';
+  document.getElementById('letStars').textContent=(lStars/3*100).toFixed(0)+'%';
+  document.getElementById('numFill').style.width=(nStars/3*100)+'%';
+  document.getElementById('letFill').style.width=(lStars/3*100)+'%';
+
+  const moodLog=JSON.parse(getState('mood_log','[]'));
+  const moodDiv=document.getElementById('moodLog');
+  moodDiv.innerHTML='';
+  moodLog.slice(-5).reverse().forEach(m=>{
+    const entry=document.createElement('div');
+    entry.className='mentry';
+    entry.innerHTML=`<span class="mtime">${m.time}</span><span class="memoji">${m.emoji}</span><span class="mtxt">${m.mood}</span>`;
+    moodDiv.appendChild(entry);
+  });
+}
+
+function closePin(){
+  document.getElementById('pinOver').style.display='none';
+  document.getElementById('pinOver').querySelector('.pin-box').style.display='block';
+  document.getElementById('dashContent').style.display='none';
+  pinAttempt='';
+  updatePinDots();
+}
+
+function resetData(){
+  if(confirm('Alle Daten zurücksetzen?')){
+    localStorage.clear();
+    closePin();
+    location.reload();
+  }
+}
+
+// ===== INITIALIZATION =====
+window.addEventListener('load',()=>{
+  initAAC();
+  initMusic();
+  initYouTube();
+  buildMoodPicker();
+
+  setInterval(updateUsageTime,1000);
+});
+
+// Prevent zoom
+document.addEventListener('touchmove',e=>{if(e.scale!==1)e.preventDefault()},{passive:false});
+document.addEventListener('gesturestart',e=>e.preventDefault(),{passive:false});
+
+// ===== EDGE AI: KI-GEHÖR (Lokale Audio-Erkennung) =====
+// Modular und austauschbar. Keine Cloud-APIs — alles läuft on-device im Browser.
+// Verwendet TensorFlow.js Speech Commands Modell (18KHz, ~1s Fenster).
+// Trigger: Auffälliges Geräusch (Speech/Laut) > 75% Confidence → go('calm')
+(function(){
+  let aiListening=false;
+  let aiRecognizer=null;
+  let wakeLock=null;
+  let aiCooldown=false; // Verhindert Mehrfach-Trigger
+
+  // Labels die als "auffällig" gelten (Speech Commands v0.5 Standardlabels)
+  // Das Modell erkennt ~20 Wörter + "_background_noise_" + "_unknown_"
+  // Alles außer "_background_noise_" bei hoher Confidence = auffällig
+  const BACKGROUND_LABEL='_background_noise_';
+  const CONFIDENCE_THRESHOLD=0.75;
+  const COOLDOWN_MS=30000; // 30s Cooldown nach Trigger
+
+  function updateAIStatus(text){
+    const el=document.getElementById('aiListenStatus');
+    if(el) el.textContent=text;
+  }
+
+  function updateAIButton(active){
+    const btn=document.getElementById('aiListenBtn');
+    if(!btn) return;
+    if(active){
+      btn.textContent='🔴 KI-Gehör deaktivieren';
+      btn.style.background='var(--category-red)';
+      btn.style.borderColor='var(--red)';
+    }else{
+      btn.textContent='🎙️ KI-Gehör aktivieren';
+      btn.style.background='var(--category-purple)';
+      btn.style.borderColor='var(--purple)';
+    }
+  }
+
+  async function requestWakeLock(){
+    if(!('wakeLock' in navigator)) return;
+    try{
+      wakeLock=await navigator.wakeLock.request('screen');
+      wakeLock.addEventListener('release',()=>{
+        // Re-acquire wenn AI noch aktiv
+        if(aiListening) requestWakeLock();
+      });
+    }catch(e){/* Wake Lock nicht verfügbar — kein Fehler */}
+  }
+
+  function releaseWakeLock(){
+    if(wakeLock){try{wakeLock.release()}catch(e){} wakeLock=null}
+  }
+
+  async function startAIListener(){
+    updateAIStatus('Modell lädt...');
+    try{
+      // Speech Commands Modell laden (BROWSER_FFT = Mikrofon-basiert)
+      aiRecognizer=speechCommands.create('BROWSER_FFT');
+      await aiRecognizer.ensureModelLoaded();
+
+      const labels=aiRecognizer.wordLabels();
+      updateAIStatus('Aktiv — lauscht...');
+      updateAIButton(true);
+      aiListening=true;
+
+      // Wake Lock damit Tablet nicht einschläft
+      await requestWakeLock();
+
+      // Mikrofon-Überwachung starten
+      aiRecognizer.listen(result=>{
+        if(!aiListening||aiCooldown) return;
+
+        const scores=result.scores;
+        let maxIdx=0;
+        let maxScore=0;
+        for(let i=0;i<scores.length;i++){
+          if(scores[i]>maxScore){maxScore=scores[i];maxIdx=i}
+        }
+
+        const label=labels[maxIdx];
+
+        // Trigger: Alles außer Hintergrundrauschen mit >75% Confidence
+        if(label!==BACKGROUND_LABEL && maxScore>CONFIDENCE_THRESHOLD){
+          aiCooldown=true;
+          updateAIStatus('Erkannt: '+label+' ('+Math.round(maxScore*100)+'%) → Ruhezeit');
+          bubbleSay('Ich höre etwas... Lass uns zur Ruhe kommen. 🌙');
+          bennyReact('wave');
+
+          // Nur triggern wenn nicht schon im Calm-Modus
+          if(currentScreen!=='calm'){
+            go('calm');
+          }
+
+          // Cooldown: 30 Sekunden kein erneuter Trigger
+          setTimeout(()=>{
+            aiCooldown=false;
+            if(aiListening) updateAIStatus('Aktiv — lauscht...');
+          },COOLDOWN_MS);
+        }
+      },{
+        includeSpectrogram:false,
+        probabilityThreshold:0.5, // Vorfilter (feinere Prüfung oben)
+        invokeCallbackOnNoiseAndUnknown:true, // Auch _background_noise_ melden
+        overlapFactor:0.5 // 50% Überlappung der Audio-Fenster
+      });
+
+    }catch(e){
+      updateAIStatus('Fehler: '+e.message);
+      updateAIButton(false);
+      aiListening=false;
+      releaseWakeLock();
+    }
+  }
+
+  function stopAIListener(){
+    aiListening=false;
+    if(aiRecognizer){
+      try{aiRecognizer.stopListening()}catch(e){}
+      aiRecognizer=null;
+    }
+    releaseWakeLock();
+    aiCooldown=false;
+    updateAIStatus('Inaktiv');
+    updateAIButton(false);
+  }
+
+  // Globale Toggle-Funktion (vom Button aufgerufen)
+  window.toggleAIListener=function(){
+    if(aiListening){
+      stopAIListener();
+    }else{
+      startAIListener();
+    }
+  };
+})();
+</script>
+</body>
+</html>
