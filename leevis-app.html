@@ -205,7 +205,7 @@ body{
 /* ===== YOUTUBE SCREEN ===== */
 .yt-cats{display:flex;gap:8px;flex:1;flex-wrap:nowrap;padding:0;background:none;border:none;transition:none;overflow-x:auto;-webkit-overflow-scrolling:touch}
 .yt-cats.hidden-scroll{opacity:1;margin-top:0;pointer-events:auto}
-.yt-cat{background:rgba(255,255,255,0.15);border:2px solid rgba(255,255,255,0.25);border-radius:16px;width:140px;height:140px;font-size:4.8em;cursor:pointer;color:#fff;transition:all 0.15s;touch-action:manipulation;display:flex;align-items:center;justify-content:center;text-align:center;line-height:1;padding:4px;flex-shrink:0}
+.yt-cat{background:rgba(255,255,255,0.15);border:2px solid rgba(255,255,255,0.25);border-radius:12px;padding:6px 14px;font-size:1.1em;cursor:pointer;color:#fff;transition:all 0.15s;touch-action:manipulation;display:flex;align-items:center;justify-content:center;text-align:center;line-height:1;flex-shrink:0;white-space:nowrap;height:42px}
 .yt-cat:active{transform:scale(0.95)}
 .yt-cat.active{background:rgba(255,255,255,0.35);color:#fff;border-color:#fff;box-shadow:0 0 10px rgba(255,255,255,0.3)}
 .yt-grid{display:grid;grid-template-columns:1fr;gap:12px;padding:14px;flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;align-content:start;min-height:0;grid-auto-rows:min-content}
@@ -1882,7 +1882,7 @@ function initYouTube(){
   allCats.forEach((cat,i)=>{
     const btn=document.createElement('div');
     btn.className='yt-cat'+(i===0?' active':'');
-    btn.textContent=cat.split(' ')[0];
+    btn.textContent=cat;
     btn.onclick=()=>{
       document.querySelectorAll('.yt-cat').forEach(b=>b.classList.remove('active'));
       btn.classList.add('active');
