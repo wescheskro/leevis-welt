@@ -1452,31 +1452,55 @@ function showMusicContent(cat){
     // Klangplatten-Container
     const barsDiv=document.createElement('div');
     barsDiv.style.cssText='display:flex;gap:0;justify-content:space-evenly;align-items:center;padding:24px 5px;position:relative;z-index:1;width:100%';
+    const xyloBarElements=[];
     xyloNotes.forEach((freq,i)=>{
       const barWrap=document.createElement('div');
       barWrap.style.cssText='display:flex;flex-direction:column;align-items:center;gap:0';
       // Klangplatte
       const bar=document.createElement('div');
       const w=80-i*3;
-      bar.style.cssText=`width:${w}px;height:280px;background:linear-gradient(180deg,${xyloColors[i]},${xyloColors[i]}dd,${xyloColors[i]}aa);border-radius:6px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1.6em;font-weight:bold;color:rgba(255,255,255,0.8);transition:transform 0.08s;touch-action:manipulation;box-shadow:0 3px 6px rgba(0,0,0,0.3),inset 0 1px 2px rgba(255,255,255,0.3);border:1px solid rgba(0,0,0,0.15)`;
+      bar.style.cssText=`width:${w}px;height:280px;background:linear-gradient(180deg,${xyloColors[i]},${xyloColors[i]}dd,${xyloColors[i]}aa);border-radius:6px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1.6em;font-weight:bold;color:rgba(255,255,255,0.8);transition:transform 0.08s;touch-action:none;box-shadow:0 3px 6px rgba(0,0,0,0.3),inset 0 1px 2px rgba(255,255,255,0.3);border:1px solid rgba(0,0,0,0.15)`;
       bar.textContent=xyloLabels[i];
+      bar.dataset.freq=freq;
+      bar.dataset.idx=i;
+      xyloBarElements.push(bar);
       // Befestigungspunkte (Schrauben)
       const screwTop=document.createElement('div');
       screwTop.style.cssText='width:8px;height:8px;border-radius:50%;background:radial-gradient(circle,#ccc,#888);border:1px solid #666;margin-bottom:-4px;z-index:2';
       const screwBot=document.createElement('div');
       screwBot.style.cssText='width:8px;height:8px;border-radius:50%;background:radial-gradient(circle,#ccc,#888);border:1px solid #666;margin-top:-4px;z-index:2';
       const normalShadow='0 3px 6px rgba(0,0,0,0.3),inset 0 1px 2px rgba(255,255,255,0.3)';
-      bar.onclick=()=>{
+      function hitBar(){
         bar.style.transform='scale(0.93)';
         bar.style.boxShadow='0 1px 3px rgba(0,0,0,0.4),inset 0 1px 2px rgba(255,255,255,0.3)';
         setTimeout(()=>{bar.style.transform='scale(1)';bar.style.boxShadow=normalShadow},150);
         playTone(freq);
-      };
+      }
+      bar.addEventListener('pointerdown',(e)=>{e.preventDefault();hitBar()});
       barWrap.appendChild(screwTop);
       barWrap.appendChild(bar);
       barWrap.appendChild(screwBot);
       barsDiv.appendChild(barWrap);
     });
+    // Wisch-Erkennung: Beim Drüberziehen über Platten Töne spielen
+    let xyloLastHit=-1;
+    barsDiv.style.touchAction='none';
+    barsDiv.addEventListener('pointermove',(e)=>{
+      if(e.pressure===0)return; // Kein Finger/Maus gedrückt
+      const el=document.elementFromPoint(e.clientX,e.clientY);
+      if(el&&el.dataset&&el.dataset.freq!==undefined){
+        const idx=parseInt(el.dataset.idx);
+        if(idx!==xyloLastHit){
+          xyloLastHit=idx;
+          const freq=parseFloat(el.dataset.freq);
+          el.style.transform='scale(0.93)';
+          setTimeout(()=>{el.style.transform='scale(1)'},150);
+          playTone(freq);
+        }
+      }
+    });
+    barsDiv.addEventListener('pointerup',()=>{xyloLastHit=-1});
+    barsDiv.addEventListener('pointerleave',()=>{xyloLastHit=-1});
     frameInner.appendChild(barsDiv);
     // Seitliche Beine
     const legL=document.createElement('div');
@@ -1501,18 +1525,23 @@ function showMusicContent(cat){
       {note:'A',freq:880.00}
     ];
     const blackPattern=[1,1,0,1,1,1,0,1,1,0,1,1,1];
+    keysDiv.style.touchAction='none';
     // Weiße Tasten
     whiteNotes.forEach((n,i)=>{
       const key=document.createElement('div');
-      key.style.cssText='flex:1;background:linear-gradient(180deg,#fafafa,#e8e8e8,#d0d0d0);border:1px solid #999;border-radius:0 0 6px 6px;margin:0 1px;cursor:pointer;display:flex;align-items:flex-end;justify-content:center;padding-bottom:10px;font-size:1.1em;font-weight:bold;color:#888;transition:background 0.08s;touch-action:manipulation;box-shadow:0 4px 6px rgba(0,0,0,0.2),inset 0 -2px 3px rgba(0,0,0,0.1)';
+      key.style.cssText='flex:1;background:linear-gradient(180deg,#fafafa,#e8e8e8,#d0d0d0);border:1px solid #999;border-radius:0 0 6px 6px;margin:0 1px;cursor:pointer;display:flex;align-items:flex-end;justify-content:center;padding-bottom:10px;font-size:1.1em;font-weight:bold;color:#888;transition:background 0.08s;touch-action:none;box-shadow:0 4px 6px rgba(0,0,0,0.2),inset 0 -2px 3px rgba(0,0,0,0.1)';
       key.textContent=n.note;
+      key.dataset.freq=n.freq;
+      key.dataset.pkey='white';
+      key.dataset.pidx=i;
       const whiteNormal='linear-gradient(180deg,#fafafa,#e8e8e8,#d0d0d0)';
       const whitePressed='linear-gradient(180deg,#ddd,#ccc,#bbb)';
-      key.onclick=()=>{
+      key.addEventListener('pointerdown',(e)=>{
+        e.preventDefault();
         key.style.background=whitePressed;
         setTimeout(()=>{key.style.background=whiteNormal},150);
         playTone(n.freq);
-      };
+      });
       keysDiv.appendChild(key);
     });
     // Schwarze Tasten (absolut positioniert)
@@ -1522,16 +1551,42 @@ function showMusicContent(cat){
       const blackKey=document.createElement('div');
       const leftPct=((i+1)/totalWhite*100)-2.5;
       const blackFreq=whiteNotes[i].freq*1.05946;
-      blackKey.style.cssText=`position:absolute;left:${leftPct}%;width:5%;height:60%;background:linear-gradient(180deg,#2a2a2a,#1a1a1a,#111);border:1px solid #000;border-radius:0 0 4px 4px;cursor:pointer;z-index:2;transition:background 0.08s;touch-action:manipulation;box-shadow:0 4px 6px rgba(0,0,0,0.4),inset 0 -2px 3px rgba(0,0,0,0.3)`;
+      blackKey.style.cssText=`position:absolute;left:${leftPct}%;width:5%;height:60%;background:linear-gradient(180deg,#2a2a2a,#1a1a1a,#111);border:1px solid #000;border-radius:0 0 4px 4px;cursor:pointer;z-index:2;transition:background 0.08s;touch-action:none;box-shadow:0 4px 6px rgba(0,0,0,0.4),inset 0 -2px 3px rgba(0,0,0,0.3)`;
+      blackKey.dataset.freq=blackFreq;
+      blackKey.dataset.pkey='black';
       const blackNormal='linear-gradient(180deg,#2a2a2a,#1a1a1a,#111)';
       const blackPressed='linear-gradient(180deg,#444,#333,#222)';
-      blackKey.onclick=()=>{
+      blackKey.addEventListener('pointerdown',(e)=>{
+        e.preventDefault();
         blackKey.style.background=blackPressed;
         setTimeout(()=>{blackKey.style.background=blackNormal},150);
         playTone(blackFreq);
-      };
+      });
       keysDiv.appendChild(blackKey);
     });
+    // Wisch-Erkennung: Finger über Tasten ziehen spielt Töne
+    let pianoLastHit=-1;
+    keysDiv.addEventListener('pointermove',(e)=>{
+      if(e.pressure===0)return;
+      const el=document.elementFromPoint(e.clientX,e.clientY);
+      if(el&&el.dataset&&el.dataset.freq!==undefined){
+        const freq=parseFloat(el.dataset.freq);
+        const id=el.dataset.pkey+(el.dataset.pidx||el.dataset.freq);
+        if(id!==pianoLastHit){
+          pianoLastHit=id;
+          if(el.dataset.pkey==='white'){
+            el.style.background='linear-gradient(180deg,#ddd,#ccc,#bbb)';
+            setTimeout(()=>{el.style.background='linear-gradient(180deg,#fafafa,#e8e8e8,#d0d0d0)'},150);
+          }else{
+            el.style.background='linear-gradient(180deg,#444,#333,#222)';
+            setTimeout(()=>{el.style.background='linear-gradient(180deg,#2a2a2a,#1a1a1a,#111)'},150);
+          }
+          playTone(freq);
+        }
+      }
+    });
+    keysDiv.addEventListener('pointerup',()=>{pianoLastHit=-1});
+    keysDiv.addEventListener('pointerleave',()=>{pianoLastHit=-1});
     pianoBody.appendChild(keysDiv);
     pianoFrame.appendChild(pianoBody);
     content.appendChild(pianoFrame);
