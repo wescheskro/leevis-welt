@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="images/peppa/peppa-wave.png">
 <title>Leevis Welt</title>
 <!-- Edge AI: TensorFlow.js + Speech Commands (lokal, keine Cloud) -->
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js"></script>
@@ -616,6 +619,28 @@ body{
         <h3>😊 Schnellzugriff-Symbole</h3>
         <p style="font-size:0.8em;color:var(--text-secondary);margin-bottom:10px">Wähle welche Symbole im Smiley-Menü (unten links) angezeigt werden. Tippe zum An-/Abwählen.</p>
         <div id="quickSymbolEditor" style="display:flex;flex-wrap:wrap;gap:8px"></div>
+      </div>
+
+      <div class="dcard" id="installCard">
+        <h3>📲 App installieren</h3>
+        <p style="font-size:0.8em;color:var(--text-secondary);margin-bottom:10px">Installiere Leevis Welt als App auf dem Homescreen.</p>
+        <button class="close-dash-btn" id="installBtn" onclick="doInstall()" style="background:#1565C0;color:#fff;border-color:#1565C0;font-size:1em;padding:10px 20px">📲 Jetzt installieren</button>
+        <div id="installGuide" style="display:none;margin-top:12px;text-align:left;font-size:0.85em;color:var(--text-primary);line-height:1.6">
+          <div style="background:var(--dark-bg2);border-radius:12px;padding:14px;border:1px solid var(--border)">
+            <p style="font-weight:700;margin-bottom:8px;font-size:1.1em">iPhone / iPad Anleitung:</p>
+            <p>1. Tippe unten auf <span style="display:inline-block;background:#007AFF;color:#fff;border-radius:4px;padding:1px 6px;font-size:0.95em">↑</span> (Teilen-Button)</p>
+            <p>2. Scrolle runter und tippe auf <b>"Zum Home-Bildschirm"</b></p>
+            <p>3. Tippe oben rechts auf <b>"Hinzufügen"</b></p>
+            <p style="margin-top:8px;color:var(--text-secondary);font-size:0.9em">Danach findest du Leevis Welt als App-Icon auf deinem Homescreen!</p>
+          </div>
+        </div>
+        <p id="installDone" style="display:none;color:#4CAF50;font-weight:700;margin-top:8px">✅ App wurde installiert!</p>
+      </div>
+
+      <div class="dcard">
+        <h3>🚪 App beenden</h3>
+        <p style="font-size:0.8em;color:var(--text-secondary);margin-bottom:8px">Schließt die App. Nur hier möglich.</p>
+        <button class="close-dash-btn" onclick="exitApp()" style="background:#C62828;color:#fff;border-color:#C62828;font-size:1em;padding:10px 20px">🚪 App beenden</button>
       </div>
 
       <button class="reset-btn" onclick="resetData()">Daten zurücksetzen</button>
@@ -2887,12 +2912,85 @@ function resetData(){
   }
 }
 
+// ===== PWA INSTALL =====
+let deferredInstallPrompt=null;
+window.addEventListener('beforeinstallprompt',e=>{
+  e.preventDefault();
+  deferredInstallPrompt=e;
+});
+window.addEventListener('appinstalled',()=>{
+  deferredInstallPrompt=null;
+  const done=document.getElementById('installDone');
+  if(done)done.style.display='block';
+  const btn=document.getElementById('installBtn');
+  if(btn)btn.style.display='none';
+});
+
+function doInstall(){
+  // Already installed as standalone?
+  if(window.matchMedia('(display-mode:standalone)').matches||window.navigator.standalone){
+    const done=document.getElementById('installDone');
+    if(done){done.style.display='block';done.textContent='✅ App ist bereits installiert!';}
+    document.getElementById('installBtn').style.display='none';
+    return;
+  }
+  // Android/Chrome: use prompt
+  if(deferredInstallPrompt){
+    deferredInstallPrompt.prompt();
+    deferredInstallPrompt.userChoice.then(r=>{
+      if(r.outcome==='accepted'){
+        document.getElementById('installDone').style.display='block';
+        document.getElementById('installBtn').style.display='none';
+      }
+      deferredInstallPrompt=null;
+    });
+    return;
+  }
+  // iOS: show guide
+  const ua=navigator.userAgent||'';
+  if(/iPad|iPhone|iPod/.test(ua)||(/Macintosh/.test(ua)&&'ontouchend' in document)){
+    document.getElementById('installGuide').style.display='block';
+    document.getElementById('installBtn').style.display='none';
+    return;
+  }
+  // Fallback: show generic guide
+  document.getElementById('installGuide').style.display='block';
+  document.getElementById('installGuide').querySelector('p[style*="font-weight"]').textContent='Anleitung:';
+  document.getElementById('installGuide').querySelector('div').innerHTML=`
+    <p style="font-weight:700;margin-bottom:8px;font-size:1.1em">Anleitung:</p>
+    <p>1. Öffne das Browser-Menü (⋮ oben rechts)</p>
+    <p>2. Tippe auf <b>"App installieren"</b> oder <b>"Zum Startbildschirm hinzufügen"</b></p>
+    <p style="margin-top:8px;color:var(--text-secondary);font-size:0.9em">Danach findest du Leevis Welt als App-Icon auf deinem Homescreen!</p>
+  `;
+  document.getElementById('installBtn').style.display='none';
+}
+
+// Service Worker
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('sw.js').catch(()=>{});
+}
+
+// ===== PWA: BACK BUTTON / EXIT =====
+function exitApp(){
+  if(confirm('App wirklich beenden?')){
+    window.close();
+    // Fallback falls window.close nicht klappt (z.B. iOS)
+    setTimeout(()=>{location.href='about:blank'},200);
+  }
+}
+
 // ===== INITIALIZATION =====
 window.addEventListener('load',()=>{
   initAAC();
   initMusic();
   initYouTube();
   buildMoodPicker();
+
+  // Check if already installed - update install card
+  if(window.matchMedia('(display-mode:standalone)').matches||window.navigator.standalone){
+    const btn=document.getElementById('installBtn');
+    if(btn){btn.textContent='✅ Bereits installiert';btn.style.background='#4CAF50';btn.onclick=null;}
+  }
 
   setInterval(updateUsageTime,1000);
 });

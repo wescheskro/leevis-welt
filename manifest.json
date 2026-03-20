@@ -1,0 +1,18 @@
+{
+  "name": "Leevis Welt",
+  "short_name": "Leevis Welt",
+  "description": "AAC App für Leevi",
+  "start_url": "./leevis-app.html",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0d1b2a",
+  "theme_color": "#1565C0",
+  "icons": [
+    {
+      "src": "images/peppa/peppa-wave.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
