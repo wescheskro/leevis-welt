@@ -203,10 +203,10 @@ body{
 .music-list{display:flex;flex-direction:column;gap:clamp(8px,1.5vw,12px);padding:clamp(8px,2vw,16px);flex:1;overflow-y:auto}
 .music-box{background:var(--card-bg);border-radius:clamp(10px,2.5vw,18px);padding:clamp(10px,2vw,16px);box-shadow:0 3px 12px rgba(0,0,0,0.3);border:1px solid var(--border)}
 .music-box h3{font-size:clamp(0.8em,2vw,1em);color:var(--text-primary);margin-bottom:clamp(6px,1.2vw,10px)}
-.snd-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(clamp(50px,10vw,80px),1fr));gap:clamp(4px,1vw,8px)}
-.snd{background:var(--card-bg2);border:2px solid var(--border);border-radius:clamp(8px,2vw,14px);padding:clamp(6px,1.2vw,12px) clamp(3px,0.8vw,6px);font-size:clamp(1.2em,3.5vw,2em);cursor:pointer;transition:all 0.15s;display:flex;flex-direction:column;align-items:center;gap:2px;color:var(--text-primary);aspect-ratio:1/1;justify-content:center;touch-action:manipulation}
+.snd-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(clamp(100px,20vw,160px),1fr));gap:clamp(8px,1.5vw,14px)}
+.snd{background:var(--card-bg2);border:2px solid var(--border);border-radius:clamp(12px,2.5vw,18px);padding:clamp(10px,2vw,16px) clamp(6px,1.2vw,10px);font-size:clamp(2em,5vw,3em);cursor:pointer;transition:all 0.15s;display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--text-primary);aspect-ratio:1/1;justify-content:center;touch-action:manipulation}
+.snd .sl{font-size:clamp(0.3em,0.8vw,0.4em);font-weight:700}
 .snd:active{transform:scale(0.9);background:var(--category-blue);border-color:var(--blue)}
-.snd .sl{font-size:0.35em;font-weight:600;color:var(--text-secondary)}
 .piano{display:flex;gap:clamp(1px,0.4vw,3px);justify-content:center;padding:clamp(4px,1vw,8px);overflow-x:auto;flex-wrap:wrap}
 .pkey{width:clamp(28px,6vw,44px);height:clamp(70px,16vh,120px);background:#e0e0e0;border:2px solid #999;border-radius:0 0 clamp(6px,1.2vw,10px) clamp(6px,1.2vw,10px);cursor:pointer;display:flex;align-items:flex-end;justify-content:center;padding-bottom:clamp(4px,1vw,8px);font-weight:700;color:#666;font-size:clamp(0.6em,1.5vw,0.85em);transition:all 0.1s;touch-action:manipulation}
 .pkey:active{background:#c0c0c0;transform:translateY(2px)}
@@ -1586,16 +1586,23 @@ function animalSpeak(name,sound){
   bubbleSay(name+' – '+sound);
   stopCurrentAudio();
   const soundFile=name.toLowerCase().replace(/ä/g,'ae').replace(/ö/g,'oe').replace(/ü/g,'ue').replace(/ß/g,'ss');
-  // 1. Erst echtes Tiergeräusch aus audio/animals/
   const animalSound=new Audio('audio/animals/'+soundFile+'.mp3');
   animalSound.volume=1;
   currentSpeechAudio=animalSound;
-  animalSound.onended=function(){
-    // 2. Danach den Namen sprechen (nutzt High-Quality Audio First Logik)
+  // Max 1.5 Sekunden, dann Namen sprechen
+  const maxDur=1.5;
+  let cutTimer=null;
+  function afterSound(){
+    if(cutTimer)clearTimeout(cutTimer);
     speak(name);
-  };
-  animalSound.play().catch(()=>{
-    // Fallback: Nur den Namen sprechen
+  }
+  animalSound.onended=afterSound;
+  animalSound.play().then(()=>{
+    cutTimer=setTimeout(()=>{
+      animalSound.pause();
+      afterSound();
+    },maxDur*1000);
+  }).catch(()=>{
     speak(name);
   });
 }
