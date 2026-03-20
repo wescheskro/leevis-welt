@@ -1355,7 +1355,17 @@ const musicData={
     {name:'Huhn',sound:'Gack gack!',pid:2403},{name:'Bär',sound:'Grrrr!',pid:2488},
     {name:'Affe',sound:'Uuh uuh!',pid:2477},{name:'Elefant',sound:'Törööö!',pid:2372},
     {name:'Eule',sound:'Schuhu!',pid:2671},{name:'Schlange',sound:'Zzzisch!',pid:2568},
-    {name:'Hase',sound:'Schnüffel!',pid:2351},{name:'Pinguin',sound:'Tröt!',pid:3243}
+    {name:'Hase',sound:'Schnüffel!',pid:2351},{name:'Pinguin',sound:'Tröt!',pid:3243},
+    {name:'Katze',sound:'Miau!',pid:2280},{name:'Löwe',sound:'Roaaar!',pid:2393},
+    {name:'Wolf',sound:'Auuuuu!',pid:2594},{name:'Ziege',sound:'Meck meck!',pid:2556},
+    {name:'Papagei',sound:'Kraaah!',pid:2476},{name:'Delfin',sound:'Klick klick!',pid:11175},
+    {name:'Maus',sound:'Pieps!',pid:2448},{name:'Tiger',sound:'Grrrrr!',pid:7196},
+    {name:'Truthahn',sound:'Gluck gluck!',pid:5765},{name:'Krähe',sound:'Krah krah!',pid:28471},
+    {name:'Möwe',sound:'Kriiih!',pid:5736},{name:'Grille',sound:'Zirp zirp!',pid:7155},
+    {name:'Biene',sound:'Summ summ!',pid:7163},{name:'Taube',sound:'Gurr gurr!',pid:5763},
+    {name:'Gans',sound:'Gak gak!',pid:28464},{name:'Esel',sound:'I-aah!',pid:2371},
+    {name:'Nilpferd',sound:'Grunz!',pid:5747},{name:'Gorilla',sound:'Uah uah!',pid:2404},
+    {name:'Adler',sound:'Kriiih!',pid:2348},{name:'Wal',sound:'Wuuuuh!',pid:11192}
   ]},
   'Xylophon':{icon:'🎵'},
   'Klavier':{icon:'🎹'},
@@ -1589,8 +1599,8 @@ function animalSpeak(name,sound){
   const animalSound=new Audio('audio/animals/'+soundFile+'.mp3');
   animalSound.volume=1;
   currentSpeechAudio=animalSound;
-  // Max 1.5 Sekunden, dann Namen sprechen
-  const maxDur=1.5;
+  // Max 3 Sekunden, dann Namen sprechen
+  const maxDur=3;
   let cutTimer=null;
   function afterSound(){
     if(cutTimer)clearTimeout(cutTimer);
