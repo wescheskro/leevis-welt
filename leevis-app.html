@@ -74,7 +74,8 @@ body{
 /* ===== PEPPA FLOATING BUDDY =====
  * MOTOR PLANNING: Peppa is FIXED at top-right. NOT draggable.
  * This position must NEVER change across any screen or state. */
-.buddy-float{position:fixed;top:8px;right:8px;z-index:80}
+.buddy-float{position:fixed;top:8px;right:8px;z-index:80;opacity:0;pointer-events:none;transition:opacity 0.4s ease-in-out}
+.buddy-float.visible{opacity:1;pointer-events:auto}
 .buddy-float .peppa-body{width:clamp(80px,18vw,168px);height:clamp(80px,18vw,168px);display:flex;align-items:center;justify-content:center;animation:peppaIdle 3s infinite ease-in-out;filter:drop-shadow(0 4px 12px rgba(0,0,0,0.4))}
 .buddy-float .peppa-body img{width:100%;height:100%;object-fit:contain}
 .buddy-float .peppa-body:active{transform:scale(1.15)}
@@ -381,8 +382,8 @@ body{
  * This enables motor memory (motorische Planung) for autistic users.
  * DO NOT reorder, hide conditionally, or change positions based on usage frequency.
  */
-.motor-bar{position:fixed;bottom:0;left:0;right:0;display:flex;align-items:center;justify-content:space-between;padding:clamp(6px,1.5vw,16px) clamp(8px,2vw,16px);height:auto;background:none;border:none;z-index:60;padding-bottom:max(clamp(6px,1.5vw,16px),env(safe-area-inset-bottom));pointer-events:none}
-.motor-btn{width:clamp(50px,12vw,90px);height:clamp(50px,12vw,90px);border-radius:50%;border:2px solid var(--border);background:var(--card-bg);font-size:clamp(1em,2.5vw,1.8em);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform 0.15s;touch-action:manipulation;flex-shrink:0;color:var(--text-primary);pointer-events:auto}
+.motor-bar{position:fixed;bottom:0;left:0;right:0;display:flex;align-items:center;justify-content:space-between;padding:clamp(6px,1.5vw,16px) clamp(8px,2vw,16px);height:auto;background:var(--dark-bg);border-top:2px solid var(--border);z-index:60;padding-bottom:max(clamp(6px,1.5vw,16px),env(safe-area-inset-bottom));pointer-events:auto;box-shadow:0 -4px 16px rgba(0,0,0,0.4)}
+.motor-btn{width:clamp(50px,12vw,90px);height:clamp(50px,12vw,90px);border-radius:50%;border:2px solid var(--border);background:var(--card-bg);font-size:clamp(1em,2.5vw,1.8em);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform 0.15s;touch-action:manipulation;flex-shrink:0;color:var(--text-primary)}
 .motor-btn:active{transform:scale(0.9)}
 
 /* Motor-bar bottom spacing for all scrollable content areas */
@@ -739,9 +740,9 @@ function go(screen){
   // Peppa zeigt passende Bilder je nach Screen
   const peppaScreenMap={home:'happy',aac:'happy',learn:'think',youtube:'happy',music:'music',credits:'happy',sensory:'play',calm:'sleep'};
   setPeppa(peppaScreenMap[screen]||'happy');
-  // Auf Home-Screen: Floating Buddy verstecken (große Peppa in Mitte reicht)
+  // Peppa ist jetzt standardmäßig versteckt, erscheint nur kurz bei bubbleSay()
   const buddy=document.getElementById('buddy');
-  if(screen==='home'){buddy.style.display='none'}else{buddy.style.display=''}
+  if(screen==='home'){buddy.style.display='none'}else{buddy.style.display='';buddy.classList.remove('visible')}
 }
 
 // ===== TEXT-TO-SPEECH (High-Quality Audio First) =====
@@ -869,21 +870,36 @@ function setPeppa(emotion){
   if(img&&peppaImages[emotion])img.src=peppaImages[emotion];
 }
 
+let buddyHideTimer=null;
 function bubbleSay(text){
+  const buddy=document.getElementById('buddy');
   const bubble=document.getElementById('bubble');
   bubble.textContent=text;
   bubble.classList.remove('hidden');
-  setTimeout(()=>bubble.classList.add('hidden'),3000);
+  // Peppa einblenden
+  buddy.classList.add('visible');
+  clearTimeout(buddyHideTimer);
+  // Nach 4 Sekunden wieder ausblenden
+  buddyHideTimer=setTimeout(()=>{
+    bubble.classList.add('hidden');
+    buddy.classList.remove('visible');
+  },4000);
 }
 
 function bennyReact(emotion){
   const buddy=document.getElementById('buddy');
-  // Only do CSS animation bounce - don't override the peppa image!
+  // Peppa kurz einblenden mit Animation
   buddy.classList.add(emotion);
+  buddy.classList.add('visible');
   clearTimeout(peppaResetTimer);
+  clearTimeout(buddyHideTimer);
   peppaResetTimer=setTimeout(()=>{
     buddy.classList.remove(emotion);
   },2000);
+  // Nach 3 Sekunden wieder ausblenden
+  buddyHideTimer=setTimeout(()=>{
+    buddy.classList.remove('visible');
+  },3000);
 }
 
 // MOTOR PLANNING: Peppa is fixed at top-right. Dragging removed.
