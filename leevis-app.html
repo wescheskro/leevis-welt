@@ -2219,12 +2219,16 @@ function playYTVideo(v){
 // --- YouTube direkt öffnen (echte App auf Tablet) ---
 // ===== YOUTUBE APP LAUNCHER =====
 function launchYouTube(){
-  // Android Intent: öffnet die echte YouTube-App
+  // Wenn in nativer Android-App: nutze die Bridge
+  if(window.AndroidBridge&&window.AndroidBridge.launchYouTube){
+    window.AndroidBridge.launchYouTube();
+    return;
+  }
+  // Fallback für Browser: Intent-URL oder neuer Tab
   const intentUrl='intent://www.youtube.com/#Intent;package=com.google.android.youtube;scheme=https;end';
   const a=document.createElement('a');
   a.href=intentUrl;
   a.click();
-  // Fallback: wenn Intent nicht funktioniert (z.B. iOS oder Desktop), öffne im neuen Tab
   setTimeout(()=>{window.open('https://www.youtube.com/','_blank');},500);
 }
 
