@@ -18,13 +18,13 @@
  * as perfected in systems like Proloquo2Go.
  *
  * RULES (NEVER VIOLATE):
- * 1. Fixed spatial anchors: Back=top-left, Benny=top-right,
+ * 1. Fixed spatial anchors: Back=top-left, Peppa=top-right,
  *    Mood=bottom-left, Credits=bottom-right, Parent=bottom-center
  * 2. Home grid order is IMMUTABLE - buttons never change position
  * 3. AAC pictogram positions within categories are STABLE
  * 4. Game answer options are sorted deterministically (never random)
  * 5. The motor-bar is visible on EVERY screen at the SAME position
- * 6. Benny is NOT draggable - fixed position only
+ * 6. Peppa is NOT draggable - fixed position only
  * 7. NO usage-based reordering of any element, anywhere, ever
  * 8. All touch targets are minimum 60x60px
  *
@@ -68,17 +68,18 @@ body{
 .screen{display:none;height:100vh;width:100vw;position:absolute;top:0;left:0;flex-direction:column;overflow:hidden;background:var(--dark-bg);opacity:0;transition:opacity 0.3s ease;z-index:1}
 .screen.active{display:flex;opacity:1}
 
-/* ===== BENNY FLOATING BUDDY =====
- * MOTOR PLANNING: Benny is FIXED at top-right. NOT draggable.
+/* ===== PEPPA FLOATING BUDDY =====
+ * MOTOR PLANNING: Peppa is FIXED at top-right. NOT draggable.
  * This position must NEVER change across any screen or state. */
 .buddy-float{position:fixed;top:8px;right:8px;z-index:80}
-.buddy-float .benny-body{width:80px;height:80px;font-size:4em;line-height:80px;text-align:center;background:rgba(224,224,224,0.95);border-radius:50%;box-shadow:0 6px 20px rgba(0,0,0,0.4);animation:bennyIdle 3s infinite ease-in-out;border:3px solid var(--purple)}
-.buddy-float .benny-body:active{transform:scale(1.15)}
-@keyframes bennyIdle{0%,100%{transform:translateY(0) rotate(0deg)}25%{transform:translateY(-6px) rotate(-3deg)}50%{transform:translateY(0) rotate(0deg)}75%{transform:translateY(-4px) rotate(3deg)}}
-@keyframes bennyWave{0%{transform:rotate(0deg)}15%{transform:rotate(15deg)}30%{transform:rotate(-10deg)}45%{transform:rotate(12deg)}60%{transform:rotate(-5deg)}75%{transform:rotate(8deg)}100%{transform:rotate(0deg)}}
-@keyframes bennyHappy{0%{transform:scale(1) translateY(0)}25%{transform:scale(1.2) translateY(-15px)}50%{transform:scale(1) translateY(0)}75%{transform:scale(1.15) translateY(-10px)}100%{transform:scale(1) translateY(0)}}
-.buddy-float.wave .benny-body{animation:bennyWave 0.8s ease-in-out}
-.buddy-float.happy .benny-body{animation:bennyHappy 0.8s ease-in-out}
+.buddy-float .peppa-body{width:90px;height:90px;display:flex;align-items:center;justify-content:center;animation:peppaIdle 3s infinite ease-in-out;filter:drop-shadow(0 4px 12px rgba(0,0,0,0.4))}
+.buddy-float .peppa-body img{width:100%;height:100%;object-fit:contain}
+.buddy-float .peppa-body:active{transform:scale(1.15)}
+@keyframes peppaIdle{0%,100%{transform:translateY(0) rotate(0deg)}25%{transform:translateY(-6px) rotate(-3deg)}50%{transform:translateY(0) rotate(0deg)}75%{transform:translateY(-4px) rotate(3deg)}}
+@keyframes peppaWave{0%{transform:rotate(0deg)}15%{transform:rotate(15deg)}30%{transform:rotate(-10deg)}45%{transform:rotate(12deg)}60%{transform:rotate(-5deg)}75%{transform:rotate(8deg)}100%{transform:rotate(0deg)}}
+@keyframes peppaHappy{0%{transform:scale(1) translateY(0)}25%{transform:scale(1.2) translateY(-15px)}50%{transform:scale(1) translateY(0)}75%{transform:scale(1.15) translateY(-10px)}100%{transform:scale(1) translateY(0)}}
+.buddy-float.wave .peppa-body{animation:peppaWave 0.8s ease-in-out}
+.buddy-float.happy .peppa-body{animation:peppaHappy 0.8s ease-in-out}
 .buddy-bubble{position:absolute;top:90px;right:0;background:rgba(30,30,50,0.98);border-radius:4px 18px 18px 18px;padding:12px 14px;font-size:0.9em;color:var(--text-primary);line-height:1.4;width:240px;box-shadow:0 4px 15px rgba(0,0,0,0.6);animation:bubbleIn 0.3s ease-out;pointer-events:none;border:1px solid var(--border)}
 .buddy-bubble:after{content:'';position:absolute;top:-8px;right:30px;width:0;height:0;border-left:10px solid transparent;border-right:10px solid transparent;border-bottom:10px solid rgba(30,30,50,0.98)}
 .buddy-bubble.hidden{display:none}
@@ -87,7 +88,8 @@ body{
 /* ===== HOME ===== */
 #home{background:linear-gradient(135deg,var(--dark-bg2) 0%,var(--dark-bg3) 100%);justify-content:center;align-items:center;padding:20px;padding-bottom:76px}
 .home-title{color:var(--text-primary);font-size:3.2em;font-weight:900;text-shadow:2px 2px 4px rgba(0,0,0,0.5)}
-.home-buddy{font-size:5em;margin:10px 0;animation:buddyBounce 2s infinite}
+.home-buddy{width:120px;height:120px;margin:10px 0;animation:buddyBounce 2s infinite}
+.home-buddy img{width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 4px 12px rgba(0,0,0,0.3))}
 @keyframes buddyBounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-20px)}}
 .home-subtitle{color:var(--text-secondary);font-size:1.1em;margin-bottom:30px;text-align:center}
 .home-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;width:100%;max-width:600px;padding:0 10px}
@@ -390,7 +392,7 @@ body{
 <div class="screen active" id="home">
   <div id="parentSecretBtn" onclick="parentSecretTap()" style="position:absolute;top:12px;left:12px;width:50px;height:50px;border-radius:50%;cursor:pointer;z-index:5;opacity:0.3"></div>
   <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;padding-bottom:76px">
-    <div class="home-buddy">🐻</div>
+    <div class="home-buddy"><img src="images/peppa/peppa-wave.png" alt="Peppa"></div>
     <div class="home-title">Leevis Welt</div>
     <div class="home-subtitle">Hallo Leevi! Was machen wir?</div>
     <!-- MOTOR PLANNING: Button order is FIXED. Do NOT reorder based on usage.
@@ -614,9 +616,9 @@ body{
   </div>
 </div>
 
-<!-- BENNY FLOATING BUDDY -->
+<!-- PEPPA FLOATING BUDDY -->
 <div class="buddy-float" id="buddy">
-  <div class="benny-body">🐻</div>
+  <div class="peppa-body" id="peppaBody"><img src="images/peppa/peppa-happy.png" alt="Peppa" id="peppaImg"></div>
   <div class="buddy-bubble hidden" id="bubble"></div>
 </div>
 
@@ -674,6 +676,9 @@ function go(screen){
   if(screen==='credits')initCredits();
   if(screen==='sensory')initSensory();
   if(screen==='learn'){initLearnCats();endGame()}
+  // Peppa zeigt passende Bilder je nach Screen
+  const peppaScreenMap={home:'happy',aac:'happy',learn:'think',youtube:'happy',music:'music',credits:'happy',sensory:'play',calm:'sleep'};
+  setPeppa(peppaScreenMap[screen]||'happy');
 }
 
 // ===== TEXT-TO-SPEECH (High-Quality Audio First) =====
@@ -764,7 +769,43 @@ function speakSequence(texts,idx){
   });
 }
 
-// ===== BENNY BUDDY SYSTEM =====
+// ===== PEPPA BUDDY SYSTEM =====
+const peppaImages={
+  happy:'images/peppa/peppa-happy.png',
+  wave:'images/peppa/peppa-wave.png',
+  celebrate:'images/peppa/peppa-celebrate.png',
+  think:'images/peppa/peppa-think.png',
+  encourage:'images/peppa/peppa-encourage.png',
+  sleep:'images/peppa/peppa-sleep.png',
+  laugh:'images/peppa/peppa-laugh.png',
+  love:'images/peppa/peppa-love.png',
+  eat:'images/peppa/peppa-eat.png',
+  drink:'images/peppa/peppa-drink.png',
+  dance:'images/peppa/peppa-dance.png',
+  sing:'images/peppa/peppa-sing.png',
+  read:'images/peppa/peppa-read.png',
+  paint:'images/peppa/peppa-paint.png',
+  clap:'images/peppa/peppa-clap.png',
+  surprised:'images/peppa/peppa-surprised.png',
+  cry:'images/peppa/peppa-cry.png',
+  angry:'images/peppa/peppa-angry.png',
+  scared:'images/peppa/peppa-scared.png',
+  star:'images/peppa/peppa-star.png',
+  music:'images/peppa/peppa-music.png',
+  bath:'images/peppa/peppa-bath.png',
+  goodnight:'images/peppa/peppa-goodnight.png',
+  play:'images/peppa/peppa-play.png',
+  run:'images/peppa/peppa-run.png'
+};
+// Preload all peppa images
+Object.values(peppaImages).forEach(src=>{const i=new Image();i.src=src});
+
+let peppaResetTimer=null;
+function setPeppa(emotion){
+  const img=document.getElementById('peppaImg');
+  if(img&&peppaImages[emotion])img.src=peppaImages[emotion];
+}
+
 function bubbleSay(text){
   const bubble=document.getElementById('bubble');
   bubble.textContent=text;
@@ -774,11 +815,19 @@ function bubbleSay(text){
 
 function bennyReact(emotion){
   const buddy=document.getElementById('buddy');
+  // Map emotions to peppa images
+  if(emotion==='happy'){setPeppa('celebrate');}
+  else if(emotion==='wave'){setPeppa('wave');}
+  else{setPeppa('happy');}
   buddy.classList.add(emotion);
-  setTimeout(()=>buddy.classList.remove(emotion),800);
+  clearTimeout(peppaResetTimer);
+  peppaResetTimer=setTimeout(()=>{
+    buddy.classList.remove(emotion);
+    setPeppa('happy');
+  },2000);
 }
 
-// MOTOR PLANNING: Benny is fixed at top-right. Dragging removed.
+// MOTOR PLANNING: Peppa is fixed at top-right. Dragging removed.
 
 // ===== AAC PICTOGRAMS =====
 const aacData={
@@ -926,7 +975,7 @@ function clearWords(){words=[];updateSentence();playSound('click');bubbleSay('Ge
 const gameConfigs={
   numbers:{title:'Zahlen',icon:'🔢',questions:8,promptAudio:'frage-zahl'},
   letters:{title:'Buchstaben',icon:'🔤',letters:'ABCDEFGHIJKLMNOPQRSTUVWXYZ',questions:8,promptAudio:'frage-buchstabe'},
-  counting:{title:'Zählen',icon:'🐻',range:[1,8],questions:8,promptAudio:'frage-zaehlen'},
+  counting:{title:'Zählen',icon:'🔢',range:[1,8],questions:8,promptAudio:'frage-zaehlen'},
   colors:{title:'Farben',icon:'🎨',questions:8,promptAudio:'frage-farbe',
     all:[
       {name:'Rot',hex:'#C62828',audio:'rot'},{name:'Blau',hex:'#1565C0',audio:'blau'},
@@ -942,7 +991,7 @@ const gameConfigs={
     ]}
 };
 
-const countEmojis=['🐻','🐱','🐶','🐸','🐧','🦊','🐰','🐷','🐮','🦁','🐵','🐔'];
+const countEmojis=['🐷','🐱','🐶','🐸','🐧','🦊','🐰','🐮','🦁','🐵','🐔','🦋'];
 const feedbackCorrect=['richtig','super','toll-gemacht'];
 const feedbackWrong=['nein-falsch','nein-probier-nochmal'];
 
@@ -1097,12 +1146,14 @@ function checkAnswer(isCorrect,btn){
       const fb=feedbackCorrect[Math.floor(Math.random()*feedbackCorrect.length)];
       playGameAudio(fb);
     },900);
+    setPeppa(['celebrate','clap','star','laugh'][Math.floor(Math.random()*4)]);
     bennyReact('happy');
     playSound('correct');
     currentGame.q++;
     setTimeout(nextQuestion,2200);
   }else{
     setTimeout(()=>{const fw=feedbackWrong[Math.floor(Math.random()*feedbackWrong.length)];playGameAudio(fw)},900);
+    setPeppa('encourage');
     bennyReact('wave');
     playSound('error');
   }
@@ -1133,6 +1184,7 @@ function endGameRound(){
     </div>`;
 
   playGameAudio('du-bist-toll');
+  setPeppa('star');
   bennyReact('happy');
 }
 
@@ -1525,7 +1577,7 @@ const ytCategories={
   '🎬 Abspänne':{query:'movie studio logo intro animation'},
   '🎵 Lieder':{query:'Kinderlieder deutsch zum Mitsingen'},
   '🌙 Ruhe':{query:'Baby Sensory calming relaxing video'},
-  '🐻 Hey Bear':{query:'Hey Bear Sensory'}
+  '🐷 Peppa Pig':{query:'Peppa Pig Deutsch'}
 };
 
 let ytPlayerActive=false;
@@ -2113,13 +2165,13 @@ function initCredits(){
   bubbleSay('Schau die Abspänne an!');
   playAmbientCreditsMusic();
 
-  // Contextual Benny comments - references numbers, letters, names
+  // Contextual Peppa comments - references numbers, letters, names
   creditsBennyTimer=setInterval(()=>{
     if(currentScreen!=='credits')return;
     const nums=Math.floor(Math.random()*10);
     const letter='ABCDEFGHIJKLMNOPQRSTUVWXYZ'[Math.floor(Math.random()*26)];
     const name=germanFirstNames[Math.floor(Math.random()*germanFirstNames.length)];
-    const bennyComments=[
+    const peppaComments=[
       `Schau mal, eine ${nums}!`,
       `Da ist der Buchstabe ${letter}!`,
       `L wie Leevi!`,
@@ -2136,7 +2188,8 @@ function initCredits(){
       `Schau, wie es scrollt!`,
       `Buchstaben überall!`
     ];
-    const comment=bennyComments[Math.floor(Math.random()*bennyComments.length)];
+    const comment=peppaComments[Math.floor(Math.random()*peppaComments.length)];
+    setPeppa(['wave','laugh','surprised','clap','dance'][Math.floor(Math.random()*5)]);
     bubbleSay(comment);
     bennyReact('wave');
   },10000);
@@ -2523,6 +2576,7 @@ function initCalmMode(){
   }
 
   speak('Atme langsam und ruhig');
+  setPeppa('sleep');
   bubbleSay('Lass dich entspannen...');
 }
 
@@ -2620,6 +2674,9 @@ function toggleMoodPicker(){
 function quickSpeak(text,pid){
   speak(text);
   playSound('click');
+  // Peppa zeigt passendes Bild je nach Bedürfnis
+  const peppaMap={'Hilfe':'scared','Wasser':'drink','Essen':'eat','Trinken':'drink','Schlafen':'sleep','Kuscheln':'love','Ruhe':'sleep','Schmerzen':'cry'};
+  setPeppa(peppaMap[text]||'wave');
   bennyReact('wave');
   bubbleSay(text);
   document.getElementById('moodPicker').classList.remove('show');
