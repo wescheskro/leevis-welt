@@ -1877,7 +1877,7 @@ function initYouTube(){
   const catsDiv=document.getElementById('ytCats');
   catsDiv.innerHTML='';
   const favVideos=getFavoriteVideos();
-  const allCats=favVideos.length>0?['⭐ Favoriten',...Object.keys(ytCategories)]:Object.keys(ytCategories);
+  const allCats=['⭐ Favoriten',...Object.keys(ytCategories)];
 
   allCats.forEach((cat,i)=>{
     const btn=document.createElement('div');
