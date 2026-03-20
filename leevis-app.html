@@ -390,7 +390,7 @@ body{
 
 <!-- HOME SCREEN -->
 <div class="screen active" id="home">
-  <div id="parentSecretBtn" onclick="parentSecretTap()" style="position:absolute;top:12px;left:12px;width:50px;height:50px;border-radius:50%;cursor:pointer;z-index:5;opacity:0.3"></div>
+  <div id="parentSecretBtn" onclick="parentSecretTap()" style="position:absolute;top:12px;left:50%;transform:translateX(-50%);width:60px;height:60px;border-radius:50%;cursor:pointer;z-index:5;opacity:0"></div>
   <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;padding-bottom:76px">
     <div class="home-buddy"><img src="images/peppa/peppa-wave.png" alt="Peppa"></div>
     <div class="home-title">Leevis Welt</div>
@@ -2336,11 +2336,25 @@ let ambientNodes=[];
 function stopAmbientMusic(){
   ambientNodes.forEach(n=>{try{n.stop()}catch(e){}});
   ambientNodes=[];
+  const yt=document.getElementById('creditsYT');
+  if(yt)yt.remove();
 }
 
 function playAmbientCreditsMusic(){
   if(currentScreen!=='credits'||creditsConfig.musicMode==='off'){return}
   stopAmbientMusic();
+
+  // YouTube background music for credits
+  if(!document.getElementById('creditsYT')){
+    const iframe=document.createElement('iframe');
+    iframe.id='creditsYT';
+    iframe.style.cssText='position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;pointer-events:none';
+    iframe.src='https://www.youtube.com/embed/hMhJhRLsl34?autoplay=1&loop=1&playlist=hMhJhRLsl34&controls=0&showinfo=0&rel=0&enablejsapi=0';
+    iframe.allow='autoplay';
+    document.body.appendChild(iframe);
+  }
+  return; // Skip generated tones — use YouTube audio instead
+
 
   const now=audioCtx.currentTime;
 
