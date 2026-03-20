@@ -80,8 +80,9 @@ body{
 @keyframes peppaHappy{0%{transform:scale(1) translateY(0)}25%{transform:scale(1.2) translateY(-15px)}50%{transform:scale(1) translateY(0)}75%{transform:scale(1.15) translateY(-10px)}100%{transform:scale(1) translateY(0)}}
 .buddy-float.wave .peppa-body{animation:peppaWave 0.8s ease-in-out}
 .buddy-float.happy .peppa-body{animation:peppaHappy 0.8s ease-in-out}
-.buddy-bubble{position:absolute;top:90px;right:0;background:rgba(30,30,50,0.98);border-radius:4px 18px 18px 18px;padding:12px 14px;font-size:0.9em;color:var(--text-primary);line-height:1.4;width:240px;box-shadow:0 4px 15px rgba(0,0,0,0.6);animation:bubbleIn 0.3s ease-out;pointer-events:none;border:1px solid var(--border)}
-.buddy-bubble:after{content:'';position:absolute;top:-8px;right:30px;width:0;height:0;border-left:10px solid transparent;border-right:10px solid transparent;border-bottom:10px solid rgba(30,30,50,0.98)}
+.buddy-bubble{position:absolute;top:170px;right:10px;background:#fff;border-radius:24px;padding:14px 18px;font-size:1.1em;font-weight:700;color:#222;line-height:1.4;width:220px;box-shadow:0 4px 12px rgba(0,0,0,0.15);animation:bubbleIn 0.3s ease-out;pointer-events:none;border:3px solid #222;text-align:center}
+.buddy-bubble:after{content:'';position:absolute;top:-18px;right:40px;width:20px;height:20px;background:#fff;border-radius:50%;border:3px solid #222;border-bottom:none;border-right:none;box-shadow:none}
+.buddy-bubble:before{content:'';position:absolute;top:-32px;right:55px;width:12px;height:12px;background:#fff;border-radius:50%;border:3px solid #222}
 .buddy-bubble.hidden{display:none}
 @keyframes bubbleIn{0%{opacity:0;transform:scale(0.8) translateY(10px)}100%{opacity:1;transform:scale(1) translateY(0)}}
 
