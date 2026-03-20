@@ -707,6 +707,13 @@ function go(screen){
   // Stop loops from previous screen
   if(currentScreen==='credits')stopCreditsLoops();
   if(currentScreen==='sensory')stopSensory();
+  // YouTube Video stoppen wenn man weg navigiert
+  if(currentScreen==='youtube'&&ytPlayerActive){
+    const pf=document.getElementById('ytPlayerFrame');
+    if(pf){pf.contentWindow?.postMessage('{"event":"command","func":"pauseVideo","args":""}','*');pf.src='about:blank';pf.src='';}
+    document.getElementById('ytPlayer').style.display='none';
+    ytPlayerActive=false;
+  }
 
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById(screen).classList.add('active');
@@ -1970,6 +1977,9 @@ function showYTGrid(cat){
   const playerFrame=document.getElementById('ytPlayerFrame');
   grid.style.display='';
   player.style.display='none';
+  // Video komplett stoppen
+  playerFrame.contentWindow?.postMessage('{"event":"command","func":"pauseVideo","args":""}','*');
+  playerFrame.src='about:blank';
   playerFrame.src='';
   const cats=document.getElementById('ytCats');
   cats.style.display='';
