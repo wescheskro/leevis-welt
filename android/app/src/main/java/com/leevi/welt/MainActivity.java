@@ -1,9 +1,6 @@
 package com.leevi.welt;
 
 import android.app.Activity;
-import android.app.admin.DevicePolicyManager;
-import android.content.ComponentName;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
@@ -16,6 +13,7 @@ import android.view.WindowManager;
 import android.webkit.JavascriptInterface;
 import android.webkit.PermissionRequest;
 import android.webkit.WebChromeClient;
+import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -24,9 +22,9 @@ import android.widget.Toast;
 /**
  * Leevis Welt - Launcher App
  *
- * Diese App dient als Tablet-Launcher (Startbildschirm) für Leevi.
- * Sie lädt die Web-App und kann die echte YouTube-App starten.
- * Leevi kann nicht aus der App raus (Kiosk-Modus).
+ * Tablet-Launcher für Leevi. Lädt die Web-App von GitHub Pages.
+ * Kann YouTube starten. Kiosk-Modus verhindert Verlassen.
+ * Rotation erlaubt (Quer + Hochformat).
  */
 public class MainActivity extends Activity {
 
@@ -35,10 +33,10 @@ public class MainActivity extends Activity {
 
     // Erlaubte Apps die gestartet werden dürfen
     private static final String[] ALLOWED_PACKAGES = {
-        "com.google.android.youtube",           // YouTube
-        "com.google.android.apps.youtube.kids", // YouTube Kids
-        "com.google.android.music",             // Google Play Music
-        "com.spotify.music"                     // Spotify
+        "com.google.android.youtube",
+        "com.google.android.apps.youtube.kids",
+        "com.google.android.music",
+        "com.spotify.music"
     };
 
     @Override
@@ -52,7 +50,10 @@ public class MainActivity extends Activity {
             WindowManager.LayoutParams.FLAG_FULLSCREEN
         );
 
-        // Immersive Sticky Mode - versteckt System-Bars komplett
+        // Screen bleibt an während App aktiv ist
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+
+        // Immersive Sticky Mode
         hideSystemUI();
 
         // WebView erstellen
@@ -68,29 +69,62 @@ public class MainActivity extends Activity {
         settings.setCacheMode(WebSettings.LOAD_DEFAULT);
         settings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
         settings.setDatabaseEnabled(true);
+        settings.setLoadWithOverviewMode(true);
+        settings.setUseWideViewPort(true);
+        settings.setSupportZoom(false);
+        settings.setBuiltInZoomControls(false);
+        settings.setDisplayZoomControls(false);
 
-        // JavaScript-Bridge: Damit die Web-App native Android-Funktionen aufrufen kann
+        // Wichtig: User-Agent ergänzen damit Web-App erkennt dass sie in der APK läuft
+        String ua = settings.getUserAgentString();
+        settings.setUserAgentString(ua + " LeevisWeltApp/1.0");
+
+        // JavaScript-Bridge
         webView.addJavascriptInterface(new AppBridge(), "AndroidBridge");
 
-        // WebViewClient: Links innerhalb der App halten
+        // WebViewClient: Links innerhalb der App halten + YouTube abfangen
         webView.setWebViewClient(new WebViewClient() {
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, String url) {
-                // YouTube-Links: Echte YouTube-App öffnen
                 if (url.contains("youtube.com") || url.contains("youtu.be") || url.contains("youtubekids.com")) {
-                    launchYouTube(url);
+                    openYouTube(url);
                     return true;
                 }
-                // Alles andere im WebView behalten
+                // Intent-URLs abfangen (z.B. intent://...)
+                if (url.startsWith("intent://")) {
+                    try {
+                        Intent intent = Intent.parseUri(url, Intent.URI_INTENT_SCHEME);
+                        if (intent != null) {
+                            PackageManager pm = getPackageManager();
+                            if (intent.resolveActivity(pm) != null) {
+                                startActivity(intent);
+                                return true;
+                            }
+                            // Fallback: Play Store
+                            String fallbackUrl = intent.getStringExtra("browser_fallback_url");
+                            if (fallbackUrl != null) {
+                                view.loadUrl(fallbackUrl);
+                                return true;
+                            }
+                        }
+                    } catch (Exception e) {}
+                    return true;
+                }
                 return false;
+            }
+
+            @Override
+            public void onPageFinished(WebView view, String url) {
+                super.onPageFinished(view, url);
+                hideSystemUI();
             }
         });
 
-        // WebChromeClient: Kamera/Mikrofon-Zugriff erlauben (für Emotionserkennung)
+        // WebChromeClient: Kamera/Mikrofon erlauben + Fullscreen für Videos
         webView.setWebChromeClient(new WebChromeClient() {
             @Override
             public void onPermissionRequest(final PermissionRequest request) {
-                request.grant(request.getResources());
+                runOnUiThread(() -> request.grant(request.getResources()));
             }
         });
 
@@ -99,46 +133,29 @@ public class MainActivity extends Activity {
     }
 
     /**
-     * Startet die echte YouTube-App oder YouTube Kids
+     * YouTube-App starten
      */
-    private void launchYouTube(String url) {
+    private void openYouTube(String url) {
         try {
-            // Versuche YouTube Kids wenn URL darauf hinweist
             if (url.contains("youtubekids")) {
                 Intent intent = getPackageManager().getLaunchIntentForPackage("com.google.android.apps.youtube.kids");
-                if (intent != null) {
-                    startActivity(intent);
-                    return;
-                }
+                if (intent != null) { startActivity(intent); return; }
             }
-
-            // Versuche reguläre YouTube-App
             Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
             intent.setPackage("com.google.android.youtube");
             startActivity(intent);
         } catch (Exception e) {
-            // Fallback: YouTube Kids versuchen
-            try {
-                Intent intent = getPackageManager().getLaunchIntentForPackage("com.google.android.apps.youtube.kids");
-                if (intent != null) {
-                    startActivity(intent);
-                    return;
-                }
-            } catch (Exception e2) {}
-
-            // Letzter Fallback: Im Browser öffnen
             try {
                 Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
                 startActivity(intent);
-            } catch (Exception e3) {
-                Toast.makeText(this, "YouTube konnte nicht geöffnet werden", Toast.LENGTH_SHORT).show();
+            } catch (Exception e2) {
+                Toast.makeText(this, "YouTube nicht gefunden", Toast.LENGTH_SHORT).show();
             }
         }
     }
 
     /**
-     * JavaScript-Bridge: Funktionen die aus der Web-App aufgerufen werden können
-     * In der Web-App: AndroidBridge.launchYouTube() oder AndroidBridge.launchYouTubeKids()
+     * JavaScript-Bridge: Funktionen die aus der Web-App aufgerufen werden
      */
     public class AppBridge {
 
@@ -167,7 +184,6 @@ public class MainActivity extends Activity {
                     if (intent != null) {
                         startActivity(intent);
                     } else {
-                        // Fallback auf reguläres YouTube
                         launchYouTube();
                     }
                 } catch (Exception e) {
@@ -179,21 +195,14 @@ public class MainActivity extends Activity {
         @JavascriptInterface
         public void launchApp(String packageName) {
             runOnUiThread(() -> {
-                // Nur erlaubte Apps starten
                 boolean allowed = false;
                 for (String pkg : ALLOWED_PACKAGES) {
-                    if (pkg.equals(packageName)) {
-                        allowed = true;
-                        break;
-                    }
+                    if (pkg.equals(packageName)) { allowed = true; break; }
                 }
                 if (!allowed) return;
-
                 try {
                     Intent intent = getPackageManager().getLaunchIntentForPackage(packageName);
-                    if (intent != null) {
-                        startActivity(intent);
-                    }
+                    if (intent != null) startActivity(intent);
                 } catch (Exception e) {}
             });
         }
@@ -212,10 +221,20 @@ public class MainActivity extends Activity {
         public boolean isLauncher() {
             return true;
         }
+
+        /**
+         * Web-App kann native Zurück-Navigation auslösen
+         */
+        @JavascriptInterface
+        public void goHome() {
+            runOnUiThread(() -> {
+                webView.evaluateJavascript("go('home')", null);
+            });
+        }
     }
 
     /**
-     * Vollbild-Modus: Versteckt Statusleiste und Navigationsleiste
+     * Vollbild-Modus
      */
     private void hideSystemUI() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
@@ -235,51 +254,64 @@ public class MainActivity extends Activity {
     @Override
     public void onWindowFocusChanged(boolean hasFocus) {
         super.onWindowFocusChanged(hasFocus);
-        if (hasFocus) {
-            hideSystemUI();
-        }
+        if (hasFocus) hideSystemUI();
     }
 
     /**
-     * KIOSK-MODUS: Zurück-Button ist deaktiviert
-     * Leevi kann nicht aus der App raus!
+     * ZURÜCK-BUTTON: Navigiert innerhalb der Web-App zurück zum Home-Screen.
+     * Wenn schon auf Home: nichts tun (Kiosk-Modus).
      */
     @Override
     public void onBackPressed() {
-        // Wenn WebView zurück kann (z.B. innerhalb der App-Navigation), erlaube es
-        if (webView.canGoBack()) {
-            webView.goBack();
-        }
-        // Sonst: NICHTS tun - Leevi bleibt in der App
-        // super.onBackPressed() wird NICHT aufgerufen!
+        // Rufe die go('home') Funktion in der Web-App auf
+        webView.evaluateJavascript(
+            "(function(){ if(typeof currentScreen !== 'undefined' && currentScreen !== 'home'){ go('home'); return 'navigated'; } return 'home'; })()",
+            value -> {
+                // Wenn bereits auf Home: nichts tun (Kiosk)
+                // super.onBackPressed() wird NICHT aufgerufen
+            }
+        );
     }
 
     /**
-     * Home-Button abfangen: App bleibt im Vordergrund
-     * (Funktioniert nur wenn App als Standard-Launcher gesetzt ist)
+     * Home-Button: App bleibt im Vordergrund (nur als Standard-Launcher)
      */
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
-        if (keyCode == KeyEvent.KEYCODE_HOME || keyCode == KeyEvent.KEYCODE_APP_SWITCH) {
-            return true; // Event konsumieren, nichts passiert
+        if (keyCode == KeyEvent.KEYCODE_APP_SWITCH) {
+            return true;
         }
         return super.onKeyDown(keyCode, event);
     }
 
     /**
-     * Wenn die App wieder in den Vordergrund kommt (z.B. nach YouTube)
+     * WebView Lifecycle
      */
     @Override
     protected void onResume() {
         super.onResume();
         hideSystemUI();
-        // WebView fortsetzen
-        webView.onResume();
+        if (webView != null) webView.onResume();
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        webView.onPause();
+        if (webView != null) webView.onPause();
+    }
+
+    /**
+     * Rotation: WebView-State erhalten bei Konfigurationsänderung
+     */
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        if (webView != null) webView.saveState(outState);
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        if (webView != null) webView.restoreState(savedInstanceState);
     }
 }
