@@ -3038,7 +3038,7 @@ window.addEventListener('load',()=>{
 document.addEventListener('touchmove',e=>{if(e.scale!==1)e.preventDefault()},{passive:false});
 document.addEventListener('gesturestart',e=>e.preventDefault(),{passive:false});
 
-// ===== FULLSCREEN MODUS =====
+// ===== KIOSK MODUS (Vollbild + Zurück blockieren + kein Verlassen) =====
 function goFullscreen(){
   const el=document.documentElement;
   if(document.fullscreenElement||document.webkitFullscreenElement)return;
@@ -3066,6 +3066,50 @@ document.addEventListener('webkitfullscreenchange',()=>{
       goFullscreen();
       document.removeEventListener('click',fsAgain);
     },{once:true});
+  }
+});
+
+// --- Zurück-Button blockieren ---
+// History-Stack voll packen, damit Zurück nie raus navigiert
+history.pushState(null,null,location.href);
+window.addEventListener('popstate',()=>{
+  history.pushState(null,null,location.href);
+});
+
+// --- Seite verlassen verhindern ---
+window.addEventListener('beforeunload',(e)=>{
+  e.preventDefault();
+  e.returnValue='';
+});
+
+// --- Tastatur blockieren (Escape, Alt+F4, etc.) ---
+document.addEventListener('keydown',(e)=>{
+  // Escape aus Fullscreen verhindern
+  if(e.key==='Escape'){e.preventDefault();e.stopPropagation();}
+  // F5 Reload verhindern
+  if(e.key==='F5'){e.preventDefault();}
+  // Alt+F4 verhindern
+  if(e.altKey&&e.key==='F4'){e.preventDefault();}
+  // Ctrl+W Tab schließen verhindern
+  if(e.ctrlKey&&e.key==='w'){e.preventDefault();}
+  // Ctrl+L Adressleiste verhindern
+  if(e.ctrlKey&&e.key==='l'){e.preventDefault();}
+},true);
+
+// --- Wake Lock: Bildschirm bleibt an ---
+async function requestWakeLock(){
+  try{
+    if('wakeLock' in navigator){
+      await navigator.wakeLock.request('screen');
+    }
+  }catch(e){}
+}
+requestWakeLock();
+document.addEventListener('visibilitychange',()=>{
+  if(document.visibilityState==='visible'){
+    requestWakeLock();
+    // Fullscreen wiederherstellen wenn App wieder sichtbar
+    setTimeout(goFullscreen,300);
   }
 });
 
