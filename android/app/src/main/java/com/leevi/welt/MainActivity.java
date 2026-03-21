@@ -910,15 +910,27 @@ public class MainActivity extends Activity {
     /** Show floating back-button overlay on top of other apps */
     private void showFloatingOverlay() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !android.provider.Settings.canDrawOverlays(this)) {
-            // Request overlay permission
-            Intent permIntent = new Intent(android.provider.Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                Uri.parse("package:" + getPackageName()));
-            permIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            startActivity(permIntent);
+            Log.w(TAG, "Overlay permission not granted, requesting...");
+            try {
+                Intent permIntent = new Intent(android.provider.Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                    Uri.parse("package:" + getPackageName()));
+                permIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(permIntent);
+            } catch (Exception e) {
+                Log.e(TAG, "Failed to request overlay permission", e);
+            }
             return;
         }
-        Intent svc = new Intent(this, OverlayService.class);
-        startService(svc);
+        // Delay slightly so the external app has time to come to foreground
+        new Handler(Looper.getMainLooper()).postDelayed(() -> {
+            try {
+                Intent svc = new Intent(MainActivity.this, OverlayService.class);
+                startService(svc);
+                Log.d(TAG, "OverlayService started");
+            } catch (Exception e) {
+                Log.e(TAG, "Failed to start OverlayService", e);
+            }
+        }, 500);
     }
 
     /** Hide floating overlay (called when returning to app) */
