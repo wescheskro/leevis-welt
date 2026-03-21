@@ -9,6 +9,42 @@
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="images/peppa/peppa-wave.png">
 <title>Leevis Welt</title>
+<!-- Polyfills & Debug für ältere Android Tablets -->
+<script>
+window.onerror = function(msg, url, line, col, err) {
+  alert("Fehler in Leevis Welt!\n" + msg + "\nZeile: " + line);
+  return false;
+};
+if (window.NodeList && !NodeList.prototype.forEach) {
+  NodeList.prototype.forEach = Array.prototype.forEach;
+}
+if (!Object.entries) {
+  Object.entries = function(obj) {
+    var ownProps = Object.keys(obj), i = ownProps.length, resArray = new Array(i);
+    while (i--) resArray[i] = [ownProps[i], obj[ownProps[i]]];
+    return resArray;
+  };
+}
+if (!Object.values) {
+  Object.values = function(obj) {
+    var ownProps = Object.keys(obj), i = ownProps.length, resArray = new Array(i);
+    while (i--) resArray[i] = obj[ownProps[i]];
+    return resArray;
+  };
+}
+if (!Array.prototype.includes) {
+  Array.prototype.includes = function(searchElement) {
+    return this.indexOf(searchElement) !== -1;
+  };
+}
+if (!String.prototype.includes) {
+  String.prototype.includes = function(search, start) {
+    if (typeof start !== 'number') { start = 0; }
+    if (start + search.length > this.length) { return false; }
+    return this.indexOf(search, start) !== -1;
+  };
+}
+</script>
 <!-- Edge AI: TensorFlow.js + Speech Commands (lokal, keine Cloud) -->
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js" async></script>
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/speech-commands@0.5.4/dist/speech-commands.min.js" async></script>
@@ -395,8 +431,13 @@ body{
       <div class="home-btn" onclick="try{go('learn');bubbleSay('Lernen')}catch(e){}"><img class="icon" src="https://static.arasaac.org/pictograms/37810/37810_500.png"><span class="label">Lernen</span></div>
       <div class="home-btn" onclick="try{launchYouTube();speak('Videos');bubbleSay('Videos')}catch(e){}"><span class="icon" style="display:flex;align-items:center;justify-content:center"><svg viewBox="0 0 48 48" style="width:100%;height:100%"><rect x="2" y="8" width="44" height="32" rx="8" fill="#FF0000"/><polygon points="20,15 35,24 20,33" fill="#fff"/></svg></span><span class="label">Videos</span></div>
       <div class="home-btn" onclick="try{go('music');speak('Musik');bubbleSay('Musik')}catch(e){}"><img class="icon" src="https://static.arasaac.org/pictograms/24791/24791_500.png"><span class="label">Musik</span></div>
+<<<<<<< HEAD
       <div class="home-btn" onclick="try{go('mood');speak('Stimmung');bubbleSay('Stimmung')}catch(e){}"><img class="icon" src="https://static.arasaac.org/pictograms/7349/7349_500.png"><span class="label">Stimmung</span></div>
       <div class="home-btn" onclick="try{go('sensory');speak('Sensorik');bubbleSay('Sensorik')}catch(e){}"><img class="icon" src="https://static.arasaac.org/pictograms/6936/6936_500.png"><span class="label">Sensorik</span></div>
+=======
+      <div class="home-btn" onclick="try{go('credits');speak('Kino');bubbleSay('Kino')}catch(e){}"><img class="icon" src="https://static.arasaac.org/pictograms/30387/30387_500.png"><span class="label">Kino</span></div>
+      <div class="home-btn" onclick="try{go('sensory');speak('Spielen');bubbleSay('Spielen')}catch(e){}"><img class="icon" src="https://static.arasaac.org/pictograms/23392/23392_500.png"><span class="label">Spielen</span></div>
+>>>>>>> cf16f6b (fix: Webview Polyfills)
     </div>
 <div style="text-align:center" onclick="try{showPinOverlay();speak('Eltern');bubbleSay('Eltern')}catch(e){}"><img src="https://static.arasaac.org/pictograms/35722/35722_500.png" alt="Eltern" style="width:90%;border-radius:18px"><span style="display:block;font-size:clamp(0.7em,1.8vmin,1em);margin-top:2px;font-weight:bold">Eltern</span></div>
   </div>
@@ -686,6 +727,7 @@ function updateUsageTime(){let t=parseInt(getState('usage_time','0'))+1;setState
 
 // ===== SCREEN NAVIGATION =====
 function go(screen){
+<<<<<<< HEAD
 try{
 stopCurrentAudio();
 var map={mood:"moodPicker",dash:"dashContent"};
@@ -701,6 +743,27 @@ if(screen==="music")try{initMusic()}catch(x){}
 if(screen==="mood")try{if(typeof initMoodPicker==="function")initMoodPicker()}catch(x){}
 setState("currentScreen",screen);
 }catch(e){console.error("go error:",e)}
+=======
+  // Stop loops from previous screen
+  if(currentScreen==='credits')stopCreditsLoops();
+  if(currentScreen==='sensory')stopSensory();
+
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(screen).classList.add('active');
+  currentScreen=screen;
+  try{playSound('click')}catch(e){}
+  if(screen==='calm')initCalmMode();
+  if(screen==='credits')initCredits();
+  if(screen==='sensory')initSensory();
+  if(screen==='learn'){initLearnCats();endGame()}
+  if(screen==='youtube')initYouTube();
+  // Peppa zeigt passende Bilder je nach Screen
+  const peppaScreenMap={home:'happy',aac:'happy',learn:'think',youtube:'happy',music:'music',credits:'happy',sensory:'play',calm:'sleep'};
+  setPeppa(peppaScreenMap[screen]||'happy');
+  // Peppa ist jetzt standardmäßig versteckt, erscheint nur kurz bei bubbleSay()
+  const buddy=document.getElementById('buddy');
+  if(screen==='home'){buddy.style.display='none'}else{buddy.style.display='';buddy.classList.remove('visible')}
+>>>>>>> cf16f6b (fix: Webview Polyfills)
 }
 
 // ===== TEXT-TO-SPEECH (High-Quality Audio First) =====
