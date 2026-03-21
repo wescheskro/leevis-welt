@@ -1,4 +1,4 @@
-const CACHE_NAME = 'leevis-welt-v13';
+const CACHE_NAME = 'leevis-welt-v14';
 
 self.addEventListener('install', e => {
   self.skipWaiting();
