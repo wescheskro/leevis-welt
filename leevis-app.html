@@ -2835,7 +2835,7 @@ function parentSecretTap(){
   if(parentTapCount>=5){
     parentTapCount=0;
     clearTimeout(parentTapTimer);
-    openPin();
+    showPinOverlay();
   }
 }
 
@@ -2849,32 +2849,20 @@ function openPin(){
   pinAttempt='';
   const pinPad=document.getElementById('pinPad');
   pinPad.innerHTML='';
-  for(let i=1;i<=9;i++){
+  function makePinBtn(text,cls,fn){
     const btn=document.createElement('button');
-    btn.className='pin-n';
-    btn.textContent=i;
-    const digit=i.toString();
-    btn.onclick=()=>enterPin(digit);
-    btn.addEventListener('touchend',(e)=>{e.preventDefault();enterPin(digit);},{passive:false});
-    pinPad.appendChild(btn);
+    btn.className='pin-n'+(cls?' '+cls:'');
+    btn.textContent=text;
+    btn.onclick=(e)=>{e.preventDefault();fn();};
+    return btn;
   }
-  const del=document.createElement('button');
-  del.className='pin-n pin-d';
-  del.textContent='←';
-  del.onclick=()=>enterPin('del');
-  pinPad.appendChild(del);
-
-  const zero=document.createElement('button');
-  zero.className='pin-n';
-  zero.textContent='0';
-  zero.onclick=()=>enterPin('0');
-  pinPad.appendChild(zero);
-
-  const x=document.createElement('button');
-  x.className='pin-n pin-x';
-  x.textContent='✕';
-  x.onclick=()=>closePin();
-  pinPad.appendChild(x);
+  for(let i=1;i<=9;i++){
+    const digit=i.toString();
+    pinPad.appendChild(makePinBtn(i,'',()=>enterPin(digit)));
+  }
+  pinPad.appendChild(makePinBtn('←','pin-d',()=>enterPin('del')));
+  pinPad.appendChild(makePinBtn('0','',()=>enterPin('0')));
+  pinPad.appendChild(makePinBtn('✕','pin-x',()=>closePin()));
 
   updatePinDots();
 }
@@ -2888,7 +2876,9 @@ function enterPin(digit){
   }
   updatePinDots();
 
+  console.log('PIN attempt so far:',pinAttempt);
   if(pinAttempt.length===4){
+    console.log('PIN entered:',pinAttempt,'correct:',pinAttempt==='1234');
     if(pinAttempt==='1234'){
       showDashboard();
       pinAttempt='';
