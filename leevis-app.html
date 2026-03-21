@@ -436,6 +436,7 @@ body{
       <div class="home-btn" onclick="try{go('music');speak('Musik');bubbleSay('Musik')}catch(e){}"><img class="icon" src="https://static.arasaac.org/pictograms/24791/24791_500.png"><span class="label">Musik</span></div>
       <div class="home-btn" onclick="try{go('credits');speak('Kino');bubbleSay('Kino')}catch(e){}"><img class="icon" src="https://static.arasaac.org/pictograms/30387/30387_500.png"><span class="label">Kino</span></div>
       <div class="home-btn" onclick="try{go('sensory');speak('Spielen');bubbleSay('Spielen')}catch(e){}"><img class="icon" src="https://static.arasaac.org/pictograms/23392/23392_500.png"><span class="label">Spielen</span></div>
+      <div id="dynamicHomeApps" style="display:contents"></div>
     </div>
 <div style="text-align:center" onclick="try{showPinOverlay();speak('Eltern');bubbleSay('Eltern')}catch(e){}"><img src="https://static.arasaac.org/pictograms/35722/35722_500.png" alt="Eltern" style="width:90%;border-radius:18px"><span style="display:block;font-size:clamp(0.7em,1.8vmin,1em);margin-top:2px;font-weight:bold">Eltern</span></div>
   </div>
@@ -658,6 +659,12 @@ body{
           </div>
         </div>
         <p id="installDone" style="display:none;color:#4CAF50;font-weight:700;margin-top:8px">✅ App wurde installiert!</p>
+      </div>
+
+      <div class="dcard">
+        <h3>📱 Externe Apps einbinden</h3>
+        <p style="font-size:0.8em;color:var(--text-secondary);margin-bottom:10px">Wähle installierte Apps (z.B. Netflix, Spiele) aus, die für Leevi als Knopf auf der Startseite auftauchen sollen.</p>
+        <div id="externalAppEditor" style="display:flex;flex-wrap:wrap;gap:8px">Lade Apps...</div>
       </div>
 
       <div class="dcard">
@@ -2492,6 +2499,87 @@ function buildQuickSymbolEditor(){
   });
 }
 
+// ===== EXTERNAL APP LAUNCHER (DASHBOARD) =====
+const knownExternalApps = [
+  {pkg:'com.disney.disneyplus', name:'Disney+', pid:30387},
+  {pkg:'com.netflix.mediaclient', name:'Netflix', pid:29123},
+  {pkg:'com.amazon.avod.thirdpartyclient', name:'Prime Video', pid:30387},
+  {pkg:'com.amazon.tahoe', name:'Amazon Kids', pid:10972},
+  {pkg:'com.spotify.music', name:'Spotify', pid:24791},
+  {pkg:'com.solocode.anton', name:'Anton', pid:37810},
+  {pkg:'com.solocode.anton.amazon', name:'Anton (Fire)', pid:37810},
+  {pkg:'de.wdr.maus', name:'Die Maus', pid:13596},
+  {pkg:'de.kika.kikaplayer', name:'KiKA', pid:29123},
+  {pkg:'com.mojang.minecraftpe', name:'Minecraft', pid:25807},
+  {pkg:'com.roblox.client', name:'Roblox', pid:23392},
+  {pkg:'com.touchnlearn.brioWorldRailway', name:'Brio', pid:23392},
+  {pkg:'com.tocaboca.tocabuilder', name:'Toca Boca', pid:23392}
+];
+
+function getPinnedApps(){
+  try{return JSON.parse(localStorage.getItem('pinned_apps'))||[]}catch(e){return []}
+}
+function savePinnedApps(arr){
+  localStorage.setItem('pinned_apps',JSON.stringify(arr));
+}
+
+function buildExternalAppEditor(){
+  const editor=document.getElementById('externalAppEditor');
+  if(!editor)return;
+  if(window.AndroidBridge && typeof AndroidBridge.isAppInstalled === 'function'){
+    const pinned=getPinnedApps();
+    editor.innerHTML='';
+    let foundAny=false;
+    knownExternalApps.forEach(app=>{
+      if(AndroidBridge.isAppInstalled(app.pkg)){
+        foundAny=true;
+        const active=pinned.includes(app.pkg);
+        const btn=document.createElement('div');
+        btn.style.cssText='display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px;border-radius:12px;cursor:pointer;border:3px solid;width:90px;min-height:90px;justify-content:center;transition:all 0.15s;touch-action:manipulation;'
+          +(active?'border-color:var(--green);background:rgba(76,175,80,0.2);':'border-color:var(--border);background:var(--card-bg2);opacity:0.5;');
+        btn.innerHTML=`<img src="https://static.arasaac.org/pictograms/${app.pid}/${app.pid}_500.png" style="width:50px;height:50px;object-fit:contain">
+          <span style="font-size:0.7em;font-weight:700;color:var(--text-primary);text-align:center">${app.name}</span>
+          <span style="font-size:0.65em;color:${active?'var(--green)':'var(--text-secondary)'}">${active?'✅ Auf Home':'Aus'}</span>`;
+        btn.onclick=()=>{
+          let current=getPinnedApps();
+          if(current.includes(app.pkg)) current=current.filter(p=>p!==app.pkg);
+          else current.push(app.pkg);
+          savePinnedApps(current);
+          buildExternalAppEditor();
+          buildHomeGrid();
+        };
+        editor.appendChild(btn);
+      }
+    });
+    if(!foundAny) editor.innerHTML='<p style="font-size:0.8em;color:var(--text-secondary)">Keine der 10 häufigsten Kinder-Apps gefunden.</p>';
+  }else{
+    editor.innerHTML='<p style="font-size:0.8em;color:var(--text-secondary)">App-Check wird auf diesem Tablet nicht unterstützt.</p>';
+  }
+}
+
+function buildHomeGrid(){
+  const container=document.getElementById('dynamicHomeApps');
+  if(!container)return;
+  const pinned=getPinnedApps();
+  container.innerHTML='';
+  pinned.forEach(pkg=>{
+    const app=knownExternalApps.find(a=>a.pkg===pkg);
+    if(app){
+      const btn=document.createElement('div');
+      btn.className='home-btn';
+      btn.onclick=()=>{
+        try{
+          speak(app.name);
+          bubbleSay(app.name);
+          fireIntent("intent://#Intent;action=android.intent.action.MAIN;category=android.intent.category.LAUNCHER;package="+app.pkg+";end");
+        }catch(e){}
+      };
+      btn.innerHTML=`<img class="icon" src="https://static.arasaac.org/pictograms/${app.pid}/${app.pid}_500.png"><span class="label">${app.name}</span>`;
+      container.appendChild(btn);
+    }
+  });
+}
+
 function toggleMoodPicker(){
   document.getElementById('moodPicker').classList.toggle('show');
 }
@@ -2614,6 +2702,7 @@ function showDashboard(){
   // YouTube now uses external app - no API keys needed
   updateDashboard();
   buildQuickSymbolEditor();
+  buildExternalAppEditor();
 }
 
 function updateDashboard(){
@@ -2743,6 +2832,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   try{initAAC()}catch(e){console.error('[Init] AAC failed:',e)}
   try{initMusic()}catch(e){console.error('[Init] Music failed:',e)}
   try{buildMoodPicker()}catch(e){console.error('[Init] MoodPicker failed:',e)}
+  try{buildHomeGrid()}catch(e){}
 
   // Check if already installed - update install card
   try{
