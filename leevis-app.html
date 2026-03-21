@@ -752,24 +752,31 @@ function go(screen){
 }
 
 // ===== TEXT-TO-SPEECH (High-Quality Audio First) =====
-const synth=window.speechSynthesis;
+const synth=window.speechSynthesis||null;
 let deVoice=null;
 
 function findGermanVoice(){
-  const voices=synth.getVoices();
-  // Premium-Stimmen bevorzugen (Siri, Google, Microsoft Neural, Enhanced)
-  const premiumKeywords=['siri','premium','enhanced','neural','natural','google','samantha','anna'];
-  const deVoices=voices.filter(v=>v.lang.startsWith('de')||v.lang.includes('DE'));
-  // Zuerst Premium-Stimme suchen
-  deVoice=deVoices.find(v=>{
-    const n=v.name.toLowerCase();
-    return premiumKeywords.some(k=>n.includes(k));
-  });
-  // Dann lokale (nicht remote) Stimme
-  if(!deVoice) deVoice=deVoices.find(v=>!v.localService===false);
-  // Dann irgendeine deutsche Stimme
-  if(!deVoice) deVoice=deVoices[0]||null;
-  if(deVoice) console.log('[TTS] Stimme gewählt:',deVoice.name,'('+deVoice.lang+')');
+  if(!synth) return;
+  try {
+    const voices=synth.getVoices();
+    if(!voices || voices.length===0) return;
+    // Premium-Stimmen bevorzugen (Siri, Google, Microsoft Neural, Enhanced)
+    const premiumKeywords=['siri','premium','enhanced','neural','natural','google','samantha','anna'];
+    const deVoices=voices.filter(v=>v.lang && (v.lang.startsWith('de')||v.lang.includes('DE')));
+    if(deVoices.length===0) return;
+    // Zuerst Premium-Stimme suchen
+    deVoice=deVoices.find(v=>{
+      const n=v.name.toLowerCase();
+      return premiumKeywords.some(k=>n.includes(k));
+    });
+    // Dann lokale (nicht remote) Stimme
+    if(!deVoice) deVoice=deVoices.find(v=>v.localService===true);
+    // Dann irgendeine deutsche Stimme
+    if(!deVoice) deVoice=deVoices[0]||null;
+    if(deVoice) console.log('[TTS] Stimme gewaehlt:',deVoice.name,'('+deVoice.lang+')');
+  } catch(e) {
+    console.warn('[TTS] findGermanVoice error:', e);
+  }
 }
 if(synth&&synth.onvoiceschanged!==undefined)synth.onvoiceschanged=findGermanVoice;
 findGermanVoice();
@@ -781,20 +788,24 @@ let currentSpeechAudio=null;
 
 function stopCurrentAudio(){
   if(currentSpeechAudio){currentSpeechAudio.pause();currentSpeechAudio.currentTime=0;currentSpeechAudio=null}
-  if(synth)synth.cancel();
+  if(synth){ try{ synth.cancel(); }catch(e){} }
 }
 
 function speakWithTTS(text){
   if(!synth)return;
-  synth.cancel();
-  if(!deVoice)findGermanVoice();
-  const u=new SpeechSynthesisUtterance(text);
-  u.lang='de-DE';
-  u.rate=0.9;
-  u.pitch=1.0;
-  u.volume=1;
-  if(deVoice)u.voice=deVoice;
-  synth.speak(u);
+  try {
+    synth.cancel();
+    if(!deVoice)findGermanVoice();
+    const u=new SpeechSynthesisUtterance(text);
+    u.lang='de-DE';
+    u.rate=0.9;
+    u.pitch=1.0;
+    u.volume=1;
+    if(deVoice)u.voice=deVoice;
+    synth.speak(u);
+  } catch(e) {
+    console.warn('[TTS] speakWithTTS error:', e);
+  }
 }
 
 function speak(text){
