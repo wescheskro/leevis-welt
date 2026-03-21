@@ -747,7 +747,7 @@ function go(screen){
   if(screen==='calm')initCalmMode();
   if(screen==='credits')initCredits();
   if(screen==='sensory')initSensory();
-  if(screen==='learn'){initLearnCats();endGame()}
+  if(screen==='learn'){initLearnCats();currentGame=null;currentLearnCat=null;showGameSelection()}
   if(screen==='dash'){
     if(typeof updateDashboard === 'function') updateDashboard();
     if(typeof buildQuickSymbolEditor === 'function') buildQuickSymbolEditor();
@@ -1245,6 +1245,12 @@ function renderOptions(correct,opts){
     if(currentGame&&currentGame.type==='emotions'){
       const emoData=gameConfigs.emotions.all.find(e=>e.name===opt);
       btn.innerHTML=emoData?`<span style="font-size:1.6em">${emoData.emoji}</span><br>${opt}`:opt;
+    }else if(currentGame&&currentGame.type==='colors'){
+      const colData=gameConfigs.colors.all.find(c=>c.name===opt);
+      btn.innerHTML=colData?`<div style="width:clamp(24px,5vw,36px);height:clamp(24px,5vw,36px);border-radius:50%;background:${colData.hex};margin:0 auto 4px;border:2px solid rgba(255,255,255,0.3)"></div>${opt}`:opt;
+    }else if(currentGame&&currentGame.type==='shapes'){
+      const shpData=gameConfigs.shapes.all.find(s=>s.name===opt);
+      btn.innerHTML=shpData?`<span style="font-size:1.6em">${shpData.symbol}</span><br>${opt}`:opt;
     }else{
       btn.textContent=opt;
     }
@@ -1279,7 +1285,30 @@ function checkAnswer(isCorrect,btn){
   }
 }
 
-function endGame(){currentGame=null;currentLearnCat=null;initLearnCats();document.getElementById('gArea').innerHTML='<div style="flex:1;display:flex;align-items:center;justify-content:center;color:var(--text-secondary);font-size:1.3em">Wähle ein Spiel!</div>';setTimeout(()=>playGameAudio('waehle-ein-spiel'),300)}
+function endGame(){currentGame=null;currentLearnCat=null;initLearnCats();showGameSelection();setTimeout(()=>playGameAudio('waehle-ein-spiel'),300)}
+
+function showGameSelection(){
+  const area=document.getElementById('gArea');
+  area.innerHTML='';
+  const grid=document.createElement('div');
+  grid.style.cssText='display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(8px,2vw,14px);width:100%;max-width:600px;padding:8px;';
+  Object.entries(gameConfigs).forEach(([key,cfg])=>{
+    const card=document.createElement('div');
+    card.style.cssText='display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:clamp(12px,3vw,20px);border-radius:clamp(12px,2.5vw,20px);border:3px solid var(--border);background:var(--card-bg);cursor:pointer;transition:all 0.15s;touch-action:manipulation;min-height:clamp(80px,18vw,130px);';
+    let visual=cfg.icon;
+    if(key==='colors') visual='<div style="display:flex;gap:3px;flex-wrap:wrap;justify-content:center">'+cfg.all.slice(0,4).map(c=>'<div style="width:20px;height:20px;border-radius:50%;background:'+c.hex+'"></div>').join('')+'</div>';
+    if(key==='shapes') visual='<div style="font-size:1.5em;display:flex;gap:4px">'+cfg.all.slice(0,3).map(s=>'<span>'+s.symbol+'</span>').join('')+'</div>';
+    card.innerHTML=`<div style="font-size:clamp(2em,5vw,3em)">${visual}</div><span style="font-size:clamp(0.7em,1.8vw,0.95em);font-weight:700;color:var(--text-primary);text-align:center">${cfg.title}</span>`;
+    const doStart=()=>{currentLearnCat=key;initLearnCats();startGame(key);playSound('click')};
+    card.onclick=doStart;
+    card.addEventListener('touchend',(e)=>{e.preventDefault();doStart()},{passive:false});
+    card.addEventListener('pointerdown',()=>{card.style.transform='scale(0.93)'});
+    card.addEventListener('pointerup',()=>{card.style.transform='scale(1)'});
+    card.addEventListener('pointerleave',()=>{card.style.transform='scale(1)'});
+    grid.appendChild(card);
+  });
+  area.appendChild(grid);
+}
 function endGameRound(){
   const stars=Math.min(3,Math.ceil((currentGame.score/currentGame.total)*3));
   const typeKey=currentGame.type;
