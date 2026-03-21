@@ -38,13 +38,13 @@ public class OverlayService extends Service {
     }
 
     private void buildOverlay() {
-        int btnSize = dpToPx(72);
+        int btnSize = dpToPx(144);
 
         // --- Big red circle button with back arrow ---
         backButton = new TextView(this);
         backButton.setText("←");
         backButton.setTextColor(Color.WHITE);
-        backButton.setTextSize(TypedValue.COMPLEX_UNIT_SP, 32);
+        backButton.setTextSize(TypedValue.COMPLEX_UNIT_SP, 56);
         backButton.setTypeface(Typeface.DEFAULT_BOLD);
         backButton.setGravity(Gravity.CENTER);
 
