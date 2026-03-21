@@ -2661,9 +2661,16 @@ function filterAppList(query){
   available.slice(0,20).forEach(app=>{
     const row=document.createElement('div');
     row.style.cssText='display:flex;align-items:center;justify-content:space-between;padding:8px 10px;border-radius:8px;border:1px solid var(--border);background:var(--card-bg2);margin-bottom:4px;cursor:pointer;transition:background 0.15s;';
-    row.innerHTML=`<div style="display:flex;flex-direction:column;gap:2px">
-        <span style="font-size:0.85em;font-weight:700;color:var(--text-primary)">${app.name}</span>
-        <span style="font-size:0.65em;color:var(--text-secondary)">${app.pkg}</span>
+    let appIcon='📱';
+    if(window.AndroidBridge && AndroidBridge.getAppIcon){
+      try{const d=AndroidBridge.getAppIcon(app.pkg);if(d)appIcon=`<img src="${d}" style="width:32px;height:32px;border-radius:6px">`;}catch(e){}
+    }
+    row.innerHTML=`<div style="display:flex;align-items:center;gap:10px">
+        <span style="font-size:1.5em;flex-shrink:0">${appIcon}</span>
+        <div style="display:flex;flex-direction:column;gap:2px">
+          <span style="font-size:0.85em;font-weight:700;color:var(--text-primary)">${app.name}</span>
+          <span style="font-size:0.65em;color:var(--text-secondary)">${app.pkg}</span>
+        </div>
       </div>
       <span style="font-size:1.2em;color:var(--green)">+</span>`;
     const doAdd=()=>{
@@ -2766,10 +2773,16 @@ function buildHomeGrid(){
       };
       btn.onclick=doLaunch;
       btn.addEventListener('touchend',(e)=>{e.preventDefault();doLaunch();},{passive:false});
-      const icon=app.pid
-        ?`<img class="icon" src="https://static.arasaac.org/pictograms/${app.pid}/${app.pid}_500.png">`
-        :'<span class="icon" style="font-size:clamp(24px,4vh,48px)">📱</span>';
-      btn.innerHTML=`${icon}<span class="label">${app.name}</span>`;
+      let iconHtml='<span class="icon" style="font-size:clamp(24px,4vh,48px)">📱</span>';
+      if(app.pid){
+        iconHtml=`<img class="icon" src="https://static.arasaac.org/pictograms/${app.pid}/${app.pid}_500.png">`;
+      }else if(window.AndroidBridge && AndroidBridge.getAppIcon){
+        try{
+          const dataUri=AndroidBridge.getAppIcon(app.pkg);
+          if(dataUri) iconHtml=`<img class="icon" src="${dataUri}" style="border-radius:12px">`;
+        }catch(e){}
+      }
+      btn.innerHTML=`${iconHtml}<span class="label">${app.name}</span>`;
       container.appendChild(btn);
     }
   });

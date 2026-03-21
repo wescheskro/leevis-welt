@@ -394,7 +394,10 @@ public class MainActivity extends Activity {
             runOnUiThread(() -> {
                 try {
                     Intent intent = getPackageManager().getLaunchIntentForPackage(packageName);
-                    if (intent != null) startActivity(intent);
+                    if (intent != null) {
+                        startActivity(intent);
+                        showFloatingOverlay();
+                    }
                 } catch (Exception e) {
                     Log.e(TAG, "Failed to launch: " + packageName, e);
                 }
@@ -902,12 +905,51 @@ public class MainActivity extends Activity {
         return super.onKeyDown(keyCode, event);
     }
 
+    // ==================== Floating Overlay ====================
+
+    /** Show floating back-button overlay on top of other apps */
+    private void showFloatingOverlay() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !android.provider.Settings.canDrawOverlays(this)) {
+            // Request overlay permission
+            Intent permIntent = new Intent(android.provider.Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                Uri.parse("package:" + getPackageName()));
+            permIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(permIntent);
+            return;
+        }
+        Intent svc = new Intent(this, OverlayService.class);
+        startService(svc);
+    }
+
+    /** Hide floating overlay (called when returning to app) */
+    private void hideFloatingOverlay() {
+        try {
+            stopService(new Intent(this, OverlayService.class));
+        } catch (Exception e) {}
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        // Handle return from OverlayService
+        if (intent != null && intent.hasExtra("overlay_action")) {
+            String action = intent.getStringExtra("overlay_action");
+            hideFloatingOverlay();
+            if ("mood".equals(action) && webView != null) {
+                webView.evaluateJavascript("toggleMoodPicker()", null);
+            }
+            // "home" just brings us back (already done by the intent)
+        }
+    }
+
     // ==================== Lifecycle ====================
 
     @Override
     protected void onResume() {
         super.onResume();
         hideSystemUI();
+        hideFloatingOverlay();
         if (webView != null) webView.onResume();
         if (ytWebView != null && ytModeActive) ytWebView.onResume();
         startTimeLimitChecker();
