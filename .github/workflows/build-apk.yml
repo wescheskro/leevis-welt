@@ -46,6 +46,7 @@ jobs:
         path: android/app/build/outputs/apk/debug/LeevisWelt.apk
 
     - name: Create Release
+      continue-on-error: true
       uses: softprops/action-gh-release@v2
       with:
         tag_name: apk-v1.0.${{ github.run_number }}
