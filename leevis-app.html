@@ -585,7 +585,7 @@ body{
 
       <div class="dcard">
         <h3>📺 YouTube</h3>
-        <p style="font-size:0.85em;color:var(--text-secondary)">YouTube öffnet sich in einem eigenen Bildschirm mit nativen Buttons (Peppa, Stimmung, Zurück). Die APK muss neu gebaut werden für diese Funktion.</p>
+        <p style="font-size:0.85em;color:var(--text-secondary)">YouTube öffnet die echte YouTube-App. Ein schwebendes Overlay zeigt Peppa/Stimmung/Zurück-Buttons über YouTube. Die APK muss neu gebaut werden (v2.0).</p>
       </div>
 
       <div class="dcard">
@@ -1726,26 +1726,36 @@ function initAlphabetGrid(){
   }
 }
 
-// ===== YOUTUBE - NATIVE ANDROID OVERLAY =====
-// In APK: AndroidBridge.openYouTube() opens a second native WebView with
-// m.youtube.com and native floating buttons (Peppa, Stimmung, Zurück).
+// ===== YOUTUBE — LAUNCHES REAL YOUTUBE APP WITH FLOATING OVERLAY =====
+// In APK: AndroidBridge.openYouTube() opens the real YouTube app.
+// A floating OverlayService shows Peppa/Stimmung/Zurück buttons on top.
+// When Leevi taps Zurück, he returns to Leevis Welt (the launcher).
 // In browser: falls back to opening YouTube in a new tab.
 
 function initYouTube(){
-  // Nothing to init — the waiting screen is static HTML.
-  // YouTube is opened by launchYouTube() via Android bridge.
   bubbleSay('Viel Spaß mit Videos!');
 }
 
 function launchYouTube(){
-  // Show the YouTube waiting screen first
+  // Show the waiting screen (visible when Leevi returns via home button)
   go('youtube');
-  // Then open YouTube via Android bridge (native overlay with buttons)
+  // Launch real YouTube app + floating overlay
   if(window.AndroidBridge&&typeof AndroidBridge.openYouTube==='function'){
     AndroidBridge.openYouTube('');
   }else{
-    // Browser fallback: open YouTube in new tab
+    // Browser fallback
     window.open('https://m.youtube.com','_blank');
+  }
+}
+
+// Launch YouTube with a specific search (used by preset buttons if added)
+function launchYouTubeSearch(target){
+  go('youtube');
+  if(window.AndroidBridge&&typeof AndroidBridge.openYouTube==='function'){
+    AndroidBridge.openYouTube(target||'');
+  }else{
+    const urls={peppa:'https://m.youtube.com/results?search_query=Peppa+Pig+Deutsch',lieder:'https://m.youtube.com/results?search_query=Kinderlieder+deutsch',babybus:'https://m.youtube.com/results?search_query=BabyBus+Deutsch',sensory:'https://m.youtube.com/results?search_query=Hey+Bear+Sensory'};
+    window.open(urls[target]||'https://m.youtube.com','_blank');
   }
 }
 
