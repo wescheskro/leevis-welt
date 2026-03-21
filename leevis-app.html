@@ -399,7 +399,7 @@ body{
  * This enables motor memory (motorische Planung) for autistic users.
  * DO NOT reorder, hide conditionally, or change positions based on usage frequency.
  */
-.motor-bar{position:fixed;bottom:0;left:0;right:0;display:flex;align-items:center;justify-content:space-between;padding:clamp(3px,0.8vw,8px) clamp(8px,2vw,16px);height:auto;background:var(--dark-bg);border-top:2px solid var(--border);z-index:60;padding-bottom:max(clamp(3px,0.8vw,8px),env(safe-area-inset-bottom));pointer-events:auto;box-shadow:0 -4px 16px rgba(0,0,0,0.4)}
+.motor-bar{position:fixed;bottom:0;left:0;right:0;display:flex;align-items:center;justify-content:center;gap:clamp(12px,4vw,24px);padding:2px 8px;height:auto;background:var(--dark-bg);border-top:2px solid var(--border);z-index:60;padding-bottom:max(2px,env(safe-area-inset-bottom));pointer-events:auto;box-shadow:0 -4px 16px rgba(0,0,0,0.4)}
 .motor-btn{width:clamp(36px,8vw,52px);height:clamp(36px,8vw,52px);border-radius:50%;border:2px solid var(--border);background:var(--card-bg);font-size:clamp(0.8em,2vw,1.3em);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform 0.15s;touch-action:manipulation;flex-shrink:0;color:var(--text-primary)}
 .motor-btn:active{transform:scale(0.9)}
 
