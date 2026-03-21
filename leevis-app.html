@@ -1333,13 +1333,11 @@ function getAudioCtx(){
   }
   return audioCtx;
 }
-function resumeAudioCtx(){getAudioCtx()}
+function resumeAudioCtx(){if(audioCtx&&audioCtx.state==='suspended')audioCtx.resume().catch(()=>{});else getAudioCtx()}
 document.addEventListener('touchstart',resumeAudioCtx,{once:false,passive:true});
 document.addEventListener('click',resumeAudioCtx,{once:false});
 // WebView/Chrome erfordert User-Geste um AudioContext zu starten
-function resumeAudioCtx(){if(audioCtx.state==='suspended')audioCtx.resume()}
-document.addEventListener('touchstart',resumeAudioCtx,{once:true});
-document.addEventListener('click',resumeAudioCtx,{once:true});
+// resumeAudioCtx - consolidated (duplicate removed)
 
 const pianoNotes=[
   {note:'C',freq:261.63},{note:'D',freq:293.66},{note:'E',freq:329.63},{note:'F',freq:349.23},
@@ -2277,7 +2275,7 @@ function playYTVideo(v){
       if(results&&results.videos){
         results.videos.forEach(item=>{
           if(item.id===v.id)return;
-          const rv={id:item.id,title:item.snippet.title,thumb:item.snippet.thumbnails.medium.url};
+          const rv={id:item.id,title:item.title||'Video',thumb:item.thumb||('https://img.youtube.com/vi/'+item.id+'/mqdefault.jpg')};
           related.appendChild(createVideoCard(rv));
         });
       }
