@@ -2599,11 +2599,16 @@ function buildAddAppForm(editor){
 let _cachedDeviceApps=null;
 function getDeviceApps(){
   if(_cachedDeviceApps)return _cachedDeviceApps;
-  if(window.AndroidBridge && typeof AndroidBridge.getInstalledApps==='function'){
+  if(window.AndroidBridge){
     try{
-      _cachedDeviceApps=JSON.parse(AndroidBridge.getInstalledApps());
-      return _cachedDeviceApps;
-    }catch(e){}
+      const raw=AndroidBridge.getInstalledApps();
+      console.log('getInstalledApps raw length:',raw?raw.length:0);
+      if(raw){
+        _cachedDeviceApps=JSON.parse(raw);
+        console.log('Parsed apps:',_cachedDeviceApps.length);
+        return _cachedDeviceApps;
+      }
+    }catch(e){console.error('getInstalledApps error:',e);}
   }
   return [];
 }
@@ -2624,7 +2629,14 @@ function filterAppList(query){
   }
   container.innerHTML='';
   if(!allApps.length){
-    container.innerHTML='<p style="font-size:0.8em;color:var(--text-secondary)">App-Liste nicht verfügbar.</p>';
+    container.innerHTML=`<div style="margin-top:4px">
+      <p style="font-size:0.8em;color:var(--text-secondary);margin-bottom:8px">App-Liste nicht verfügbar. App manuell per Package-Name hinzufügen:</p>
+      <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+        <input id="manualPkgInput" type="text" placeholder="z.B. com.netflix.mediaclient" style="flex:1;min-width:160px;padding:8px 10px;border-radius:8px;border:2px solid var(--border);background:var(--card-bg2);color:var(--text-primary);font-size:0.85em">
+        <button onclick="handleManualAdd()" style="padding:8px 14px;border-radius:8px;border:2px solid var(--green);background:var(--green);color:#fff;font-weight:700;font-size:0.85em;cursor:pointer;white-space:nowrap">+ Hinzufügen</button>
+      </div>
+      <p id="manualAddMsg" style="font-size:0.75em;margin-top:6px;display:none"></p>
+    </div>`;
     return;
   }
   if(!available.length){
@@ -2650,6 +2662,31 @@ function filterAppList(query){
   if(available.length>20){
     container.innerHTML+='<p style="font-size:0.75em;color:var(--text-secondary);text-align:center;margin-top:4px">Tippe einen Namen ein um zu filtern...</p>';
   }
+}
+
+function handleManualAdd(){
+  const input=document.getElementById('manualPkgInput');
+  const msg=document.getElementById('manualAddMsg');
+  if(!input||!msg)return;
+  const pkg=input.value.trim();
+  if(!pkg){msg.style.display='block';msg.style.color='#C62828';msg.textContent='Bitte Package-Name eingeben.';return;}
+  if(knownExternalApps.some(a=>a.pkg===pkg)||getCustomApps().some(a=>a.pkg===pkg)){
+    msg.style.display='block';msg.style.color='#C62828';msg.textContent='Diese App ist bereits in der Liste.';return;
+  }
+  let name=pkg.split('.').pop();
+  if(window.AndroidBridge){
+    try{
+      if(AndroidBridge.isAppInstalled&&!AndroidBridge.isAppInstalled(pkg)){
+        msg.style.display='block';msg.style.color='#C62828';msg.textContent='App nicht gefunden. Ist sie installiert?';return;
+      }
+      const resolved=AndroidBridge.getAppName?AndroidBridge.getAppName(pkg):'';
+      if(resolved)name=resolved;
+    }catch(e){}
+  }
+  addCustomApp(pkg,name);
+  input.value='';
+  msg.style.display='block';msg.style.color='var(--green)';msg.textContent='✅ '+name+' hinzugefügt!';
+  buildExternalAppEditor();buildHomeGrid();
 }
 
 function buildExternalAppEditor(){
