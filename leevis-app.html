@@ -2841,14 +2841,21 @@ function parentSecretTap(){
 
 // ===== PARENT DASHBOARD =====
 function openPin(){
-  document.getElementById('pinOver').style.display='flex';
+  const po=document.getElementById('pinOver');
+  po.classList.remove('hidden');
+  po.style.display='flex';
+  document.getElementById('pinBoxWrap').style.display='';
+  document.getElementById('dashContent').style.display='none';
+  pinAttempt='';
   const pinPad=document.getElementById('pinPad');
   pinPad.innerHTML='';
   for(let i=1;i<=9;i++){
     const btn=document.createElement('button');
     btn.className='pin-n';
     btn.textContent=i;
-    btn.onclick=()=>enterPin(i.toString());
+    const digit=i.toString();
+    btn.onclick=()=>enterPin(digit);
+    btn.addEventListener('touchend',(e)=>{e.preventDefault();enterPin(digit);},{passive:false});
     pinPad.appendChild(btn);
   }
   const del=document.createElement('button');
