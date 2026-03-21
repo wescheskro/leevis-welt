@@ -1383,13 +1383,14 @@ function playTone(freq){
   }catch(e){console.warn("[Audio] playTone:",e)}
 }
 
-function playSound(name){
+function playSound(type){
   try{
-  const now=getAudioCtx().currentTime;
-  const gain=getAudioCtx().createGain();
-  gain.connect(getAudioCtx().destination);
+  const ctx=getAudioCtx();if(!ctx)return;
+  const now=ctx.currentTime;
+  const gain=ctx.createGain();
+  gain.connect(ctx.destination);
 
-  const osc=getAudioCtx().createOscillator();
+  const osc=ctx.createOscillator();
   osc.connect(gain);
 
   if(type==='click'){
