@@ -736,14 +736,24 @@ function go(screen){
   if(currentScreen==='credits')stopCreditsLoops();
   if(currentScreen==='sensory')stopSensory();
 
+  const map = { mood: "moodPicker", dash: "dashContent" };
+  const tid = map[screen] || screen;
+
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-  document.getElementById(screen).classList.add('active');
+  const el = document.getElementById(tid);
+  if(el) el.classList.add('active');
+  
   currentScreen=screen;
   try{playSound('click')}catch(e){}
   if(screen==='calm')initCalmMode();
   if(screen==='credits')initCredits();
   if(screen==='sensory')initSensory();
   if(screen==='learn'){initLearnCats();endGame()}
+  if(screen==='dash'){
+    if(typeof updateDashboard === 'function') updateDashboard();
+    if(typeof buildQuickSymbolEditor === 'function') buildQuickSymbolEditor();
+    if(typeof buildExternalAppEditor === 'function') buildExternalAppEditor();
+  }
   if(screen==='youtube')initYouTube();
   // Peppa zeigt passende Bilder je nach Screen
   const peppaScreenMap={home:'happy',aac:'happy',learn:'think',youtube:'happy',music:'music',credits:'happy',sensory:'play',calm:'sleep'};
