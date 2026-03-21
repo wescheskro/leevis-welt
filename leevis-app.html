@@ -1780,15 +1780,29 @@ function initYouTube(){
 }
 
 function launchYouTube(){
-  // Show the waiting screen (visible when Leevi returns via home button)
   go('youtube');
-  // Launch real YouTube app + floating overlay
-  if(window.AndroidBridge&&typeof AndroidBridge.openYouTube==='function'){
+  if(window.AndroidBridge && typeof AndroidBridge.isAppInstalled === 'function'){
+    if(AndroidBridge.isAppInstalled('com.google.android.youtube')){
+      window.location.href = "intent://#Intent;action=android.intent.action.MAIN;category=android.intent.category.LAUNCHER;package=com.google.android.youtube;end";
+      return;
+    }
+    if(AndroidBridge.isAppInstalled('com.amazon.youtube_apk')){
+      window.location.href = "intent://#Intent;action=android.intent.action.MAIN;category=android.intent.category.LAUNCHER;package=com.amazon.youtube_apk;end";
+      return;
+    }
+    if(AndroidBridge.isAppInstalled('com.google.android.apps.youtube.kids')){
+      window.location.href = "intent://#Intent;action=android.intent.action.MAIN;category=android.intent.category.LAUNCHER;package=com.google.android.apps.youtube.kids;end";
+      return;
+    }
+    if(typeof AndroidBridge.openYouTube === 'function'){
+      AndroidBridge.openYouTube('');
+      return;
+    }
+  }else if(window.AndroidBridge && typeof AndroidBridge.openYouTube === 'function'){
     AndroidBridge.openYouTube('');
-  }else{
-    // Browser fallback
-    window.open('https://m.youtube.com','_blank');
+    return;
   }
+  window.open('https://m.youtube.com','_blank');
 }
 
 // Launch YouTube with a specific search (used by preset buttons if added)
