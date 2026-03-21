@@ -2569,10 +2569,12 @@ function renderAppToggle(editor,app,pinned,isCustom){
     const del=document.createElement('div');
     del.style.cssText='position:absolute;top:-6px;right:-6px;background:#C62828;color:#fff;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:0.7em;font-weight:700;cursor:pointer;z-index:1;';
     del.textContent='✕';
-    del.onclick=(e)=>{e.stopPropagation();removeCustomApp(app.pkg);buildExternalAppEditor();buildHomeGrid();};
+    const doDel=(e)=>{e.stopPropagation();e.preventDefault();removeCustomApp(app.pkg);buildExternalAppEditor();buildHomeGrid();};
+    del.onclick=doDel;
+    del.addEventListener('touchend',doDel,{passive:false});
     btn.appendChild(del);
   }
-  btn.onclick=()=>{
+  const doToggle=()=>{
     let current=getPinnedApps();
     if(current.includes(app.pkg)) current=current.filter(p=>p!==app.pkg);
     else current.push(app.pkg);
@@ -2580,6 +2582,8 @@ function renderAppToggle(editor,app,pinned,isCustom){
     buildExternalAppEditor();
     buildHomeGrid();
   };
+  btn.onclick=doToggle;
+  btn.addEventListener('touchend',(e)=>{e.preventDefault();doToggle();},{passive:false});
   editor.appendChild(btn);
 }
 
@@ -2662,7 +2666,7 @@ function filterAppList(query){
         <span style="font-size:0.65em;color:var(--text-secondary)">${app.pkg}</span>
       </div>
       <span style="font-size:1.2em;color:var(--green)">+</span>`;
-    row.onclick=()=>{
+    const doAdd=()=>{
       addCustomApp(app.pkg,app.name);
       const p=getPinnedApps();if(!p.includes(app.pkg)){p.push(app.pkg);savePinnedApps(p);}
       _cachedDeviceApps=null;
@@ -2670,6 +2674,8 @@ function filterAppList(query){
       buildExternalAppEditor();
       buildHomeGrid();
     };
+    row.onclick=doAdd;
+    row.addEventListener('touchend',(e)=>{e.preventDefault();doAdd();},{passive:false});
     container.appendChild(row);
   });
   if(available.length>20){
