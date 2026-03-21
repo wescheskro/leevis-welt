@@ -2753,13 +2753,19 @@ function buildHomeGrid(){
     if(app){
       const btn=document.createElement('div');
       btn.className='home-btn';
-      btn.onclick=()=>{
+      const doLaunch=()=>{
         try{
           speak(app.name);
           bubbleSay(app.name);
-          fireIntent("intent://#Intent;action=android.intent.action.MAIN;category=android.intent.category.LAUNCHER;package="+app.pkg+";end");
-        }catch(e){}
+          if(window.AndroidBridge && AndroidBridge.launchApp){
+            AndroidBridge.launchApp(app.pkg);
+          }else{
+            fireIntent("intent://#Intent;action=android.intent.action.MAIN;category=android.intent.category.LAUNCHER;package="+app.pkg+";end");
+          }
+        }catch(e){console.error('Launch error:',e);}
       };
+      btn.onclick=doLaunch;
+      btn.addEventListener('touchend',(e)=>{e.preventDefault();doLaunch();},{passive:false});
       const icon=app.pid
         ?`<img class="icon" src="https://static.arasaac.org/pictograms/${app.pid}/${app.pid}_500.png">`
         :'<span class="icon" style="font-size:clamp(24px,4vh,48px)">📱</span>';
