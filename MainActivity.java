@@ -2,7 +2,11 @@ package com.leevi.welt;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
+
+import java.util.List;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
@@ -434,6 +438,28 @@ public class MainActivity extends Activity {
             } catch (PackageManager.NameNotFoundException e) {
                 return "";
             }
+        }
+
+        @JavascriptInterface
+        public String getInstalledApps() {
+            Intent mainIntent = new Intent(Intent.ACTION_MAIN, null);
+            mainIntent.addCategory(Intent.CATEGORY_LAUNCHER);
+            List<ResolveInfo> apps = getPackageManager().queryIntentActivities(mainIntent, 0);
+            StringBuilder sb = new StringBuilder("[");
+            boolean first = true;
+            for (ResolveInfo ri : apps) {
+                String pkg = ri.activityInfo.packageName;
+                // eigene App ausblenden
+                if (pkg.equals(getPackageName())) continue;
+                String name = ri.loadLabel(getPackageManager()).toString();
+                if (!first) sb.append(",");
+                first = false;
+                sb.append("{\"pkg\":\"").append(pkg.replace("\"", "\\\""))
+                  .append("\",\"name\":\"").append(name.replace("\"", "\\\""))
+                  .append("\"}");
+            }
+            sb.append("]");
+            return sb.toString();
         }
 
         @JavascriptInterface

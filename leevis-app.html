@@ -2586,41 +2586,70 @@ function renderAppToggle(editor,app,pinned,isCustom){
 function buildAddAppForm(editor){
   const wrap=document.createElement('div');
   wrap.style.cssText='width:100%;margin-top:12px;padding-top:12px;border-top:1px solid var(--border);';
-  wrap.innerHTML=`<p style="font-size:0.8em;font-weight:700;color:var(--text-primary);margin-bottom:8px">App manuell hinzufügen</p>
-    <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
-      <input id="customAppPkg" type="text" placeholder="Package-Name (z.B. com.example.app)" style="flex:1;min-width:180px;padding:8px 10px;border-radius:8px;border:2px solid var(--border);background:var(--card-bg2);color:var(--text-primary);font-size:0.85em">
-      <button onclick="handleAddCustomApp()" style="padding:8px 14px;border-radius:8px;border:2px solid var(--green);background:var(--green);color:#fff;font-weight:700;font-size:0.85em;cursor:pointer;white-space:nowrap">+ Hinzufügen</button>
-    </div>
-    <p id="customAppMsg" style="font-size:0.75em;margin-top:6px;display:none"></p>`;
+  wrap.innerHTML=`<p style="font-size:0.8em;font-weight:700;color:var(--text-primary);margin-bottom:8px">Weitere App hinzufügen</p>
+    <input id="appSearchInput" type="text" placeholder="App-Name suchen..." style="width:100%;padding:10px 12px;border-radius:8px;border:2px solid var(--border);background:var(--card-bg2);color:var(--text-primary);font-size:0.9em;box-sizing:border-box">
+    <div id="appSearchResults" style="margin-top:8px;max-height:250px;overflow-y:auto"></div>`;
   editor.appendChild(wrap);
+  const input=wrap.querySelector('#appSearchInput');
+  input.addEventListener('input',()=>filterAppList(input.value));
+  // Beim Fokus direkt alle Apps laden
+  input.addEventListener('focus',()=>{if(!input.value)filterAppList('');});
 }
 
-function handleAddCustomApp(){
-  const input=document.getElementById('customAppPkg');
-  const msg=document.getElementById('customAppMsg');
-  if(!input||!msg)return;
-  const pkg=input.value.trim();
-  if(!pkg){
-    msg.style.display='block';msg.style.color='#C62828';msg.textContent='Bitte Package-Name eingeben.';return;
+let _cachedDeviceApps=null;
+function getDeviceApps(){
+  if(_cachedDeviceApps)return _cachedDeviceApps;
+  if(window.AndroidBridge && typeof AndroidBridge.getInstalledApps==='function'){
+    try{
+      _cachedDeviceApps=JSON.parse(AndroidBridge.getInstalledApps());
+      return _cachedDeviceApps;
+    }catch(e){}
   }
-  if(knownExternalApps.some(a=>a.pkg===pkg)||getCustomApps().some(a=>a.pkg===pkg)){
-    msg.style.display='block';msg.style.color='#C62828';msg.textContent='Diese App ist bereits in der Liste.';return;
+  return [];
+}
+
+function filterAppList(query){
+  const container=document.getElementById('appSearchResults');
+  if(!container)return;
+  const allApps=getDeviceApps();
+  const pinned=getPinnedApps();
+  const custom=getCustomApps();
+  const knownPkgs=knownExternalApps.map(a=>a.pkg);
+  const customPkgs=custom.map(a=>a.pkg);
+  // Apps filtern die noch nicht in der Liste sind
+  let available=allApps.filter(a=>!knownPkgs.includes(a.pkg)&&!customPkgs.includes(a.pkg));
+  if(query.trim()){
+    const q=query.toLowerCase();
+    available=available.filter(a=>a.name.toLowerCase().includes(q)||a.pkg.toLowerCase().includes(q));
   }
-  if(window.AndroidBridge && typeof AndroidBridge.isAppInstalled==='function'){
-    if(!AndroidBridge.isAppInstalled(pkg)){
-      msg.style.display='block';msg.style.color='#C62828';msg.textContent='App nicht gefunden. Ist sie installiert?';return;
-    }
+  container.innerHTML='';
+  if(!allApps.length){
+    container.innerHTML='<p style="font-size:0.8em;color:var(--text-secondary)">App-Liste nicht verfügbar.</p>';
+    return;
   }
-  let name=pkg.split('.').pop();
-  if(window.AndroidBridge && typeof AndroidBridge.getAppName==='function'){
-    const resolved=AndroidBridge.getAppName(pkg);
-    if(resolved)name=resolved;
+  if(!available.length){
+    container.innerHTML='<p style="font-size:0.8em;color:var(--text-secondary)">'+(query.trim()?'Keine App gefunden.':'Alle Apps sind bereits hinzugefügt.')+'</p>';
+    return;
   }
-  addCustomApp(pkg,name);
-  input.value='';
-  msg.style.display='block';msg.style.color='var(--green)';msg.textContent='✅ '+name+' hinzugefügt!';
-  buildExternalAppEditor();
-  buildHomeGrid();
+  available.slice(0,20).forEach(app=>{
+    const row=document.createElement('div');
+    row.style.cssText='display:flex;align-items:center;justify-content:space-between;padding:8px 10px;border-radius:8px;border:1px solid var(--border);background:var(--card-bg2);margin-bottom:4px;cursor:pointer;transition:background 0.15s;';
+    row.innerHTML=`<div style="display:flex;flex-direction:column;gap:2px">
+        <span style="font-size:0.85em;font-weight:700;color:var(--text-primary)">${app.name}</span>
+        <span style="font-size:0.65em;color:var(--text-secondary)">${app.pkg}</span>
+      </div>
+      <span style="font-size:1.2em;color:var(--green)">+</span>`;
+    row.onclick=()=>{
+      addCustomApp(app.pkg,app.name);
+      _cachedDeviceApps=null;
+      buildExternalAppEditor();
+      buildHomeGrid();
+    };
+    container.appendChild(row);
+  });
+  if(available.length>20){
+    container.innerHTML+='<p style="font-size:0.75em;color:var(--text-secondary);text-align:center;margin-top:4px">Tippe einen Namen ein um zu filtern...</p>';
+  }
 }
 
 function buildExternalAppEditor(){
