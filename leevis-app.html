@@ -12,6 +12,7 @@
 <!-- Polyfills & Debug für ältere Android Tablets -->
 <script>
 window.onerror = function(msg, url, line, col, err) {
+  if (line === 0 || msg === 'Script error.') return false;
   alert("Fehler in Leevis Welt!\n" + msg + "\nZeile: " + line);
   return false;
 };
@@ -44,6 +45,8 @@ if (!String.prototype.includes) {
     return this.indexOf(search, start) !== -1;
   };
 }
+window.requestAnimationFrame = window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || function(cb){return setTimeout(cb,1000/60)};
+window.cancelAnimationFrame = window.cancelAnimationFrame || window.webkitCancelAnimationFrame || window.mozCancelAnimationFrame || clearTimeout;
 </script>
 <!-- Edge AI: TensorFlow.js + Speech Commands (lokal, keine Cloud) -->
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js" async></script>
@@ -748,6 +751,7 @@ const synth=window.speechSynthesis;
 let deVoice=null;
 
 function findGermanVoice(){
+  if (!synth || !synth.getVoices) return;
   const voices=synth.getVoices();
   // Premium-Stimmen bevorzugen (Siri, Google, Microsoft Neural, Enhanced)
   const premiumKeywords=['siri','premium','enhanced','neural','natural','google','samantha','anna'];
