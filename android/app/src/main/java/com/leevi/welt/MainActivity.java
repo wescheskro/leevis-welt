@@ -25,7 +25,7 @@ import android.widget.Toast;
 /**
  * Leevis Welt - Launcher App
  *
- * Tablet-Launcher für Leevi. Lädt die Web-App von GitHub Pages.
+ * Tablet-Launcher fÃ¼r Leevi. LÃ¤dt die Web-App von GitHub Pages.
  * Kann YouTube starten. Kiosk-Modus verhindert Verlassen.
  * Rotation erlaubt (Quer + Hochformat).
  */
@@ -35,7 +35,7 @@ public class MainActivity extends Activity {
     private WebView webView;
     private static final String APP_URL = "https://wescheskro.github.io/leevis-welt/leevis-app.html";
 
-    // Erlaubte Apps die gestartet werden dürfen
+    // Erlaubte Apps die gestartet werden dÃ¼rfen
     private static final String[] ALLOWED_PACKAGES = {
         "com.google.android.youtube",
         "com.google.android.apps.youtube.kids",
@@ -54,7 +54,7 @@ public class MainActivity extends Activity {
             WindowManager.LayoutParams.FLAG_FULLSCREEN
         );
 
-        // Screen bleibt an während App aktiv ist
+        // Screen bleibt an wÃ¤hrend App aktiv ist
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
         // Immersive Sticky Mode
@@ -73,7 +73,7 @@ public class MainActivity extends Activity {
         settings.setDomStorageEnabled(true);
         settings.setMediaPlaybackRequiresUserGesture(false);
         settings.setAllowFileAccess(true);
-        settings.setCacheMode(WebSettings.LOAD_DEFAULT);
+        settings.setCacheMode(WebSettings.LOAD_NO_CACHE);
         settings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
         settings.setDatabaseEnabled(true);
         settings.setLoadWithOverviewMode(false);
@@ -85,7 +85,7 @@ public class MainActivity extends Activity {
         settings.setAllowUniversalAccessFromFileURLs(true);
         settings.setTextZoom(100);
 
-        // Wichtig: User-Agent ergänzen damit Web-App erkennt dass sie in der APK läuft
+        // Wichtig: User-Agent ergÃ¤nzen damit Web-App erkennt dass sie in der APK lÃ¤uft
         String ua = settings.getUserAgentString();
         settings.setUserAgentString(ua + " LeevisWeltApp/1.0");
 
@@ -152,6 +152,7 @@ public class MainActivity extends Activity {
         });
 
         // App laden
+        webView.clearCache(true);
         webView.loadUrl(APP_URL);
     }
 
@@ -246,7 +247,7 @@ public class MainActivity extends Activity {
         }
 
         /**
-         * Web-App kann native Zurück-Navigation auslösen
+         * Web-App kann native ZurÃ¼ck-Navigation auslÃ¶sen
          */
         @JavascriptInterface
         public void goHome() {
@@ -281,7 +282,7 @@ public class MainActivity extends Activity {
     }
 
     /**
-     * ZURÜCK-BUTTON: Navigiert innerhalb der Web-App zurück zum Home-Screen.
+     * ZURÃCK-BUTTON: Navigiert innerhalb der Web-App zurÃ¼ck zum Home-Screen.
      * Wenn schon auf Home: nichts tun (Kiosk-Modus).
      */
     @Override
@@ -324,7 +325,7 @@ public class MainActivity extends Activity {
     }
 
     /**
-     * Rotation: WebView-State erhalten bei Konfigurationsänderung
+     * Rotation: WebView-State erhalten bei KonfigurationsÃ¤nderung
      */
     @Override
     protected void onSaveInstanceState(Bundle outState) {
