@@ -1,59 +1,66 @@
 package com.leevi.welt;
 
 import android.app.Activity;
-import android.content.ComponentName;
 import android.content.Intent;
+import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
+
+import java.util.List;
+import android.graphics.Color;
+import android.graphics.Typeface;
+import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.provider.Settings;
+import android.util.TypedValue;
+import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
-import android.webkit.ConsoleMessage;
+import android.webkit.CookieManager;
 import android.webkit.JavascriptInterface;
 import android.webkit.PermissionRequest;
+import android.util.Log;
+import android.webkit.ConsoleMessage;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceError;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.FrameLayout;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
-import android.util.Log;
 
 /**
- * Leevis Welt — Android Launcher for Leevi
+ * Leevis Welt - Launcher App
  *
- * This is a HOME LAUNCHER that replaces the normal Android home screen.
- * It loads the Leevis Welt web app in a fullscreen WebView.
- *
- * When Leevi opens YouTube (or any allowed app), a floating overlay service
- * (OverlayService) shows Peppa/Stimmung/Zurück buttons on top of everything.
- * The Zurück button brings Leevi back here.
- *
- * Registered as HOME + LAUNCHER in AndroidManifest.xml.
- * Uses SYSTEM_ALERT_WINDOW for the floating overlay buttons.
+ * Tablet-Launcher für Leevi. Lädt die Web-App von GitHub Pages.
+ * YouTube läuft in einem zweiten WebView mit nativen Overlay-Buttons.
+ * Kiosk-Modus verhindert Verlassen. Rotation erlaubt.
  */
 public class MainActivity extends Activity {
 
     private static final String TAG = "LeevisWelt";
     private static final String APP_URL = "https://wescheskro.github.io/leevis-welt/leevis-app.html";
 
-    // Apps Leevi is allowed to launch (controlled by parents)
+    // Erlaubte Apps die gestartet werden dürfen
     private static final String[] ALLOWED_PACKAGES = {
         "com.google.android.youtube",
         "com.google.android.apps.youtube.kids",
         "com.google.android.music",
-        "com.spotify.music",
-        "com.google.android.apps.photos",
-        "com.android.camera2",
-        "com.android.camera"
+        "com.spotify.music"
     };
 
-    private WebView webView;
+    private FrameLayout rootLayout;
+    private WebView webView;         // Main app WebView
+    private WebView ytWebView;       // YouTube WebView (overlay)
+    private LinearLayout ytOverlay;  // Native button bar on top of YouTube
+    private boolean ytModeActive = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,7 +73,7 @@ public class MainActivity extends Activity {
             WindowManager.LayoutParams.FLAG_FULLSCREEN
         );
 
-        // Screen bleibt an
+        // Screen bleibt an während App aktiv ist
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
         // Immersive Sticky Mode
@@ -75,42 +82,35 @@ public class MainActivity extends Activity {
         // WebView Debug (Chrome DevTools: chrome://inspect)
         WebView.setWebContentsDebuggingEnabled(true);
 
-        // WebView erstellen
+        // Root FrameLayout — stacks main WebView, YouTube WebView, and overlay
+        rootLayout = new FrameLayout(this);
+        rootLayout.setBackgroundColor(Color.BLACK);
+        setContentView(rootLayout);
+
+        // ===== 1. Main App WebView =====
         webView = new WebView(this);
-        setContentView(webView);
-
-        // WebView konfigurieren
-        WebSettings settings = webView.getSettings();
-        settings.setJavaScriptEnabled(true);
-        settings.setDomStorageEnabled(true);
-        settings.setMediaPlaybackRequiresUserGesture(false);
-        settings.setAllowFileAccess(true);
-        settings.setCacheMode(WebSettings.LOAD_NO_CACHE);
-        settings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
-        settings.setDatabaseEnabled(true);
-        settings.setLoadWithOverviewMode(false);
-        settings.setUseWideViewPort(false);
-        settings.setSupportZoom(false);
-        settings.setBuiltInZoomControls(false);
-        settings.setDisplayZoomControls(false);
-        settings.setAllowContentAccess(true);
-        settings.setAllowUniversalAccessFromFileURLs(true);
-        settings.setTextZoom(100);
-
-        // User-Agent: Web-App erkennt APK-Modus
-        String ua = settings.getUserAgentString();
-        settings.setUserAgentString(ua + " LeevisWeltApp/2.0");
+        configureWebView(webView);
+        rootLayout.addView(webView, new FrameLayout.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.MATCH_PARENT
+        ));
 
         // JavaScript-Bridge
         webView.addJavascriptInterface(new AppBridge(), "AndroidBridge");
 
-        // WebViewClient: Links in der App halten
+        // WebViewClient: Links innerhalb der App halten + YouTube abfangen
         webView.setWebViewClient(new WebViewClient() {
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, String url) {
-                // YouTube URLs → launch real YouTube app
+                // Custom protocol: app://youtube, app://youtube-peppa etc.
+                if (url.startsWith("app://youtube")) {
+                    String target = url.replace("app://youtube", "").replace("-", "");
+                    enterYouTubeMode(target);
+                    return true;
+                }
+                // Block any YouTube navigation in the main WebView
                 if (url.contains("youtube.com") || url.contains("youtu.be")) {
-                    launchExternalApp("com.google.android.youtube", url);
+                    enterYouTubeMode("");
                     return true;
                 }
                 // Intent-URLs abfangen
@@ -149,7 +149,7 @@ public class MainActivity extends Activity {
             }
         });
 
-        // WebChromeClient: Kamera/Mikrofon + Console
+        // WebChromeClient: Kamera/Mikrofon erlauben + Console-Logging
         webView.setWebChromeClient(new WebChromeClient() {
             @Override
             public void onPermissionRequest(final PermissionRequest request) {
@@ -163,98 +163,214 @@ public class MainActivity extends Activity {
             }
         });
 
-        // Request overlay permission on first launch (needed for floating buttons)
-        requestOverlayPermission();
+        // ===== 2. YouTube WebView (hidden initially) =====
+        ytWebView = new WebView(this);
+        configureWebView(ytWebView);
+        // YouTube braucht Third-Party Cookies
+        CookieManager.getInstance().setAcceptThirdPartyCookies(ytWebView, true);
+        ytWebView.setVisibility(View.GONE);
+        rootLayout.addView(ytWebView, new FrameLayout.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.MATCH_PARENT
+        ));
+
+        ytWebView.setWebViewClient(new WebViewClient() {
+            @Override
+            public boolean shouldOverrideUrlLoading(WebView view, String url) {
+                // Keep YouTube navigation inside the YouTube WebView
+                if (url.contains("youtube.com") || url.contains("youtu.be") || url.contains("google.com")) {
+                    return false; // let it load
+                }
+                // External links: open in main WebView or browser
+                return true; // block
+            }
+
+            @Override
+            public void onPageFinished(WebView view, String url) {
+                super.onPageFinished(view, url);
+                hideSystemUI();
+                // Inject CSS to add bottom padding so content isn't hidden behind overlay
+                view.evaluateJavascript(
+                    "(function(){ " +
+                    "  var s = document.createElement('style'); " +
+                    "  s.textContent = 'body { padding-bottom: 90px !important; }'; " +
+                    "  document.head.appendChild(s); " +
+                    "})()",
+                    null
+                );
+            }
+        });
+
+        ytWebView.setWebChromeClient(new WebChromeClient() {
+            @Override
+            public void onPermissionRequest(final PermissionRequest request) {
+                runOnUiThread(() -> request.grant(request.getResources()));
+            }
+        });
+
+        // ===== 3. Overlay Button Bar (native Android buttons) =====
+        buildOverlayBar();
 
         // App laden
         webView.clearCache(true);
         webView.loadUrl(APP_URL);
     }
 
-    @Override
-    protected void onNewIntent(Intent intent) {
-        super.onNewIntent(intent);
-        setIntent(intent);
+    /**
+     * Configure WebView settings (shared between main and YouTube WebViews)
+     */
+    private void configureWebView(WebView wv) {
+        WebSettings settings = wv.getSettings();
+        settings.setJavaScriptEnabled(true);
+        settings.setDomStorageEnabled(true);
+        settings.setMediaPlaybackRequiresUserGesture(false);
+        settings.setAllowFileAccess(true);
+        settings.setCacheMode(WebSettings.LOAD_DEFAULT);
+        settings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
+        settings.setDatabaseEnabled(true);
+        settings.setLoadWithOverviewMode(true);
+        settings.setUseWideViewPort(true);
+        settings.setSupportZoom(false);
+        settings.setBuiltInZoomControls(false);
+        settings.setDisplayZoomControls(false);
+        settings.setAllowContentAccess(true);
+        settings.setTextZoom(100);
 
-        // Handle overlay service callbacks
-        String action = intent.getStringExtra("overlay_action");
-        if (action != null) {
-            Log.d(TAG, "Overlay action: " + action);
-            if ("mood".equals(action)) {
-                // Open mood picker in web app
-                webView.evaluateJavascript("go('home');setTimeout(function(){toggleMoodPicker()},300)", null);
-            } else {
-                // Default: go home
-                webView.evaluateJavascript("go('home')", null);
-            }
+        // User-Agent: damit YouTube Mobile-Version liefert
+        String ua = settings.getUserAgentString();
+        settings.setUserAgentString(ua + " LeevisWeltApp/1.0");
+    }
+
+    /**
+     * Build the native overlay button bar for YouTube mode
+     * 3 buttons: 🐷 Peppa | 😊 Stimmung | ← Zurück
+     */
+    private void buildOverlayBar() {
+        int barHeight = dpToPx(80);
+
+        ytOverlay = new LinearLayout(this);
+        ytOverlay.setOrientation(LinearLayout.HORIZONTAL);
+        ytOverlay.setGravity(Gravity.CENTER_VERTICAL);
+        ytOverlay.setPadding(dpToPx(6), dpToPx(6), dpToPx(6), dpToPx(6));
+        ytOverlay.setVisibility(View.GONE);
+
+        // Semi-transparent dark background
+        GradientDrawable barBg = new GradientDrawable();
+        barBg.setColor(Color.argb(240, 15, 15, 26));
+        barBg.setCornerRadii(new float[]{
+            dpToPx(16), dpToPx(16), dpToPx(16), dpToPx(16), 0, 0, 0, 0
+        });
+        ytOverlay.setBackground(barBg);
+        ytOverlay.setElevation(dpToPx(8));
+
+        // --- Peppa Button ---
+        TextView peppaBtn = makeOverlayButton("🐷\nPeppa", new int[]{0xFFE91E63, 0xFFC2185B});
+        peppaBtn.setOnClickListener(v -> {
+            ytWebView.loadUrl("https://m.youtube.com/results?search_query=Peppa+Pig+Deutsch");
+        });
+
+        // --- Stimmung Button ---
+        TextView moodBtn = makeOverlayButton("😊\nStimmung", new int[]{0xFFFF9800, 0xFFE65100});
+        moodBtn.setOnClickListener(v -> {
+            // Exit YouTube mode and open mood picker in the app
+            exitYouTubeMode();
+            webView.evaluateJavascript("toggleMoodPicker()", null);
+        });
+
+        // --- Zurück Button (bigger, red) ---
+        TextView backBtn = makeOverlayButton("← Zurück", new int[]{0xFFE74C3C, 0xFFC0392B});
+        backBtn.setOnClickListener(v -> exitYouTubeMode());
+
+        // Add with weights: Peppa=1, Stimmung=1, Zurück=1.5
+        LinearLayout.LayoutParams lp1 = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1f);
+        lp1.setMargins(dpToPx(3), 0, dpToPx(3), 0);
+        LinearLayout.LayoutParams lp15 = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1.5f);
+        lp15.setMargins(dpToPx(3), 0, dpToPx(3), 0);
+
+        ytOverlay.addView(peppaBtn, lp1);
+        ytOverlay.addView(moodBtn, lp1);
+        ytOverlay.addView(backBtn, lp15);
+
+        // Position: bottom of screen
+        FrameLayout.LayoutParams overlayParams = new FrameLayout.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT, barHeight
+        );
+        overlayParams.gravity = Gravity.BOTTOM;
+        rootLayout.addView(ytOverlay, overlayParams);
+    }
+
+    /**
+     * Create a styled overlay button
+     */
+    private TextView makeOverlayButton(String text, int[] gradientColors) {
+        TextView btn = new TextView(this);
+        btn.setText(text);
+        btn.setTextColor(Color.WHITE);
+        btn.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
+        btn.setTypeface(Typeface.DEFAULT_BOLD);
+        btn.setGravity(Gravity.CENTER);
+        btn.setPadding(dpToPx(8), dpToPx(4), dpToPx(8), dpToPx(4));
+
+        GradientDrawable bg = new GradientDrawable(
+            GradientDrawable.Orientation.TL_BR,
+            gradientColors
+        );
+        bg.setCornerRadius(dpToPx(14));
+        btn.setBackground(bg);
+        btn.setElevation(dpToPx(4));
+
+        return btn;
+    }
+
+    /**
+     * Enter YouTube mode: show YouTube WebView + overlay, hide main app
+     * @param target optional target: "peppa", "lieder", "babybus", "sensory", or "" for home
+     */
+    private void enterYouTubeMode(String target) {
+        ytModeActive = true;
+
+        // Determine URL
+        String url;
+        if ("peppa".equals(target)) {
+            url = "https://m.youtube.com/results?search_query=Peppa+Pig+Deutsch";
+        } else if ("lieder".equals(target)) {
+            url = "https://m.youtube.com/results?search_query=Kinderlieder+deutsch+zum+Mitsingen";
+        } else if ("babybus".equals(target)) {
+            url = "https://m.youtube.com/results?search_query=BabyBus+Deutsch";
+        } else if ("sensory".equals(target)) {
+            url = "https://m.youtube.com/results?search_query=Hey+Bear+Sensory+Baby";
+        } else {
+            url = "https://m.youtube.com";
         }
+
+        // Show YouTube WebView on top of main WebView
+        ytWebView.setVisibility(View.VISIBLE);
+        ytWebView.loadUrl(url);
+
+        // Show overlay buttons
+        ytOverlay.setVisibility(View.VISIBLE);
 
         hideSystemUI();
+        Log.d(TAG, "YouTube mode entered: " + url);
     }
 
     /**
-     * Request SYSTEM_ALERT_WINDOW permission (needed for floating overlay)
+     * Exit YouTube mode: hide YouTube WebView + overlay, return to app
      */
-    private void requestOverlayPermission() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if (!Settings.canDrawOverlays(this)) {
-                // Open settings to grant permission
-                Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                    Uri.parse("package:" + getPackageName()));
-                startActivity(intent);
-                Toast.makeText(this,
-                    "Bitte 'Über anderen Apps anzeigen' erlauben für Leevis Welt",
-                    Toast.LENGTH_LONG).show();
-            }
-        }
-    }
+    private void exitYouTubeMode() {
+        ytModeActive = false;
 
-    /**
-     * Check if overlay permission is granted
-     */
-    private boolean hasOverlayPermission() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            return Settings.canDrawOverlays(this);
-        }
-        return true; // Pre-M doesn't need runtime permission
-    }
+        // Stop YouTube playback
+        ytWebView.loadUrl("about:blank");
+        ytWebView.setVisibility(View.GONE);
 
-    /**
-     * Launch an external app with the floating overlay buttons
-     */
-    private void launchExternalApp(String packageName, String url) {
-        try {
-            Intent intent;
-            if (url != null && !url.isEmpty()) {
-                // Open specific URL in the app
-                intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-                intent.setPackage(packageName);
-            } else {
-                // Just launch the app
-                intent = getPackageManager().getLaunchIntentForPackage(packageName);
-            }
+        // Hide overlay
+        ytOverlay.setVisibility(View.GONE);
 
-            if (intent != null) {
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                startActivity(intent);
-
-                // Start the floating overlay service (Peppa/Stimmung/Zurück buttons)
-                if (hasOverlayPermission()) {
-                    Intent overlayIntent = new Intent(this, OverlayService.class);
-                    startService(overlayIntent);
-                }
-                Log.d(TAG, "Launched: " + packageName + (url != null ? " with " + url : ""));
-            } else {
-                // App not installed — try as a generic intent
-                Intent generic = new Intent(Intent.ACTION_VIEW, Uri.parse(url != null ? url : "https://www.youtube.com"));
-                generic.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                startActivity(generic);
-                Log.d(TAG, "App not found, opened URL: " + url);
-            }
-        } catch (Exception e) {
-            Log.e(TAG, "Failed to launch " + packageName + ": " + e.getMessage());
-            Toast.makeText(this, "App konnte nicht gestartet werden", Toast.LENGTH_SHORT).show();
-        }
+        // Ensure main WebView is showing the app
+        // (it's been underneath the whole time, no reload needed)
+        hideSystemUI();
+        Log.d(TAG, "YouTube mode exited");
     }
 
     /**
@@ -262,42 +378,32 @@ public class MainActivity extends Activity {
      */
     public class AppBridge {
 
-        /**
-         * Launch YouTube (with optional search target)
-         * Targets: "peppa", "lieder", "babybus", "sensory", or "" for home
-         */
         @JavascriptInterface
         public void openYouTube(String target) {
-            runOnUiThread(() -> {
-                String url;
-                if ("peppa".equals(target)) {
-                    url = "https://www.youtube.com/results?search_query=Peppa+Pig+Deutsch";
-                } else if ("lieder".equals(target)) {
-                    url = "https://www.youtube.com/results?search_query=Kinderlieder+deutsch";
-                } else if ("babybus".equals(target)) {
-                    url = "https://www.youtube.com/results?search_query=BabyBus+Deutsch";
-                } else if ("sensory".equals(target)) {
-                    url = "https://www.youtube.com/results?search_query=Hey+Bear+Sensory";
-                } else {
-                    url = "https://www.youtube.com";
-                }
-                launchExternalApp("com.google.android.youtube", url);
-            });
+            runOnUiThread(() -> enterYouTubeMode(target != null ? target : ""));
         }
 
         @JavascriptInterface
         public void launchYouTube() {
-            runOnUiThread(() -> launchExternalApp("com.google.android.youtube", null));
+            runOnUiThread(() -> enterYouTubeMode(""));
         }
 
         @JavascriptInterface
         public void launchYouTubeKids() {
-            runOnUiThread(() -> launchExternalApp("com.google.android.apps.youtube.kids", null));
+            runOnUiThread(() -> {
+                try {
+                    Intent intent = getPackageManager().getLaunchIntentForPackage("com.google.android.apps.youtube.kids");
+                    if (intent != null) {
+                        startActivity(intent);
+                    } else {
+                        enterYouTubeMode("");
+                    }
+                } catch (Exception e) {
+                    enterYouTubeMode("");
+                }
+            });
         }
 
-        /**
-         * Launch any allowed app by package name
-         */
         @JavascriptInterface
         public void launchApp(String packageName) {
             runOnUiThread(() -> {
@@ -305,11 +411,11 @@ public class MainActivity extends Activity {
                 for (String pkg : ALLOWED_PACKAGES) {
                     if (pkg.equals(packageName)) { allowed = true; break; }
                 }
-                if (!allowed) {
-                    Log.w(TAG, "App not in allowed list: " + packageName);
-                    return;
-                }
-                launchExternalApp(packageName, null);
+                if (!allowed) return;
+                try {
+                    Intent intent = getPackageManager().getLaunchIntentForPackage(packageName);
+                    if (intent != null) startActivity(intent);
+                } catch (Exception e) {}
             });
         }
 
@@ -324,23 +430,49 @@ public class MainActivity extends Activity {
         }
 
         @JavascriptInterface
+        public String getAppName(String packageName) {
+            try {
+                return getPackageManager().getApplicationLabel(
+                    getPackageManager().getApplicationInfo(packageName, 0)
+                ).toString();
+            } catch (PackageManager.NameNotFoundException e) {
+                return "";
+            }
+        }
+
+        @JavascriptInterface
+        public String getInstalledApps() {
+            Intent mainIntent = new Intent(Intent.ACTION_MAIN, null);
+            mainIntent.addCategory(Intent.CATEGORY_LAUNCHER);
+            List<ResolveInfo> apps = getPackageManager().queryIntentActivities(mainIntent, 0);
+            StringBuilder sb = new StringBuilder("[");
+            boolean first = true;
+            for (ResolveInfo ri : apps) {
+                String pkg = ri.activityInfo.packageName;
+                // eigene App ausblenden
+                if (pkg.equals(getPackageName())) continue;
+                String name = ri.loadLabel(getPackageManager()).toString();
+                if (!first) sb.append(",");
+                first = false;
+                sb.append("{\"pkg\":\"").append(pkg.replace("\"", "\\\""))
+                  .append("\",\"name\":\"").append(name.replace("\"", "\\\""))
+                  .append("\"}");
+            }
+            sb.append("]");
+            return sb.toString();
+        }
+
+        @JavascriptInterface
         public boolean isLauncher() {
             return true;
         }
 
         @JavascriptInterface
-        public boolean hasOverlay() {
-            return hasOverlayPermission();
-        }
-
-        @JavascriptInterface
-        public void requestOverlay() {
-            runOnUiThread(() -> requestOverlayPermission());
-        }
-
-        @JavascriptInterface
         public void goHome() {
-            runOnUiThread(() -> webView.evaluateJavascript("go('home')", null));
+            runOnUiThread(() -> {
+                if (ytModeActive) exitYouTubeMode();
+                webView.evaluateJavascript("go('home')", null);
+            });
         }
     }
 
@@ -369,21 +501,30 @@ public class MainActivity extends Activity {
     }
 
     /**
-     * ZURÜCK-BUTTON: Navigiert innerhalb der Web-App zurück zum Home-Screen.
-     * Wenn schon auf Home: nichts tun (Kiosk-Modus).
+     * ZURÜCK-BUTTON: In YouTube mode exits YouTube. In app navigates home.
      */
     @Override
     public void onBackPressed() {
+        if (ytModeActive) {
+            // In YouTube mode: check if YouTube WebView can go back, otherwise exit
+            if (ytWebView.canGoBack()) {
+                ytWebView.goBack();
+            } else {
+                exitYouTubeMode();
+            }
+            return;
+        }
+        // In main app: navigate to home screen
         webView.evaluateJavascript(
             "(function(){ if(typeof currentScreen !== 'undefined' && currentScreen !== 'home'){ go('home'); return 'navigated'; } return 'home'; })()",
             value -> {
-                // Auf Home: nichts tun (Kiosk — Leevi kann App nicht verlassen)
+                // Wenn bereits auf Home: nichts tun (Kiosk)
             }
         );
     }
 
     /**
-     * Home-Button: Kiosk-Modus — App bleibt im Vordergrund
+     * Home-Button: App bleibt im Vordergrund (nur als Standard-Launcher)
      */
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
@@ -401,14 +542,14 @@ public class MainActivity extends Activity {
         super.onResume();
         hideSystemUI();
         if (webView != null) webView.onResume();
-        // Stop overlay when returning to Leevis Welt (user came back)
-        stopService(new Intent(this, OverlayService.class));
+        if (ytWebView != null && ytModeActive) ytWebView.onResume();
     }
 
     @Override
     protected void onPause() {
         super.onPause();
         if (webView != null) webView.onPause();
+        if (ytWebView != null) ytWebView.onPause();
     }
 
     @Override
@@ -421,5 +562,10 @@ public class MainActivity extends Activity {
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
         if (webView != null) webView.restoreState(savedInstanceState);
+    }
+
+    /** Helper: dp to pixels */
+    private int dpToPx(int dp) {
+        return (int) (dp * getResources().getDisplayMetrics().density + 0.5f);
     }
 }
