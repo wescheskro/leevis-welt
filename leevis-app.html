@@ -10,8 +10,8 @@
 <link rel="apple-touch-icon" href="images/peppa/peppa-wave.png">
 <title>Leevis Welt</title>
 <!-- Edge AI: TensorFlow.js + Speech Commands (lokal, keine Cloud) -->
-<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/speech-commands@0.5.4/dist/speech-commands.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js" async></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/speech-commands@0.5.4/dist/speech-commands.min.js" async></script>
 <!-- YouTube Data API v3: Fuer echte Video-Suche wie auf YouTube -->
 <style>
 /* ========================================================================
@@ -1279,6 +1279,10 @@ function updateLearnStars(){
 
 // ===== MUSIC SCREEN =====
 const audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+// WebView/Chrome erfordert User-Geste um AudioContext zu starten
+function resumeAudioCtx(){if(audioCtx.state==='suspended')audioCtx.resume()}
+document.addEventListener('touchstart',resumeAudioCtx,{once:true});
+document.addEventListener('click',resumeAudioCtx,{once:true});
 
 const pianoNotes=[
   {note:'C',freq:261.63},{note:'D',freq:293.66},{note:'E',freq:329.63},{note:'F',freq:349.23},
@@ -2818,6 +2822,13 @@ function initSensory(){
       const rect=sensoryCanvas.getBoundingClientRect();
       spawnSensoryChar(e.clientX-rect.left,e.clientY-rect.top);
     });
+    // Bei Rotation Canvas-Größe anpassen
+    window.addEventListener('resize',()=>{
+      if(currentScreen==='sensory'&&sensoryCanvas){
+        sensoryCanvas.width=window.innerWidth;
+        sensoryCanvas.height=window.innerHeight-120;
+      }
+    });
   }
 }
 
@@ -3243,7 +3254,7 @@ function exitApp(){
 }
 
 // ===== INITIALIZATION =====
-window.addEventListener('load',()=>{
+document.addEventListener('DOMContentLoaded',()=>{
   initAAC();
   initMusic();
   initYouTube();
@@ -3270,28 +3281,32 @@ function goFullscreen(){
   else if(el.webkitRequestFullscreen)el.webkitRequestFullscreen();
   else if(el.msRequestFullscreen)el.msRequestFullscreen();
 }
-// Beim ersten Touch/Klick automatisch Vollbild
-document.addEventListener('click',function fsOnce(){
-  goFullscreen();
-  document.removeEventListener('click',fsOnce);
-},{once:true});
-// Falls Vollbild verlassen wird, beim nächsten Touch wieder aktivieren
-document.addEventListener('fullscreenchange',()=>{
-  if(!document.fullscreenElement){
-    document.addEventListener('click',function fsAgain(){
-      goFullscreen();
-      document.removeEventListener('click',fsAgain);
-    },{once:true});
-  }
-});
-document.addEventListener('webkitfullscreenchange',()=>{
-  if(!document.webkitFullscreenElement){
-    document.addEventListener('click',function fsAgain(){
-      goFullscreen();
-      document.removeEventListener('click',fsAgain);
-    },{once:true});
-  }
-});
+// Beim ersten Touch/Klick automatisch Vollbild (nicht in nativer App - die ist schon fullscreen)
+if(!window.AndroidBridge){
+  document.addEventListener('click',function fsOnce(){
+    goFullscreen();
+    document.removeEventListener('click',fsOnce);
+  },{once:true});
+}
+// Falls Vollbild verlassen wird, beim nächsten Touch wieder aktivieren (nicht in nativer App)
+if(!window.AndroidBridge){
+  document.addEventListener('fullscreenchange',()=>{
+    if(!document.fullscreenElement){
+      document.addEventListener('click',function fsAgain(){
+        goFullscreen();
+        document.removeEventListener('click',fsAgain);
+      },{once:true});
+    }
+  });
+  document.addEventListener('webkitfullscreenchange',()=>{
+    if(!document.webkitFullscreenElement){
+      document.addEventListener('click',function fsAgain(){
+        goFullscreen();
+        document.removeEventListener('click',fsAgain);
+      },{once:true});
+    }
+  });
+}
 
 // --- Zurück-Button blockieren ---
 // History-Stack voll packen, damit Zurück nie raus navigiert
@@ -3391,6 +3406,12 @@ document.addEventListener('visibilitychange',()=>{
   async function startAIListener(){
     updateAIStatus('Modell lädt...');
     try{
+      // Prüfen ob TensorFlow.js geladen ist (async geladen)
+      if(typeof speechCommands==='undefined'||typeof tf==='undefined'){
+        updateAIStatus('KI-Bibliothek lädt noch... bitte warten');
+        setTimeout(()=>{if(!aiListening)startAIListener()},3000);
+        return;
+      }
       // Speech Commands Modell laden (BROWSER_FFT = Mikrofon-basiert)
       aiRecognizer=speechCommands.create('BROWSER_FFT');
       await aiRecognizer.ensureModelLoaded();

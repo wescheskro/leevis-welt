@@ -12,7 +12,10 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.webkit.JavascriptInterface;
 import android.webkit.PermissionRequest;
+import android.util.Log;
+import android.webkit.ConsoleMessage;
 import android.webkit.WebChromeClient;
+import android.webkit.WebResourceError;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
@@ -28,6 +31,7 @@ import android.widget.Toast;
  */
 public class MainActivity extends Activity {
 
+    private static final String TAG = "LeevisWelt";
     private WebView webView;
     private static final String APP_URL = "https://wescheskro.github.io/leevis-welt/leevis-app.html";
 
@@ -55,6 +59,9 @@ public class MainActivity extends Activity {
 
         // Immersive Sticky Mode
         hideSystemUI();
+
+        // WebView Debug (Chrome DevTools: chrome://inspect)
+        WebView.setWebContentsDebuggingEnabled(true);
 
         // WebView erstellen
         webView = new WebView(this);
@@ -119,15 +126,28 @@ public class MainActivity extends Activity {
             @Override
             public void onPageFinished(WebView view, String url) {
                 super.onPageFinished(view, url);
+                Log.d(TAG, "Page loaded: " + url);
                 hideSystemUI();
+            }
+
+            @Override
+            public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
+                super.onReceivedError(view, request, error);
+                Log.e(TAG, "WebView error: " + error.getDescription() + " URL: " + request.getUrl());
             }
         });
 
-        // WebChromeClient: Kamera/Mikrofon erlauben + Fullscreen für Videos
+        // WebChromeClient: Kamera/Mikrofon erlauben + Console-Logging
         webView.setWebChromeClient(new WebChromeClient() {
             @Override
             public void onPermissionRequest(final PermissionRequest request) {
                 runOnUiThread(() -> request.grant(request.getResources()));
+            }
+
+            @Override
+            public boolean onConsoleMessage(ConsoleMessage consoleMessage) {
+                Log.d(TAG, "JS: " + consoleMessage.message() + " (line " + consoleMessage.lineNumber() + ")");
+                return true;
             }
         });
 
