@@ -110,7 +110,7 @@ body{
   .home-subtitle{margin-bottom:clamp(2px,1vh,10px)}
   .home-grid{max-width:min(500px,70vw);gap:clamp(4px,1vh,10px)}
 }
-/* .parent-btn removed — now in .motor-bar (Motor Planning) */
+/* .parent-btn removed â now in .motor-bar (Motor Planning) */
 
 /* ===== TOP BAR ===== */
 .topbar{display:flex;align-items:center;padding:8px 14px;color:var(--text-primary);font-weight:700;font-size:1.2em;gap:10px;flex-shrink:0;border-bottom:1px solid var(--border)}
@@ -333,7 +333,7 @@ body{
 .calm-exit{background:rgba(224,224,224,0.15);border:1px solid rgba(224,224,224,0.2);color:var(--text-primary);padding:clamp(8px,1.5vw,12px) clamp(14px,3vw,24px);border-radius:clamp(10px,2vw,16px);font-size:clamp(0.8em,2vw,1em);cursor:pointer;font-weight:600;transition:all 0.2s;touch-action:manipulation}
 .calm-exit:active{background:rgba(224,224,224,0.25)}
 
-/* .mood-quick removed — now in .motor-bar (Motor Planning) */
+/* .mood-quick removed â now in .motor-bar (Motor Planning) */
 .mood-picker{position:fixed;bottom:clamp(50px,10vw,76px);left:12px;background:var(--card-bg);border-radius:clamp(12px,2.5vw,20px);padding:clamp(8px,1.5vw,14px);box-shadow:0 8px 30px rgba(0,0,0,0.5);z-index:61;display:none;gap:clamp(6px,1.2vw,10px);flex-wrap:wrap;width:50vw;height:50vh;overflow-y:auto;border:1px solid var(--border);align-content:start}
 .mood-picker.show{display:flex}
 .mood-pick{padding:clamp(3px,0.8vw,6px);cursor:pointer;border-radius:clamp(8px,2vw,14px);border:2px solid var(--border);background:var(--card-bg2);transition:all 0.15s;touch-action:manipulation;display:flex;flex-direction:column;align-items:center;gap:3px;width:clamp(60px,14vw,100px);min-height:clamp(60px,14vw,100px);justify-content:center}
@@ -413,44 +413,58 @@ body{
          Position 3 (mid-left): Videos   | Position 4 (mid-right): Musik
          Position 5 (bot-left): Abspann  | Position 6 (bot-right): Spielplatz -->
     <div class="home-grid">
-      <div class="home-btn" onclick="go('aac');playSound('click');speak('Sprechen');bubbleSay('Sprechen')"><img class="icon" src="https://static.arasaac.org/pictograms/6517/6517_500.png"><span class="label">Sprechen</span></div>
-      <div class="home-btn" onclick="go('learn');playSound('click');bubbleSay('Lernen')"><img class="icon" src="https://static.arasaac.org/pictograms/37810/37810_500.png"><span class="label">Lernen</span></div>
-      <div class="home-btn" onclick="launchYouTube();playSound('click');speak('Videos');bubbleSay('Videos')"><span class="icon" style="display:flex;align-items:center;justify-content:center"><svg viewBox="0 0 48 48" style="width:100%;height:100%"><rect x="2" y="8" width="44" height="32" rx="8" fill="#FF0000"/><polygon points="20,15 35,24 20,33" fill="#fff"/></svg></span><span class="label">Videos</span></div>
-      <div class="home-btn" onclick="go('music');playSound('click');speak('Musik');bubbleSay('Musik')"><img class="icon" src="https://static.arasaac.org/pictograms/24791/24791_500.png"><span class="label">Musik</span></div>
-      <div class="home-btn" onclick="go('credits');playSound('click');speak('Kino');bubbleSay('Kino')"><img class="icon" src="https://static.arasaac.org/pictograms/30387/30387_500.png"><span class="label">Kino</span></div>
-      <div class="home-btn" onclick="go('sensory');playSound('click');speak('Spielen');bubbleSay('Spielen')"><img class="icon" src="https://static.arasaac.org/pictograms/23392/23392_500.png"><span class="label">Spielen</span></div>
+      <div class="home-btn" onclick="try{go('aac');speak('Sprechen');bubbleSay('Sprechen')}catch(e){}"><img class="icon" src="https://static.arasaac.org/pictograms/6517/6517_500.png"><span class="label">Sprechen</span></div>
+      <div class="home-btn" onclick="try{go('learn');bubbleSay('Lernen')}catch(e){}"><img class="icon" src="https://static.arasaac.org/pictograms/37810/37810_500.png"><span class="label">Lernen</span></div>
+      <div class="home-btn" onclick="try{launchYouTube();speak('Videos');bubbleSay('Videos')}catch(e){}"><span class="icon" style="display:flex;align-items:center;justify-content:center"><svg viewBox="0 0 48 48" style="width:100%;height:100%"><rect x="2" y="8" width="44" height="32" rx="8" fill="#FF0000"/><polygon points="20,15 35,24 20,33" fill="#fff"/></svg></span><span class="label">Videos</span></div>
+      <div class="home-btn" onclick="try{go('music');speak('Musik');bubbleSay('Musik')}catch(e){}"><img class="icon" src="https://static.arasaac.org/pictograms/24791/24791_500.png"><span class="label">Musik</span></div>
+      <div class="home-btn" onclick="try{go('credits')}catch(e){};speak('Kino');bubbleSay('Kino')"><img class="icon" src="https://static.arasaac.org/pictograms/30387/30387_500.png"><span class="label">Kino</span></div>
+      <div class="home-btn" onclick="try{go('sensory')}catch(e){};speak('Spielen');bubbleSay('Spielen')"><img class="icon" src="https://static.arasaac.org/pictograms/23392/23392_500.png"><span class="label">Spielen</span></div>
     </div>
   </div>
 </div>
 
 <!-- AAC (SPRECHEN) SCREEN -->
 <div class="screen" id="aac">
-  <div class="topbar blue" style="flex-wrap:nowrap"><button class="back-btn" onclick="go('home')">←</button><div class="aac-cats" id="aacCats"></div></div>
+  <div class="topbar blue" style="flex-wrap:nowrap"><button class="back-btn" onclick="go('home')">â</button><div class="aac-cats" id="aacCats"></div></div>
   <div class="sentence-bar">
     <div class="sentence" id="sentence">Tippe auf Bilder...</div>
-    <button class="speak-btn" onclick="speakAll()">🔊</button>
-    <button class="clear-btn" onclick="clearWords()">✕</button>
+    <button class="speak-btn" onclick="speakAll()">ð</button>
+    <button class="clear-btn" onclick="clearWords()">â</button>
   </div>
   <div class="aac-grid" id="aacGrid"></div>
 </div>
 
 <!-- LEARN SCREEN -->
 <div class="screen" id="learn">
-  <div class="topbar green" style="flex-wrap:nowrap"><button class="back-btn" onclick="go('home')">←</button><div class="learn-cats" id="learnCats"></div></div>
+  <div class="topbar green" style="flex-wrap:nowrap"><button class="back-btn" onclick="go('home')">â</button><div class="learn-cats" id="learnCats"></div></div>
   <div class="game-area" id="gArea"></div>
 </div>
 
 <!-- MUSIC SCREEN -->
 <div class="screen" id="music">
-  <div class="topbar orange" style="flex-wrap:nowrap"><button class="back-btn" onclick="go('home')">←</button><div class="music-cats" id="musicCats"></div></div>
+  <div class="topbar orange" style="flex-wrap:nowrap"><button class="back-btn" onclick="go('home')">â</button><div class="music-cats" id="musicCats"></div></div>
   <div class="music-content" id="musicContent" style="flex:1;overflow-y:scroll;-webkit-overflow-scrolling:touch;padding:10px;touch-action:pan-y;min-height:0"></div>
 </div>
 
 <!-- YOUTUBE SCREEN -->
 
+<div class="screen" id="youtube">
+<div class="topbar red" style="flex-wrap:nowrap"><button class="back-btn" onclick="showYTGrid(currentYTCat||'⭐ Favoriten')">&#8592;</button><div class="yt-cats-wrap" id="ytCats" style="display:flex;gap:6px;overflow-x:auto;flex:1;-webkit-overflow-scrolling:touch"></div></div>
+<div class="yt-grid" id="ytGrid" style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;display:grid;grid-template-columns:repeat(2,1fr);gap:10px;padding:10px;align-content:start;touch-action:pan-y;min-height:0"></div>
+<div id="ytPlayer" style="display:none;flex:1;flex-direction:column">
+<div style="position:relative;width:100%;padding-top:56.25%;background:#000">
+<iframe id="ytPlayerFrame" style="position:absolute;top:0;left:0;width:100%;height:100%;border:none" allow="autoplay;encrypted-media" allowfullscreen></iframe>
+</div>
+<div style="padding:10px">
+<button class="back-btn" onclick="showYTGrid(currentYTCat||'⭐ Favoriten')" style="margin-bottom:8px">&#8592; Zur\u00fcck</button>
+<div id="ytPlayerTitle" style="font-size:1.1em;font-weight:700;color:var(--text-primary);margin-bottom:8px"></div>
+<div id="ytRelated" style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px"></div>
+</div>
+</div>
+</div>
 <!-- CREDITS SCREEN (CINEMATIC FULLSCREEN) -->
 <div class="screen" id="credits">
-  <div class="topbar purple"><button class="back-btn" onclick="go('home')">←</button>🎬 Abspann</div>
+  <div class="topbar purple"><button class="back-btn" onclick="go('home')">â</button>ð¬ Abspann</div>
   <div class="credits-container">
     <div class="credits-bg"></div>
     <div class="credits-scroll" id="creditsScroll"></div>
@@ -462,7 +476,7 @@ body{
         <div class="cs-options">
           <button class="cs-opt active" onclick="setCreditsFontSize('small')">Klein</button>
           <button class="cs-opt" onclick="setCreditsFontSize('medium')">Mittel</button>
-          <button class="cs-opt" onclick="setCreditsFontSize('large')">Groß</button>
+          <button class="cs-opt" onclick="setCreditsFontSize('large')">GroÃ</button>
         </div>
       </div>
       <div class="cs-row">
@@ -504,19 +518,19 @@ body{
     <!-- Bottom Speed Bar -->
     <div class="credits-controls">
       <div class="credits-speed-bar">
-        <span class="credits-speed-label">🐢</span>
+        <span class="credits-speed-label">ð¢</span>
         <input type="range" class="credits-speed-slider" id="creditsSpeedBar" min="0" max="100" step="1" value="25" oninput="setCreditsSpeedFromBar(this.value)">
-        <span class="credits-speed-label">🐇</span>
+        <span class="credits-speed-label">ð</span>
         <span class="credits-speed-val" id="speedDisplay">1.0</span>
       </div>
-      <button class="credits-settings-btn" onclick="toggleCreditsSettings()" id="creditsSettingsBtn" style="display:none">⚙</button>
+      <button class="credits-settings-btn" onclick="toggleCreditsSettings()" id="creditsSettingsBtn" style="display:none">â</button>
     </div>
   </div>
 </div>
 
 <!-- SENSORY PLAYGROUND SCREEN (NEW) -->
 <div class="screen" id="sensory">
-  <button class="back-btn" onclick="go('home')" style="position:absolute;top:12px;left:12px;z-index:10">←</button>
+  <button class="back-btn" onclick="go('home')" style="position:absolute;top:12px;left:12px;z-index:10">â</button>
   <div class="sensory-container">
     <canvas id="sensoryCanvas"></canvas>
     <div class="sensory-mode">
@@ -530,10 +544,10 @@ body{
 <!-- CALM MODE SCREEN -->
 <div class="screen" id="calm">
   <div style="flex:1;display:flex;flex-direction:column">
-    <div class="topbar purple"><button class="back-btn" onclick="go('home')">←</button>🌙 Ruhezeit</div>
+    <div class="topbar purple"><button class="back-btn" onclick="go('home')">â</button>ð Ruhezeit</div>
     <div class="calm-content">
       <div class="calm-stars" id="calmStars"></div>
-      <div class="calm-moon">🌙</div>
+      <div class="calm-moon">ð</div>
       <div class="calm-breathing"></div>
       <div class="calm-breathtext" id="breathtext">Ein... Aus...</div>
       <div class="calm-text">Atme langsam und ruhig...</div>
@@ -543,8 +557,8 @@ body{
         <button class="calm-snd" onclick="playCalmSound('ocean')"><img src="https://static.arasaac.org/pictograms/2925/2925_500.png" style="width:50px;height:50px;object-fit:contain"><span class="csl">Meer</span></button>
       </div>
       <div class="calm-buttons">
-        <button class="calm-exit" onclick="go('home')">← Zurück</button>
-        <button class="calm-exit" onclick="go('credits')">🎬 Abspann</button>
+        <button class="calm-exit" onclick="go('home')">â ZurÃ¼ck</button>
+        <button class="calm-exit" onclick="go('credits')">ð¬ Abspann</button>
       </div>
     </div>
   </div>
@@ -554,7 +568,7 @@ body{
 <div class="pin-over hidden" id="pinOver" style="display:none">
   <div id="pinBoxWrap" style="z-index:1001">
     <div class="pin-box">
-      <h2>🔒 PIN</h2>
+      <h2>ð PIN</h2>
       <p>Eltern-PIN eingeben</p>
       <div class="pin-dots" id="pinDots"></div>
       <div class="pin-pad" id="pinPad"></div>
@@ -564,12 +578,12 @@ body{
   <div style="position:absolute;top:0;left:0;right:0;bottom:0;overflow-y:scroll;-webkit-overflow-scrolling:touch;display:none;padding:clamp(10px,2vw,20px);touch-action:pan-y" id="dashContent">
     <div class="dash">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:clamp(6px,1.5vw,12px)">
-        <h2 style="color:var(--text-primary);margin:0">👨‍👩‍👦 Elternbereich</h2>
-        <button onclick="closePin()" style="background:none;border:none;color:var(--text-secondary);font-size:1.8em;cursor:pointer;padding:4px 8px">✕</button>
+        <h2 style="color:var(--text-primary);margin:0">ð¨âð©âð¦ Elternbereich</h2>
+        <button onclick="closePin()" style="background:none;border:none;color:var(--text-secondary);font-size:1.8em;cursor:pointer;padding:4px 8px">â</button>
       </div>
 
       <div class="dcard">
-        <h3>⏱️ Nutzer Heute</h3>
+        <h3>â±ï¸ Nutzer Heute</h3>
         <div class="srow">
           <span class="slbl">Gesamtzeit</span>
           <span class="sval" id="totalTime">0 min</span>
@@ -578,7 +592,7 @@ body{
       </div>
 
       <div class="dcard">
-        <h3>⭐ Lernfortschritt</h3>
+        <h3>â­ Lernfortschritt</h3>
         <div class="srow">
           <span class="slbl">Zahlen</span>
           <span class="sval" id="numStars">0%</span>
@@ -592,60 +606,60 @@ body{
       </div>
 
       <div class="dcard">
-        <h3>💙 Stimmung Heute</h3>
+        <h3>ð Stimmung Heute</h3>
         <div id="moodLog"></div>
       </div>
 
       <div class="dcard">
-        <h3>📺 YouTube API Keys (Rotation)</h3>
-        <p style="font-size:0.8em;color:var(--text-secondary);margin-bottom:8px">Mehrere Keys kommagetrennt eingeben. Bei Quota-Limit wechselt die App automatisch zum nächsten Key.</p>
+        <h3>ðº YouTube API Keys (Rotation)</h3>
+        <p style="font-size:0.8em;color:var(--text-secondary);margin-bottom:8px">Mehrere Keys kommagetrennt eingeben. Bei Quota-Limit wechselt die App automatisch zum nÃ¤chsten Key.</p>
         <textarea id="ytApiKeyInput" placeholder="AIza..., AIza..., AIza..." rows="3" style="width:100%;padding:8px 12px;border-radius:8px;border:1px solid var(--border);background:var(--dark-bg2);color:var(--text-primary);font-size:0.85em;box-sizing:border-box;margin-bottom:6px;resize:vertical;font-family:monospace"></textarea>
         <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-          <button class="close-dash-btn" onclick="saveYTApiKey()" style="background:var(--category-green);color:#fff;border-color:var(--green)">💾 Speichern</button>
+          <button class="close-dash-btn" onclick="saveYTApiKey()" style="background:var(--category-green);color:#fff;border-color:var(--green)">ð¾ Speichern</button>
           <span id="ytKeyCount" style="font-size:0.8em;color:var(--accent-blue)"></span>
           <span id="ytApiKeyStatus" style="font-size:0.75em;color:var(--text-secondary)"></span>
         </div>
       </div>
 
       <div class="dcard">
-        <h3>🧠 KI-Gehör (Edge AI)</h3>
+        <h3>ð§  KI-GehÃ¶r (Edge AI)</h3>
         <div class="srow">
           <span class="slbl">Status</span>
           <span class="sval" id="aiListenStatus">Inaktiv</span>
         </div>
-        <button class="close-dash-btn" id="aiListenBtn" onclick="toggleAIListener()" style="background:var(--category-purple);color:#fff;border-color:var(--purple);margin-top:4px">🎙️ KI-Gehör aktivieren</button>
+        <button class="close-dash-btn" id="aiListenBtn" onclick="toggleAIListener()" style="background:var(--category-purple);color:#fff;border-color:var(--purple);margin-top:4px">ðï¸ KI-GehÃ¶r aktivieren</button>
       </div>
 
       <div class="dcard">
-        <h3>😊 Schnellzugriff-Symbole</h3>
-        <p style="font-size:0.8em;color:var(--text-secondary);margin-bottom:10px">Wähle welche Symbole im Smiley-Menü (unten links) angezeigt werden. Tippe zum An-/Abwählen.</p>
+        <h3>ð Schnellzugriff-Symbole</h3>
+        <p style="font-size:0.8em;color:var(--text-secondary);margin-bottom:10px">WÃ¤hle welche Symbole im Smiley-MenÃ¼ (unten links) angezeigt werden. Tippe zum An-/AbwÃ¤hlen.</p>
         <div id="quickSymbolEditor" style="display:flex;flex-wrap:wrap;gap:8px"></div>
       </div>
 
       <div class="dcard" id="installCard">
-        <h3>📲 App installieren</h3>
+        <h3>ð² App installieren</h3>
         <p style="font-size:0.8em;color:var(--text-secondary);margin-bottom:10px">Installiere Leevis Welt als App auf dem Homescreen.</p>
-        <button class="close-dash-btn" id="installBtn" onclick="doInstall()" style="background:#1565C0;color:#fff;border-color:#1565C0;font-size:1em;padding:10px 20px">📲 Jetzt installieren</button>
+        <button class="close-dash-btn" id="installBtn" onclick="doInstall()" style="background:#1565C0;color:#fff;border-color:#1565C0;font-size:1em;padding:10px 20px">ð² Jetzt installieren</button>
         <div id="installGuide" style="display:none;margin-top:12px;text-align:left;font-size:0.85em;color:var(--text-primary);line-height:1.6">
           <div style="background:var(--dark-bg2);border-radius:12px;padding:14px;border:1px solid var(--border)">
             <p style="font-weight:700;margin-bottom:8px;font-size:1.1em">iPhone / iPad Anleitung:</p>
-            <p>1. Tippe unten auf <span style="display:inline-block;background:#007AFF;color:#fff;border-radius:4px;padding:1px 6px;font-size:0.95em">↑</span> (Teilen-Button)</p>
+            <p>1. Tippe unten auf <span style="display:inline-block;background:#007AFF;color:#fff;border-radius:4px;padding:1px 6px;font-size:0.95em">â</span> (Teilen-Button)</p>
             <p>2. Scrolle runter und tippe auf <b>"Zum Home-Bildschirm"</b></p>
-            <p>3. Tippe oben rechts auf <b>"Hinzufügen"</b></p>
+            <p>3. Tippe oben rechts auf <b>"HinzufÃ¼gen"</b></p>
             <p style="margin-top:8px;color:var(--text-secondary);font-size:0.9em">Danach findest du Leevis Welt als App-Icon auf deinem Homescreen!</p>
           </div>
         </div>
-        <p id="installDone" style="display:none;color:#4CAF50;font-weight:700;margin-top:8px">✅ App wurde installiert!</p>
+        <p id="installDone" style="display:none;color:#4CAF50;font-weight:700;margin-top:8px">â App wurde installiert!</p>
       </div>
 
       <div class="dcard">
-        <h3>🚪 App beenden</h3>
-        <p style="font-size:0.8em;color:var(--text-secondary);margin-bottom:8px">Schließt die App. Nur hier möglich.</p>
-        <button class="close-dash-btn" onclick="exitApp()" style="background:#C62828;color:#fff;border-color:#C62828;font-size:1em;padding:10px 20px">🚪 App beenden</button>
+        <h3>ðª App beenden</h3>
+        <p style="font-size:0.8em;color:var(--text-secondary);margin-bottom:8px">SchlieÃt die App. Nur hier mÃ¶glich.</p>
+        <button class="close-dash-btn" onclick="exitApp()" style="background:#C62828;color:#fff;border-color:#C62828;font-size:1em;padding:10px 20px">ðª App beenden</button>
       </div>
 
-      <button class="reset-btn" onclick="resetData()">Daten zurücksetzen</button>
-      <button class="close-dash-btn" onclick="closePin()">Schließen</button>
+      <button class="reset-btn" onclick="resetData()">Daten zurÃ¼cksetzen</button>
+      <button class="close-dash-btn" onclick="closePin()">SchlieÃen</button>
     </div>
   </div>
 </div>
@@ -663,11 +677,11 @@ body{
      Position: Mood=left, Parent=center, Credits=right
      These buttons are ALWAYS visible on EVERY screen at the SAME position.
      DO NOT reorder, hide conditionally, or change positions based on usage. -->
-<button id="ytScrollTopBtn" class="scroll-top-btn" onclick="document.getElementById('ytGrid').scrollTo({top:0,behavior:'smooth'})">▲</button>
+<button id="ytScrollTopBtn" class="scroll-top-btn" onclick="document.getElementById('ytGrid').scrollTo({top:0,behavior:'smooth'})">â²</button>
 <div class="motor-bar" id="motorBar">
   <button class="motor-btn" onclick="toggleMoodPicker()" id="moodBtn"><img src="https://static.arasaac.org/pictograms/6517/6517_500.png" style="width:70%;height:70%;object-fit:contain"></button>
-  <button class="motor-btn" onclick="go('home');playSound('click')" style="background:var(--category-blue);border-color:var(--accent-blue);color:#fff;font-size:clamp(1.6em,4vw,2.6em)">🏠</button>
-  <button class="motor-btn" onclick="go('credits');playSound('click')"><img src="https://static.arasaac.org/pictograms/9183/9183_500.png" style="width:70%;height:70%;object-fit:contain"></button>
+  <button class="motor-btn" onclick="try{go('home')}catch(e){}" style="background:var(--category-blue);border-color:var(--accent-blue);color:#fff;font-size:clamp(1.6em,4vw,2.6em)">ð </button>
+  <button class="motor-btn" onclick="try{go('credits')}catch(e){}"><img src="https://static.arasaac.org/pictograms/9183/9183_500.png" style="width:70%;height:70%;object-fit:contain"></button>
 </div>
 <div class="mood-picker" id="moodPicker">
   <button class="mood-pick" onclick="quickSpeak('Hilfe',12252)"><img src="https://static.arasaac.org/pictograms/12252/12252_500.png"><span class="mood-label">Hilfe</span></button>
@@ -709,7 +723,7 @@ function go(screen){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById(screen).classList.add('active');
   currentScreen=screen;
-  playSound('click');
+  try{playSound('click')}catch(e){};
   if(screen==='calm')initCalmMode();
   if(screen==='credits')initCredits();
   if(screen==='sensory')initSensory();
@@ -717,9 +731,10 @@ function go(screen){
   // Peppa zeigt passende Bilder je nach Screen
   const peppaScreenMap={home:'happy',aac:'happy',learn:'think',youtube:'happy',music:'music',credits:'happy',sensory:'play',calm:'sleep'};
   setPeppa(peppaScreenMap[screen]||'happy');
-  // Peppa ist jetzt standardmäßig versteckt, erscheint nur kurz bei bubbleSay()
+  // Peppa ist jetzt standardmÃ¤Ãig versteckt, erscheint nur kurz bei bubbleSay()
   const buddy=document.getElementById('buddy');
   if(screen==='home'){buddy.style.display='none'}else{buddy.style.display='';buddy.classList.remove('visible')}
+  if(screen==='youtube')initYouTube();
 }
 
 // ===== TEXT-TO-SPEECH (High-Quality Audio First) =====
@@ -740,11 +755,11 @@ function findGermanVoice(){
   if(!deVoice) deVoice=deVoices.find(v=>!v.localService===false);
   // Dann irgendeine deutsche Stimme
   if(!deVoice) deVoice=deVoices[0]||null;
-  if(deVoice) console.log('[TTS] Stimme gewählt:',deVoice.name,'('+deVoice.lang+')');
+  if(deVoice) console.log('[TTS] Stimme gewÃ¤hlt:',deVoice.name,'('+deVoice.lang+')');
 }
 if(synth&&synth.onvoiceschanged!==undefined)synth.onvoiceschanged=findGermanVoice;
 findGermanVoice();
-// Voices laden manchmal verzögert
+// Voices laden manchmal verzÃ¶gert
 setTimeout(findGermanVoice,500);
 setTimeout(findGermanVoice,2000);
 
@@ -771,7 +786,7 @@ function speakWithTTS(text){
 function speak(text){
   stopCurrentAudio();
   // 1. Versuche hochwertige MP3 aus audio/speech/
-  const file=text.toLowerCase().replace(/ä/g,'ae').replace(/ö/g,'oe').replace(/ü/g,'ue').replace(/ß/g,'ss').replace(/ /g,'-').replace(/[^a-z0-9\-]/g,'');
+  const file=text.toLowerCase().replace(/Ã¤/g,'ae').replace(/Ã¶/g,'oe').replace(/Ã¼/g,'ue').replace(/Ã/g,'ss').replace(/ /g,'-').replace(/[^a-z0-9\-]/g,'');
   const mp3=new Audio('audio/speech/'+file+'.mp3');
   mp3.volume=1;
   currentSpeechAudio=mp3;
@@ -796,7 +811,7 @@ function speakAll(){
 function speakSequence(texts,idx){
   if(idx>=texts.length) return;
   stopCurrentAudio();
-  const file=texts[idx].toLowerCase().replace(/ä/g,'ae').replace(/ö/g,'oe').replace(/ü/g,'ue').replace(/ß/g,'ss').replace(/ /g,'-').replace(/[^a-z0-9\-]/g,'');
+  const file=texts[idx].toLowerCase().replace(/Ã¤/g,'ae').replace(/Ã¶/g,'oe').replace(/Ã¼/g,'ue').replace(/Ã/g,'ss').replace(/ /g,'-').replace(/[^a-z0-9\-]/g,'');
   const mp3=new Audio('audio/speech/'+file+'.mp3');
   mp3.volume=1;
   currentSpeechAudio=mp3;
@@ -883,74 +898,74 @@ function bennyReact(emotion){
 
 // ===== AAC PICTOGRAMS =====
 const aacData={
-  'Bedürfnisse':{icon:'🖐️',color:'pink',items:[
+  'BedÃ¼rfnisse':{icon:'ðï¸',color:'pink',items:[
     {text:'Hilfe',pid:12252},{text:'Wasser',pid:32464},{text:'Essen',pid:6456},{text:'Ruhe',pid:7076},
     {text:'Spielen',pid:23392},{text:'Musik',pid:24791},{text:'Mama',pid:2458},{text:'Papa',pid:31146},
     {text:'Toilette',pid:5921},{text:'Schlafen',pid:6479},{text:'Anziehen',pid:6627},{text:'Ausziehen',pid:11233},
-    {text:'Waschen',pid:34826},{text:'Zähne putzen',pid:2326},{text:'Trinken',pid:6061},{text:'Kuscheln',pid:6023},
+    {text:'Waschen',pid:34826},{text:'ZÃ¤hne putzen',pid:2326},{text:'Trinken',pid:6061},{text:'Kuscheln',pid:6023},
     {text:'Tragen',pid:8983},{text:'Windel',pid:22017},{text:'Medizin',pid:8163},{text:'Durst',pid:7273}
   ]},
-  'Gefühle':{icon:'💙',color:'orange',items:[
-    {text:'Glücklich',pid:35547},{text:'Traurig',pid:35545},{text:'Müde',pid:35537},{text:'Wütend',pid:35539},
+  'GefÃ¼hle':{icon:'ð',color:'orange',items:[
+    {text:'GlÃ¼cklich',pid:35547},{text:'Traurig',pid:35545},{text:'MÃ¼de',pid:35537},{text:'WÃ¼tend',pid:35539},
     {text:'Angst',pid:10261},{text:'Ja',pid:5584},{text:'Nein',pid:5526},{text:'Mehr',pid:34312},
-    {text:'Liebe',pid:8020},{text:'Stolz',pid:31408},{text:'Überraschung',pid:8517},{text:'Langeweile',pid:35553},
-    {text:'Aufgeregt',pid:8582},{text:'Krank',pid:3308},{text:'Schmerzen',pid:2367},{text:'Heiß',pid:2300},
-    {text:'Kalt',pid:4652},{text:'Laut',pid:7157},{text:'Leise',pid:2528},{text:'Schön',pid:26114}
+    {text:'Liebe',pid:8020},{text:'Stolz',pid:31408},{text:'Ãberraschung',pid:8517},{text:'Langeweile',pid:35553},
+    {text:'Aufgeregt',pid:8582},{text:'Krank',pid:3308},{text:'Schmerzen',pid:2367},{text:'HeiÃ',pid:2300},
+    {text:'Kalt',pid:4652},{text:'Laut',pid:7157},{text:'Leise',pid:2528},{text:'SchÃ¶n',pid:26114}
   ]},
-  'Essen':{icon:'🍽️',color:'green',items:[
-    {text:'Brot',pid:2494},{text:'Milch',pid:2445},{text:'Obst',pid:28339},{text:'Gemüse',pid:29131},
-    {text:'Kuchen',pid:2502},{text:'Käse',pid:2541},{text:'Fleisch',pid:2316},{text:'Ei',pid:2427},
+  'Essen':{icon:'ð½ï¸',color:'green',items:[
+    {text:'Brot',pid:2494},{text:'Milch',pid:2445},{text:'Obst',pid:28339},{text:'GemÃ¼se',pid:29131},
+    {text:'Kuchen',pid:2502},{text:'KÃ¤se',pid:2541},{text:'Fleisch',pid:2316},{text:'Ei',pid:2427},
     {text:'Apfel',pid:2462},{text:'Banane',pid:2530},{text:'Nudeln',pid:8652},{text:'Reis',pid:39387},
     {text:'Suppe',pid:2573},{text:'Keks',pid:8312},{text:'Schokolade',pid:25940},{text:'Saft',pid:11461},
     {text:'Tee',pid:2429},{text:'Joghurt',pid:2618},{text:'Pizza',pid:2527},{text:'Pommes',pid:10227},
     {text:'Wurst',pid:8554},{text:'Eis',pid:7128}
   ]},
-  'Aktivitäten':{icon:'⚽',color:'blue',items:[
-    {text:'Spaziergang',pid:8651},{text:'Draußen',pid:5475},{text:'Fernsehen',pid:29123},{text:'Auto fahren',pid:2339},
+  'AktivitÃ¤ten':{icon:'â½',color:'blue',items:[
+    {text:'Spaziergang',pid:8651},{text:'DrauÃen',pid:5475},{text:'Fernsehen',pid:29123},{text:'Auto fahren',pid:2339},
     {text:'Tanzen',pid:35747},{text:'Laufen',pid:6465},{text:'Schwimmen',pid:6568},{text:'Lesen',pid:7141},
     {text:'Malen',pid:5574},{text:'Basteln',pid:7794},{text:'Schaukeln',pid:5430},{text:'Rutschen',pid:7016},
     {text:'Klettern',pid:8226},{text:'Fahrrad',pid:6935},{text:'Singen',pid:6960},{text:'Bauen',pid:2713},
     {text:'Puzzle',pid:2540},{text:'Ball',pid:35371},{text:'Turnen',pid:10156},{text:'Baden',pid:6058},
     {text:'Kochen',pid:2342}
   ]},
-  'Personen':{icon:'👨‍👩‍👦',color:'purple',items:[
+  'Personen':{icon:'ð¨âð©âð¦',color:'purple',items:[
     {text:'Lehrer',pid:6556},{text:'Freund',pid:38939},{text:'Bruder',pid:2423},{text:'Schwester',pid:2422},
     {text:'Opa',pid:23718},{text:'Oma',pid:23710},{text:'Arzt',pid:6561},{text:'Leevi',pid:7176},
-    {text:'Baby',pid:6060},{text:'Mädchen',pid:27509},{text:'Kind',pid:36560},{text:'Familie',pid:38351},
+    {text:'Baby',pid:6060},{text:'MÃ¤dchen',pid:27509},{text:'Kind',pid:36560},{text:'Familie',pid:38351},
     {text:'Therapeut',pid:24680},{text:'Nachbar',pid:26529},{text:'Polizist',pid:37367},{text:'Feuerwehr',pid:6066}
   ]},
-  'Orte':{icon:'🏠',color:'red',items:[
+  'Orte':{icon:'ð ',color:'red',items:[
     {text:'Schule',pid:32446},{text:'Kindergarten',pid:31470},{text:'Zuhause',pid:6964},{text:'Spielplatz',pid:33064},
     {text:'Supermarkt',pid:3389},{text:'Krankenhaus',pid:36210},{text:'Schwimmbad',pid:30516},{text:'Park',pid:35863},
     {text:'Kirche',pid:3118},{text:'Bauernhof',pid:32482}
   ]},
-  'Tiere':{icon:'🐾',color:'green',items:[
+  'Tiere':{icon:'ð¾',color:'green',items:[
     {text:'Hund',pid:7202},{text:'Katze',pid:7114},{text:'Pferd',pid:2294},{text:'Vogel',pid:2490},
-    {text:'Fisch',pid:2520},{text:'Hase',pid:2351},{text:'Bär',pid:2488},{text:'Schmetterling',pid:26200},
+    {text:'Fisch',pid:2520},{text:'Hase',pid:2351},{text:'BÃ¤r',pid:2488},{text:'Schmetterling',pid:26200},
     {text:'Kuh',pid:2609},{text:'Schwein',pid:24972}
   ]},
-  'Kleidung':{icon:'👕',color:'blue',items:[
-    {text:'Hose',pid:2565},{text:'Jacke',pid:2319},{text:'Schuhe',pid:2622},{text:'Mütze',pid:39395},
+  'Kleidung':{icon:'ð',color:'blue',items:[
+    {text:'Hose',pid:2565},{text:'Jacke',pid:2319},{text:'Schuhe',pid:2622},{text:'MÃ¼tze',pid:39395},
     {text:'Socken',pid:2298},{text:'Pullover',pid:2436},{text:'Kleid',pid:2613},{text:'Handschuhe',pid:2415},
     {text:'Brille',pid:3329},{text:'Rucksack',pid:2475}
   ]},
-  'Körper':{icon:'🫀',color:'orange',items:[
-    {text:'Kopf',pid:10386},{text:'Bauch',pid:2786},{text:'Hand',pid:37077},{text:'Fuß',pid:25327},
+  'KÃ¶rper':{icon:'ð«',color:'orange',items:[
+    {text:'Kopf',pid:10386},{text:'Bauch',pid:2786},{text:'Hand',pid:37077},{text:'FuÃ',pid:25327},
     {text:'Auge',pid:6573},{text:'Ohr',pid:2871},{text:'Mund',pid:2663},{text:'Nase',pid:2887},
     {text:'Zahn',pid:10267},{text:'Herz',pid:4613}
   ]}
 };
 
-function initAAC(){
+function try{initAAC()}catch(e){console.error("[Init] AAC failed:",e)}{
   const cats=Object.keys(aacData);
-  const allCats=['⭐ Favoriten',...cats];
+  const allCats=['â­ Favoriten',...cats];
   const catsDiv=document.getElementById('aacCats');
   catsDiv.innerHTML='';
   allCats.forEach((cat,i)=>{
     const btn=document.createElement('div');
-    if(cat==='⭐ Favoriten'){
+    if(cat==='â­ Favoriten'){
       btn.className='aac-cat red';
-      btn.innerHTML='<div class="cat-icon">⭐</div>';
+      btn.innerHTML='<div class="cat-icon">â­</div>';
     }else{
       btn.className=`aac-cat ${aacData[cat].color}`;
       btn.innerHTML=`<div class="cat-icon">${aacData[cat].icon}</div>`;
@@ -972,14 +987,14 @@ function selectAACCat(cat,btn){
   btn.classList.add('active');
   currentAACCat=cat;
   displayAACCards();
-  bubbleSay('Wähle ein Bild!');
+  bubbleSay('WÃ¤hle ein Bild!');
 }
 
 function displayAACCards(){
   const grid=document.getElementById('aacGrid');
-  const items=currentAACCat==='⭐ Favoriten'?getAACFavorites():aacData[currentAACCat].items;
-  if(currentAACCat==='⭐ Favoriten'&&items.length===0){
-    grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text-secondary);font-size:1.1em">Noch keine Favoriten – benutze ein paar Symbole!</div>';
+  const items=currentAACCat==='â­ Favoriten'?getAACFavorites():aacData[currentAACCat].items;
+  if(currentAACCat==='â­ Favoriten'&&items.length===0){
+    grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text-secondary);font-size:1.1em">Noch keine Favoriten â benutze ein paar Symbole!</div>';
     return;
   }
   grid.innerHTML='';
@@ -1021,40 +1036,40 @@ function updateSentence(){
   }
 }
 
-function clearWords(){words=[];updateSentence();playSound('click');bubbleSay('Gelöscht!')}
+function clearWords(){words=[];updateSentence();playSound('click');bubbleSay('GelÃ¶scht!')}
 
 // ===== LEARNING GAMES =====
 const gameConfigs={
-  emotions:{title:'Gefühle',icon:'😊',questions:8,promptAudio:'frage-gefuehl',
+  emotions:{title:'GefÃ¼hle',icon:'ð',questions:8,promptAudio:'frage-gefuehl',
     all:[
-      {name:'Fröhlich',emoji:'😊',img:'images/peppa/peppa-emotion-happy.png',audio:'froehlich'},
-      {name:'Traurig',emoji:'😢',img:'images/peppa/peppa-emotion-sad.png',audio:'traurig'},
-      {name:'Wütend',emoji:'😠',img:'images/peppa/peppa-emotion-angry.png',audio:'wuetend'},
-      {name:'Angst',emoji:'😨',img:'images/peppa/peppa-emotion-scared.png',audio:'angst'},
-      {name:'Überrascht',emoji:'😲',img:'images/peppa/peppa-emotion-surprised.png',audio:'ueberrascht'},
-      {name:'Müde',emoji:'😴',img:'images/peppa/peppa-emotion-tired.png',audio:'muede'},
-      {name:'Verliebt',emoji:'😍',img:'images/peppa/peppa-emotion-love.png',audio:'verliebt'},
-      {name:'Lustig',emoji:'😂',img:'images/peppa/peppa-emotion-funny.png',audio:'lustig'}
+      {name:'FrÃ¶hlich',emoji:'ð',img:'images/peppa/peppa-emotion-happy.png',audio:'froehlich'},
+      {name:'Traurig',emoji:'ð¢',img:'images/peppa/peppa-emotion-sad.png',audio:'traurig'},
+      {name:'WÃ¼tend',emoji:'ð ',img:'images/peppa/peppa-emotion-angry.png',audio:'wuetend'},
+      {name:'Angst',emoji:'ð¨',img:'images/peppa/peppa-emotion-scared.png',audio:'angst'},
+      {name:'Ãberrascht',emoji:'ð²',img:'images/peppa/peppa-emotion-surprised.png',audio:'ueberrascht'},
+      {name:'MÃ¼de',emoji:'ð´',img:'images/peppa/peppa-emotion-tired.png',audio:'muede'},
+      {name:'Verliebt',emoji:'ð',img:'images/peppa/peppa-emotion-love.png',audio:'verliebt'},
+      {name:'Lustig',emoji:'ð',img:'images/peppa/peppa-emotion-funny.png',audio:'lustig'}
     ]},
-  numbers:{title:'Zahlen',icon:'🔢',questions:8,promptAudio:'frage-zahl'},
-  letters:{title:'Buchstaben',icon:'🔤',letters:'ABCDEFGHIJKLMNOPQRSTUVWXYZ',questions:8,promptAudio:'frage-buchstabe'},
-  counting:{title:'Zählen',icon:'🔢',range:[1,8],questions:8,promptAudio:'frage-zaehlen'},
-  colors:{title:'Farben',icon:'🎨',questions:8,promptAudio:'frage-farbe',
+  numbers:{title:'Zahlen',icon:'ð¢',questions:8,promptAudio:'frage-zahl'},
+  letters:{title:'Buchstaben',icon:'ð¤',letters:'ABCDEFGHIJKLMNOPQRSTUVWXYZ',questions:8,promptAudio:'frage-buchstabe'},
+  counting:{title:'ZÃ¤hlen',icon:'ð¢',range:[1,8],questions:8,promptAudio:'frage-zaehlen'},
+  colors:{title:'Farben',icon:'ð¨',questions:8,promptAudio:'frage-farbe',
     all:[
       {name:'Rot',hex:'#C62828',audio:'rot'},{name:'Blau',hex:'#1565C0',audio:'blau'},
-      {name:'Grün',hex:'#2E7D32',audio:'gruen'},{name:'Gelb',hex:'#F9A825',audio:'gelb'},
+      {name:'GrÃ¼n',hex:'#2E7D32',audio:'gruen'},{name:'Gelb',hex:'#F9A825',audio:'gelb'},
       {name:'Orange',hex:'#E65100',audio:'orange'},{name:'Rosa',hex:'#D81B60',audio:'rosa'},
       {name:'Lila',hex:'#6A1B9A',audio:'lila'},{name:'Braun',hex:'#4E342E',audio:'braun'}
     ]},
-  shapes:{title:'Formen',icon:'⬟',questions:8,promptAudio:'frage-form',
+  shapes:{title:'Formen',icon:'â¬',questions:8,promptAudio:'frage-form',
     all:[
-      {name:'Kreis',symbol:'⬤',audio:'kreis'},{name:'Dreieck',symbol:'▲',audio:'dreieck'},
-      {name:'Quadrat',symbol:'■',audio:'quadrat'},{name:'Stern',symbol:'★',audio:'stern'},
-      {name:'Herz',symbol:'♥',audio:'herz'},{name:'Raute',symbol:'◆',audio:'raute'}
+      {name:'Kreis',symbol:'â¬¤',audio:'kreis'},{name:'Dreieck',symbol:'â²',audio:'dreieck'},
+      {name:'Quadrat',symbol:'â ',audio:'quadrat'},{name:'Stern',symbol:'â',audio:'stern'},
+      {name:'Herz',symbol:'â¥',audio:'herz'},{name:'Raute',symbol:'â',audio:'raute'}
     ]}
 };
 
-const countEmojis=['🐷','🐱','🐶','🐸','🐧','🦊','🐰','🐮','🦁','🐵','🐔','🦋'];
+const countEmojis=['ð·','ð±','ð¶','ð¸','ð§','ð¦','ð°','ð®','ð¦','ðµ','ð','ð¦'];
 const feedbackCorrect=['richtig','super','toll-gemacht'];
 const feedbackWrong=['nein-falsch','nein-probier-nochmal'];
 
@@ -1165,7 +1180,7 @@ function nextQuestion(){
   }else if(currentGame.type==='emotions'){
     const emoObj=cfg.all[Math.floor(Math.random()*cfg.all.length)];
     correct=emoObj.name;
-    promptText='Wie fühlt sich Peppa?';
+    promptText='Wie fÃ¼hlt sich Peppa?';
     visualHTML=`<div class="g-visual"><img src="${emoObj.img}" style="width:180px;height:180px;object-fit:contain;filter:drop-shadow(0 4px 12px rgba(0,0,0,0.3))"></div>`;
     const wrongs=pickUnique(cfg.all.map(e=>e.name),3,correct);
     options=[correct,...wrongs];
@@ -1188,7 +1203,7 @@ function optionAudioFile(opt){
 
 function renderOptions(correct,opts){
   /* MOTOR PLANNING: Options sorted deterministically (smaller/earlier always left).
-   * DO NOT randomize — child builds motor memory for spatial answer patterns. */
+   * DO NOT randomize â child builds motor memory for spatial answer patterns. */
   opts=[...new Set(opts)].filter(o=>o!==undefined&&o!==null).slice(0,4);
   while(opts.length<4){
     const filler=typeof correct==='number'?correct+opts.length+1:'?';
@@ -1238,7 +1253,7 @@ function checkAnswer(isCorrect,btn){
   }
 }
 
-function endGame(){currentGame=null;currentLearnCat=null;initLearnCats();document.getElementById('gArea').innerHTML='<div style="flex:1;display:flex;align-items:center;justify-content:center;color:var(--text-secondary);font-size:1.3em">Wähle ein Spiel!</div>';setTimeout(()=>playGameAudio('waehle-ein-spiel'),300)}
+function endGame(){currentGame=null;currentLearnCat=null;initLearnCats();document.getElementById('gArea').innerHTML='<div style="flex:1;display:flex;align-items:center;justify-content:center;color:var(--text-secondary);font-size:1.3em">WÃ¤hle ein Spiel!</div>';setTimeout(()=>playGameAudio('waehle-ein-spiel'),300)}
 function endGameRound(){
   const stars=Math.min(3,Math.ceil((currentGame.score/currentGame.total)*3));
   const typeKey=currentGame.type;
@@ -1246,7 +1261,7 @@ function endGameRound(){
   if(stars>progress)setState(typeKey+'_progress',stars);
 
   const starIcons=Array.from({length:3},(_,i)=>
-    `<span class="g-star">${i<stars?'⭐':'☆'}</span>`
+    `<span class="g-star">${i<stars?'â­':'â'}</span>`
   ).join('');
 
   const msgs=['Weiter so!','Du bist toll!','Perfekt!'];
@@ -1259,7 +1274,7 @@ function endGameRound(){
       <div class="g-msg">${msg}</div>
       <div class="g-score-text">${currentGame.score} von ${currentGame.total} richtig!</div>
       <button class="g-again" onclick="startGame('${currentGame.type}')">Nochmal!</button>
-      <button class="g-again" style="background:var(--category-blue)" onclick="endGame()">Zurück</button>
+      <button class="g-again" style="background:var(--category-blue)" onclick="endGame()">ZurÃ¼ck</button>
     </div>`;
 
   playGameAudio('du-bist-toll');
@@ -1273,12 +1288,29 @@ function updateLearnStars(){
     const el=document.getElementById(id);
     if(!el)return;
     const p=parseInt(getState(type+'_progress','0'));
-    el.textContent=Array.from({length:3},(_,i)=>i<p?'⭐':'☆').join('');
+    el.textContent=Array.from({length:3},(_,i)=>i<p?'â­':'â').join('');
   });
 }
 
 // ===== MUSIC SCREEN =====
-const audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+let audioCtx=null;
+function getAudioCtx(){
+  if(!audioCtx){
+    try{
+      audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+    }catch(e){
+      console.warn('[Audio] AudioContext nicht verfuegbar:',e);
+      return null;
+    }
+  }
+  if(audioCtx&&audioCtx.state==='suspended'){
+    audioCtx.resume().catch(()=>{});
+  }
+  return audioCtx;
+}
+function resumeAudioCtx(){getAudioCtx()}
+document.addEventListener('touchstart',resumeAudioCtx,{once:false,passive:true});
+document.addEventListener('click',resumeAudioCtx,{once:false});
 // WebView/Chrome erfordert User-Geste um AudioContext zu starten
 function resumeAudioCtx(){if(audioCtx.state==='suspended')audioCtx.resume()}
 document.addEventListener('touchstart',resumeAudioCtx,{once:true});
@@ -1311,24 +1343,29 @@ function initPiano(){
 }
 
 function playTone(freq){
-  const osc=audioCtx.createOscillator();
-  const gain=audioCtx.createGain();
+  const ctx=getAudioCtx();
+  if(!ctx)return;
+  try{
+  const osc=ctx.createOscillator();
+  const gain=ctx.createGain();
   osc.connect(gain);
-  gain.connect(audioCtx.destination);
+  gain.connect(ctx.destination);
   osc.frequency.value=freq;
   osc.type='sine';
-  gain.gain.setValueAtTime(0.3,audioCtx.currentTime);
-  gain.gain.exponentialRampToValueAtTime(0.01,audioCtx.currentTime+0.5);
-  osc.start(audioCtx.currentTime);
-  osc.stop(audioCtx.currentTime+0.5);
+  gain.gain.setValueAtTime(0.3,ctx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.15);
+  osc.start();
+  osc.stop(ctx.currentTime+0.15);
+  }catch(e){console.warn('[Audio] playTone error:',e)}
 }
 
-function playSound(type){
-  const now=audioCtx.currentTime;
-  const gain=audioCtx.createGain();
-  gain.connect(audioCtx.destination);
+function playSound(name){
+try{
+  const now=getAudioCtx().currentTime;
+  const gain=getAudioCtx().createGain();
+  gain.connect(getAudioCtx().destination);
 
-  const osc=audioCtx.createOscillator();
+  const osc=getAudioCtx().createOscillator();
   osc.connect(gain);
 
   if(type==='click'){
@@ -1361,39 +1398,41 @@ function playSound(type){
     osc.start(now);
     osc.stop(now+0.3);
   }
+
+}catch(e){console.warn("[Audio] playSound error:",e)}
 }
 
 // ===== MUSIC CATEGORY SYSTEM =====
 const musicData={
-  'Tiere':{icon:'🐾',animals:[
-    {name:'Küken',sound:'Piep piep!',pid:2533},{name:'Hund',sound:'Wau wau!',pid:7202},
+  'Tiere':{icon:'ð¾',animals:[
+    {name:'KÃ¼ken',sound:'Piep piep!',pid:2533},{name:'Hund',sound:'Wau wau!',pid:7202},
     {name:'Kuh',sound:'Muuuh!',pid:2609},{name:'Ente',sound:'Quak quak!',pid:28479},
-    {name:'Schaf',sound:'Määäh!',pid:2489},{name:'Schwein',sound:'Oink!',pid:24972},
+    {name:'Schaf',sound:'MÃ¤Ã¤Ã¤h!',pid:2489},{name:'Schwein',sound:'Oink!',pid:24972},
     {name:'Pferd',sound:'Wiieher!',pid:2294},{name:'Frosch',sound:'Quaaak!',pid:28473},
-    {name:'Huhn',sound:'Gack gack!',pid:2403},{name:'Bär',sound:'Grrrr!',pid:2488},
-    {name:'Affe',sound:'Uuh uuh!',pid:2477},{name:'Elefant',sound:'Törööö!',pid:2372},
+    {name:'Huhn',sound:'Gack gack!',pid:2403},{name:'BÃ¤r',sound:'Grrrr!',pid:2488},
+    {name:'Affe',sound:'Uuh uuh!',pid:2477},{name:'Elefant',sound:'TÃ¶rÃ¶Ã¶Ã¶!',pid:2372},
     {name:'Eule',sound:'Schuhu!',pid:2671},{name:'Schlange',sound:'Zzzisch!',pid:2568},
-    {name:'Hase',sound:'Schnüffel!',pid:2351},{name:'Pinguin',sound:'Tröt!',pid:3243},
-    {name:'Katze',sound:'Miau!',pid:7114},{name:'Löwe',sound:'Roaaar!',pid:25187},
+    {name:'Hase',sound:'SchnÃ¼ffel!',pid:2351},{name:'Pinguin',sound:'TrÃ¶t!',pid:3243},
+    {name:'Katze',sound:'Miau!',pid:7114},{name:'LÃ¶we',sound:'Roaaar!',pid:25187},
     {name:'Wolf',sound:'Auuuuu!',pid:5892},{name:'Ziege',sound:'Meck meck!',pid:25887},
     {name:'Papagei',sound:'Kraaah!',pid:2934},{name:'Delfin',sound:'Klick klick!',pid:2732},
     {name:'Maus',sound:'Pieps!',pid:2546},{name:'Tiger',sound:'Grrrrr!',pid:2590},
-    {name:'Truthahn',sound:'Gluck gluck!',pid:2509},{name:'Krähe',sound:'Krah krah!',pid:4619},
-    {name:'Möwe',sound:'Kriiih!',pid:3334},{name:'Grille',sound:'Zirp zirp!',pid:25147},
+    {name:'Truthahn',sound:'Gluck gluck!',pid:2509},{name:'KrÃ¤he',sound:'Krah krah!',pid:4619},
+    {name:'MÃ¶we',sound:'Kriiih!',pid:3334},{name:'Grille',sound:'Zirp zirp!',pid:25147},
     {name:'Biene',sound:'Summ summ!',pid:24823},{name:'Taube',sound:'Gurr gurr!',pid:2493},
     {name:'Gans',sound:'Gak gak!',pid:2878},{name:'Esel',sound:'I-aah!',pid:2291},
     {name:'Nilpferd',sound:'Grunz!',pid:2424},{name:'Gorilla',sound:'Uah uah!',pid:2410},
     {name:'Adler',sound:'Kriiih!',pid:2638},{name:'Wal',sound:'Wuuuuh!',pid:2268}
   ]},
-  'Xylophon':{icon:'🎵'},
-  'Klavier':{icon:'🎹'},
-  'Zahlen':{icon:'🔢'},
-  'Buchstaben':{icon:'🔤'}
+  'Xylophon':{icon:'ðµ'},
+  'Klavier':{icon:'ð¹'},
+  'Zahlen':{icon:'ð¢'},
+  'Buchstaben':{icon:'ð¤'}
 };
 
 let currentMusicCat='Tiere';
 
-function initMusic(){
+function try{initMusic()}catch(e){console.error("[Init] Music failed:",e)}{
   const catsDiv=document.getElementById('musicCats');
   catsDiv.innerHTML='';
   Object.keys(musicData).forEach((cat,i)=>{
@@ -1479,11 +1518,11 @@ function showMusicContent(cat){
       barWrap.appendChild(screwBot);
       barsDiv.appendChild(barWrap);
     });
-    // Wisch-Erkennung: Beim Drüberziehen über Platten Töne spielen
+    // Wisch-Erkennung: Beim DrÃ¼berziehen Ã¼ber Platten TÃ¶ne spielen
     let xyloLastHit=-1;
     barsDiv.style.touchAction='none';
     barsDiv.addEventListener('pointermove',(e)=>{
-      if(e.pressure===0)return; // Kein Finger/Maus gedrückt
+      if(e.pressure===0)return; // Kein Finger/Maus gedrÃ¼ckt
       const el=document.elementFromPoint(e.clientX,e.clientY);
       if(el&&el.dataset&&el.dataset.freq!==undefined){
         const idx=parseInt(el.dataset.idx);
@@ -1523,7 +1562,7 @@ function showMusicContent(cat){
     ];
     const blackPattern=[1,1,0,1,1,1,0,1,1,0,1,1,1];
     keysDiv.style.touchAction='none';
-    // Weiße Tasten
+    // WeiÃe Tasten
     whiteNotes.forEach((n,i)=>{
       const key=document.createElement('div');
       key.style.cssText='flex:1;background:linear-gradient(180deg,#fafafa,#e8e8e8,#d0d0d0);border:1px solid #999;border-radius:0 0 6px 6px;margin:0 1px;cursor:pointer;display:flex;align-items:flex-end;justify-content:center;padding-bottom:10px;font-size:1.1em;font-weight:bold;color:#888;transition:background 0.08s;touch-action:none;box-shadow:0 4px 6px rgba(0,0,0,0.2),inset 0 -2px 3px rgba(0,0,0,0.1)';
@@ -1561,7 +1600,7 @@ function showMusicContent(cat){
       });
       keysDiv.appendChild(blackKey);
     });
-    // Wisch-Erkennung: Finger über Tasten ziehen spielt Töne
+    // Wisch-Erkennung: Finger Ã¼ber Tasten ziehen spielt TÃ¶ne
     let pianoLastHit=-1;
     keysDiv.addEventListener('pointermove',(e)=>{
       if(e.pressure===0)return;
@@ -1597,11 +1636,11 @@ function showMusicContent(cat){
     numText.style.cssText='flex:1;font-size:3.5em;font-weight:bold;color:var(--text-primary);min-height:60px;line-height:1.2';
     numText.textContent='';
     const speakBtn=document.createElement('button');
-    speakBtn.innerHTML='🔊';
+    speakBtn.innerHTML='ð';
     speakBtn.style.cssText='width:60px;height:60px;border-radius:50%;border:2px solid var(--border);background:var(--category-blue);color:#fff;font-size:1.8em;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;touch-action:manipulation';
     speakBtn.onclick=()=>{const t=document.getElementById('numText').textContent;if(t)speak(t)};
     const clearBtn=document.createElement('button');
-    clearBtn.innerHTML='✕';
+    clearBtn.innerHTML='â';
     clearBtn.style.cssText='width:60px;height:60px;border-radius:50%;border:2px solid var(--border);background:var(--card-bg);color:var(--text-primary);font-size:1.8em;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;touch-action:manipulation';
     clearBtn.onclick=()=>{document.getElementById('numText').textContent=''};
     display.appendChild(numText);
@@ -1632,11 +1671,11 @@ function showMusicContent(cat){
     alphaText.id='alphaText';
     alphaText.style.cssText='flex:1;font-size:3.5em;font-weight:bold;color:var(--text-primary);min-height:60px;line-height:1.2;letter-spacing:4px';
     const speakBtn2=document.createElement('button');
-    speakBtn2.innerHTML='🔊';
+    speakBtn2.innerHTML='ð';
     speakBtn2.style.cssText='width:60px;height:60px;border-radius:50%;border:2px solid var(--border);background:var(--category-blue);color:#fff;font-size:1.8em;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;touch-action:manipulation';
     speakBtn2.onclick=()=>{const t=document.getElementById('alphaText').textContent;if(t){speakSequence(t.split(''),0)}};
     const clearBtn2=document.createElement('button');
-    clearBtn2.innerHTML='✕';
+    clearBtn2.innerHTML='â';
     clearBtn2.style.cssText='width:60px;height:60px;border-radius:50%;border:2px solid var(--border);background:var(--card-bg);color:var(--text-primary);font-size:1.8em;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;touch-action:manipulation';
     clearBtn2.onclick=()=>{document.getElementById('alphaText').textContent=''};
     display.appendChild(alphaText);
@@ -1666,9 +1705,9 @@ function animal(name,sound){animalSpeak(name,sound)}
 
 function animalSpeak(name,sound){
   playSound('click');
-  bubbleSay(name+' – '+sound);
+  bubbleSay(name+' â '+sound);
   stopCurrentAudio();
-  const soundFile=name.toLowerCase().replace(/ä/g,'ae').replace(/ö/g,'oe').replace(/ü/g,'ue').replace(/ß/g,'ss');
+  const soundFile=name.toLowerCase().replace(/Ã¤/g,'ae').replace(/Ã¶/g,'oe').replace(/Ã¼/g,'ue').replace(/Ã/g,'ss');
   const animalSound=new Audio('audio/animals/'+soundFile+'.mp3');
   animalSound.volume=1;
   currentSpeechAudio=animalSound;
@@ -1726,41 +1765,41 @@ function initAlphabetGrid(){
 // Ergebnisse werden 24h in localStorage gecacht.
 // API-Key wird einmalig im Eltern-Dashboard eingegeben (kostenlos).
 
-// --- YouTube Kanal-IDs (RSS-Feed basiert, kein API-Key nötig) ---
+// --- YouTube Kanal-IDs (RSS-Feed basiert, kein API-Key nÃ¶tig) ---
 const ytChannelMap={
-  '🔢 Zahlen':[
+  'ð¢ Zahlen':[
     {id:'UCooPit08nD5lkSjgc5Gjxqw',name:'Sing Kinderlieder'},
     {id:'UCctbi1Jw2jiVhj2ogdwiFdA',name:'Kinderlieder Mitsingen'},
     {id:'UCpYye8D5fFMUPf9nSfgd4bA',name:'BabyBus'}
   ],
-  '🔤 ABC':[
+  'ð¤ ABC':[
     {id:'UCooPit08nD5lkSjgc5Gjxqw',name:'Sing Kinderlieder'},
     {id:'UCctbi1Jw2jiVhj2ogdwiFdA',name:'Kinderlieder Mitsingen'},
     {id:'UCpYye8D5fFMUPf9nSfgd4bA',name:'BabyBus'}
   ],
-  '🎬 Abspänne':[
+  'ð¬ AbspÃ¤nne':[
     {id:'UCswHAbaWV6tsed5J5E8vBgg',name:'Disney Channel DE'},
     {id:'UCpYye8D5fFMUPf9nSfgd4bA',name:'BabyBus'}
   ],
-  '🎵 Lieder':[
+  'ðµ Lieder':[
     {id:'UCooPit08nD5lkSjgc5Gjxqw',name:'Sing Kinderlieder'},
     {id:'UCctbi1Jw2jiVhj2ogdwiFdA',name:'Kinderlieder Mitsingen'},
     {id:'UCpYye8D5fFMUPf9nSfgd4bA',name:'BabyBus'}
   ],
-  '🌙 Ruhe':[
+  'ð Ruhe':[
     {id:'UCtf9cFBJkHVAf2qMqF01xYg',name:'Hey Bear Sensory'}
   ],
-  '🐷 Peppa Pig':[
+  'ð· Peppa Pig':[
     {id:'UCNclt7O1bO7hz8Mari68neg',name:'Peppa Deutsch'}
   ]
 };
 const ytCategories={
-  '🔢 Zahlen':{query:'Zahlen lernen Kinder deutsch Lied'},
-  '🔤 ABC':{query:'ABC Buchstaben lernen Kinder deutsch Lied'},
-  '🎬 Abspänne':{query:'movie end credits rolling credits'},
-  '🎵 Lieder':{query:'Kinderlieder deutsch zum Mitsingen'},
-  '🌙 Ruhe':{query:'Baby Sensory calming relaxing video'},
-  '🐷 Peppa Pig':{query:'Peppa Pig Deutsch'}
+  'ð¢ Zahlen':{query:'Zahlen lernen Kinder deutsch Lied'},
+  'ð¤ ABC':{query:'ABC Buchstaben lernen Kinder deutsch Lied'},
+  'ð¬ AbspÃ¤nne':{query:'movie end credits rolling credits'},
+  'ðµ Lieder':{query:'Kinderlieder deutsch zum Mitsingen'},
+  'ð Ruhe':{query:'Baby Sensory calming relaxing video'},
+  'ð· Peppa Pig':{query:'Peppa Pig Deutsch'}
 };
 
 let ytPlayerActive=false;
@@ -1802,7 +1841,7 @@ function saveYTApiKey(){
   if(!raw){
     localStorage.removeItem('yt_api_keys');
     localStorage.removeItem('yt_key_idx');
-    status.textContent='Alle entfernt – Standard-Key aktiv';
+    status.textContent='Alle entfernt â Standard-Key aktiv';
     status.style.color='var(--red)';
     updateKeyCountDisplay();
     setTimeout(()=>{status.textContent=''},3000);
@@ -1811,7 +1850,7 @@ function saveYTApiKey(){
   // Mehrere Keys: komma- oder zeilengetrennt
   const keys=raw.split(/[,\n]+/).map(k=>k.trim()).filter(k=>k.startsWith('AIza'));
   if(keys.length===0){
-    status.textContent='Ungültige Keys (müssen mit AIza... beginnen)';
+    status.textContent='UngÃ¼ltige Keys (mÃ¼ssen mit AIza... beginnen)';
     status.style.color='var(--red)';
   }else{
     localStorage.setItem('yt_api_keys',JSON.stringify(keys));
@@ -1830,7 +1869,7 @@ function updateKeyCountDisplay(){
   el.textContent='Aktiv: Key '+(idx+1)+' von '+keys.length;
 }
 
-// --- YouTube RSS-Feed Suche (kein API-Key nötig!) ---
+// --- YouTube RSS-Feed Suche (kein API-Key nÃ¶tig!) ---
 const CORS_PROXIES=[
   url=>'https://api.codetabs.com/v1/proxy?quest='+encodeURIComponent(url),
   url=>'https://api.allorigins.win/raw?url='+encodeURIComponent(url)
@@ -1862,7 +1901,7 @@ async function loadChannelRSS(channelId){
 
 // Haupt-Suchfunktion: RSS zuerst, dann Google API als Fallback
 async function searchYouTube(query,maxResults,pageToken,categoryName){
-  // 1. RSS-Feed basierte Suche (kein Key nötig!)
+  // 1. RSS-Feed basierte Suche (kein Key nÃ¶tig!)
   const channels=ytChannelMap[categoryName]||[];
   if(channels.length>0){
     let allVideos=[];
@@ -1871,7 +1910,7 @@ async function searchYouTube(query,maxResults,pageToken,categoryName){
       allVideos=allVideos.concat(videos);
     }
     if(allVideos.length>0){
-      console.log('[YT] RSS erfolgreich:',allVideos.length,'Videos für',categoryName);
+      console.log('[YT] RSS erfolgreich:',allVideos.length,'Videos fÃ¼r',categoryName);
       return{videos:allVideos.slice(0,maxResults||24),nextPageToken:null};
     }
   }
@@ -1895,9 +1934,9 @@ async function searchYouTube(query,maxResults,pageToken,categoryName){
         updateKeyCountDisplay();
         return{
           videos:(data.items||[]).map(item=>({
-            id:item.id.videoId,
+            id:item.id,
             title:item.snippet.title,
-            thumb:item.snippet.thumbnails.medium?item.snippet.thumbnails.medium.url:('https://img.youtube.com/vi/'+item.id.videoId+'/mqdefault.jpg')
+            thumb:item.snippet.thumbnails.medium?item.snippet.thumbnails.medium.url:('https://img.youtube.com/vi/'+item.id+'/mqdefault.jpg')
           })),
           nextPageToken:data.nextPageToken||null
         };
@@ -1970,10 +2009,10 @@ async function loadCategoryVideos(cat,gen){
   if(ytObserver){ytObserver.disconnect();ytObserver=null}
 
   // Favoriten
-  if(cat==='⭐ Favoriten'){
+  if(cat==='â­ Favoriten'){
     const favs=getFavoriteVideos();
     if(favs.length===0){
-      grid.innerHTML='<div style="text-align:center;padding:40px;color:var(--text-secondary);font-size:1.1em">Noch keine Favoriten — schau ein paar Videos!</div>';
+      grid.innerHTML='<div style="text-align:center;padding:40px;color:var(--text-secondary);font-size:1.1em">Noch keine Favoriten â schau ein paar Videos!</div>';
     }else{
       grid.innerHTML='';
       appendVideos(grid,favs);
@@ -2017,7 +2056,7 @@ async function loadCategoryVideos(cat,gen){
   // Fehlermeldung wenn nichts funktioniert
   if(!loaded){
     if(ytLoadGeneration!==gen)return;
-    grid.innerHTML='<div style="text-align:center;padding:40px;color:var(--text-secondary);font-size:1.1em">⚠️ Videos konnten nicht geladen werden.<br><span style="font-size:0.85em">Bitte Internetverbindung prüfen.</span></div>';
+    grid.innerHTML='<div style="text-align:center;padding:40px;color:var(--text-secondary);font-size:1.1em">â ï¸ Videos konnten nicht geladen werden.<br><span style="font-size:0.85em">Bitte Internetverbindung prÃ¼fen.</span></div>';
   }
 }
 
@@ -2060,7 +2099,7 @@ function appendVideos(grid,videos){
 let ytObserver=null;
 
 function setupSentinelObserver(grid,gen){
-  // Alten Observer aufräumen
+  // Alten Observer aufrÃ¤umen
   if(ytObserver){ytObserver.disconnect();ytObserver=null}
 
   ytObserver=new IntersectionObserver((entries)=>{
@@ -2126,13 +2165,13 @@ function initYouTube(){
   const catsDiv=document.getElementById('ytCats');
   catsDiv.innerHTML='';
   const favVideos=getFavoriteVideos();
-  const allCats=['⭐ Favoriten',...Object.keys(ytCategories)];
+  const allCats=['â­ Favoriten',...Object.keys(ytCategories)];
 
   // Such-Button als erstes
   const micBtn=document.createElement('div');
   micBtn.className='yt-cat yt-voice-cat';
   micBtn.id='ytVoiceCatBtn';
-  micBtn.innerHTML='<span class="cat-icon">🎙️</span>Suche';
+  micBtn.innerHTML='<span class="cat-icon">ðï¸</span>Suche';
   micBtn.onclick=()=>startYTVoiceSearch();
   catsDiv.appendChild(micBtn);
 
@@ -2189,7 +2228,7 @@ function showYTGrid(cat){
   };
   const gen=++ytLoadGeneration;
   loadCategoryVideos(cat,gen);
-  bubbleSay(cat==='⭐ Favoriten'?'Deine Lieblingsvideos!':'Wähle ein Video!');
+  bubbleSay(cat==='â­ Favoriten'?'Deine Lieblingsvideos!':'WÃ¤hle ein Video!');
 }
 
 function playYTVideo(v){
@@ -2203,16 +2242,16 @@ function playYTVideo(v){
   document.getElementById('ytPlayerFrame').src='https://www.youtube.com/embed/'+v.id+'?autoplay=1&rel=0&modestbranding=1&enablejsapi=1&playsinline=1&fs=0';
   document.getElementById('ytPlayerTitle').textContent=v.title||'Video';
   bubbleSay(v.title||'Video');
-  // Ähnliche Videos unten laden (aus gleicher Kategorie)
+  // Ãhnliche Videos unten laden (aus gleicher Kategorie)
   const related=document.getElementById('ytRelated');
   related.innerHTML='';
   if(currentYTCat&&ytCategories[currentYTCat]){
     const q=ytCategories[currentYTCat].query;
     searchYouTube(q,8).then(results=>{
-      if(results&&results.items){
-        results.items.forEach(item=>{
-          if(item.id.videoId===v.id)return;
-          const rv={id:item.id.videoId,title:item.snippet.title,thumb:item.snippet.thumbnails.medium.url};
+      if(results&&results.videos){
+        results.videos.forEach(item=>{
+          if(item.id===v.id)return;
+          const rv={id:item.id,title:item.snippet.title,thumb:item.snippet.thumbnails.medium.url};
           related.appendChild(createVideoCard(rv));
         });
       }
@@ -2220,20 +2259,11 @@ function playYTVideo(v){
   }
 }
 
-// --- YouTube direkt öffnen (echte App auf Tablet) ---
+// --- YouTube direkt Ã¶ffnen (echte App auf Tablet) ---
 // ===== YOUTUBE APP LAUNCHER =====
 function launchYouTube(){
-  // Wenn in nativer Android-App: nutze die Bridge
-  if(window.AndroidBridge&&window.AndroidBridge.launchYouTube){
-    window.AndroidBridge.launchYouTube();
-    return;
-  }
-  // Fallback für Browser: Intent-URL oder neuer Tab
-  const intentUrl='intent://www.youtube.com/#Intent;package=com.google.android.youtube;scheme=https;end';
-  const a=document.createElement('a');
-  a.href=intentUrl;
-  a.click();
-  setTimeout(()=>{window.open('https://www.youtube.com/','_blank');},500);
+  go('youtube');
+  initYouTube();
 }
 
 // ===== YOUTUBE VOICE SEARCH =====
@@ -2242,7 +2272,7 @@ let ytVoiceRecognition=null;
 function startYTVoiceSearch(){
   const SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;
   if(!SpeechRecognition){
-    bubbleSay('Sprachsuche wird hier leider nicht unterstützt.');
+    bubbleSay('Sprachsuche wird hier leider nicht unterstÃ¼tzt.');
     return;
   }
   // Falls bereits aktiv, stoppen
@@ -2261,7 +2291,7 @@ function startYTVoiceSearch(){
 
   recognition.onstart=()=>{
     if(btn)btn.classList.add('listening');
-    bubbleSay('Ich höre zu... sag mir, was du sehen willst!');
+    bubbleSay('Ich hÃ¶re zu... sag mir, was du sehen willst!');
     playSound('click');
   };
   recognition.onresult=(e)=>{
@@ -2275,7 +2305,7 @@ function startYTVoiceSearch(){
     if(btn)btn.classList.remove('listening');
     ytVoiceRecognition=null;
     if(e.error==='no-speech'){
-      bubbleSay('Ich habe nichts gehört. Versuch es nochmal!');
+      bubbleSay('Ich habe nichts gehÃ¶rt. Versuch es nochmal!');
     }else if(e.error!=='aborted'){
       bubbleSay('Ups, das hat nicht geklappt.');
     }
@@ -2343,11 +2373,11 @@ let creditsAmbientTimer=null;
 let creditsBennyTimer=null;
 
 const germanFirstNames=['Anna','Max','Leevi','Sophie','Finn','Emma','Luca','Mia','Noah','Ella','Ben','Lina','Jonas','Hanna','Leon','Marie','Paul','Clara','Felix','Ida','Tim','Lisa','Tom','Julia','Theo','Sarah','Nico','Laura','Jan','Lea','Elias','Charlotte','Oscar','Amelie','Henrik','Greta','Lukas','Frieda','Moritz','Emilia'];
-const germanLastNames=['Schmidt','Müller','Weber','Meyer','Wagner','Becker','Schulz','Hoffmann','Koch','Bauer','Klein','Schröder','König','Huber','Ritter','Hartmann','Kaufmann','Stark','Braun','Lange','Fischer','Wolf','Berger','Frank','Kaiser','Krüger','Neumann','Schwarz','Zimmermann','Richter'];
-const creditsRoles=['Regie','Kamera','Schnitt','Musik','Drehbuch','Ton','Darsteller','Licht','Set Design','Produktion','Executive Producer','Casting','Visual Effects','Animationen','Grafik Design','Sound Design','Kostüme','Maske','Requisite','Regieassistenz','Aufnahmeleitung','Oberbeleuchter','Colorist','Dialogregie','Originalmusik','Orchestrierung','Tonmischung','Farbkorrektur','Titelgestaltung'];
-const movieTitles=['Der große Bär','Zahlenland','Buchstabenreise','Sternennacht','Der kleine Held','Farbenzauber','Mondlicht','Traumfabrik','Abenteuerland','Zauberwald','Die Zahlenmeister','ABC Odyssee','Leevis Reise','Nachthimmel','Der goldene Buchstabe','Sieben Sterne','Planetenträume','Das Zahlenrätsel'];
-const studioLogos=['🎬','🎥','🌟','⭐','🎭','🎪','🏔️','🌙','🎞️','📽️'];
-const studioNames=['Leevi Studios','Bärchen Film','Sternenlicht Pictures','Zahlenwerk','Buchstaben & Co.','Mondschein Film','Traumland Studios','Nordlicht Film'];
+const germanLastNames=['Schmidt','MÃ¼ller','Weber','Meyer','Wagner','Becker','Schulz','Hoffmann','Koch','Bauer','Klein','SchrÃ¶der','KÃ¶nig','Huber','Ritter','Hartmann','Kaufmann','Stark','Braun','Lange','Fischer','Wolf','Berger','Frank','Kaiser','KrÃ¼ger','Neumann','Schwarz','Zimmermann','Richter'];
+const creditsRoles=['Regie','Kamera','Schnitt','Musik','Drehbuch','Ton','Darsteller','Licht','Set Design','Produktion','Executive Producer','Casting','Visual Effects','Animationen','Grafik Design','Sound Design','KostÃ¼me','Maske','Requisite','Regieassistenz','Aufnahmeleitung','Oberbeleuchter','Colorist','Dialogregie','Originalmusik','Orchestrierung','Tonmischung','Farbkorrektur','Titelgestaltung'];
+const movieTitles=['Der groÃe BÃ¤r','Zahlenland','Buchstabenreise','Sternennacht','Der kleine Held','Farbenzauber','Mondlicht','Traumfabrik','Abenteuerland','Zauberwald','Die Zahlenmeister','ABC Odyssee','Leevis Reise','Nachthimmel','Der goldene Buchstabe','Sieben Sterne','PlanetentrÃ¤ume','Das ZahlenrÃ¤tsel'];
+const studioLogos=['ð¬','ð¥','ð','â­','ð­','ðª','ðï¸','ð','ðï¸','ð½ï¸'];
+const studioNames=['Leevi Studios','BÃ¤rchen Film','Sternenlicht Pictures','Zahlenwerk','Buchstaben & Co.','Mondschein Film','Traumland Studios','Nordlicht Film'];
 
 function generateNumberRow(){
   const len=12+Math.floor(Math.random()*10);
@@ -2438,9 +2468,9 @@ function initCredits(){
   if(sBtn) sBtn.classList.remove('active');
 
   let html='<div style="height:40px"></div>';
-  html+=`<div class="credits-logo">🎬</div>`;
+  html+=`<div class="credits-logo">ð¬</div>`;
   html+=`<div class="credits-movie-title" style="margin:20px 0">LEEVIS WELT</div>`;
-  html+=`<div class="credits-studio">Leevi Studios präsentiert</div>`;
+  html+=`<div class="credits-studio">Leevi Studios prÃ¤sentiert</div>`;
   html+='<div style="height:60px"></div>';
   if(creditsConfig.numberDensity!=='off') html+=generateNumberRow();
   html+=generateCreditsBlock();
@@ -2476,7 +2506,7 @@ function initCredits(){
   }
   creditsAutoScroll=requestAnimationFrame(smoothScroll);
 
-  bubbleSay('Schau die Abspänne an!');
+  bubbleSay('Schau die AbspÃ¤nne an!');
   playAmbientCreditsMusic();
 
   // Contextual Peppa comments - references numbers, letters, names
@@ -2490,17 +2520,17 @@ function initCredits(){
       `Da ist der Buchstabe ${letter}!`,
       `L wie Leevi!`,
       `${letter}... ${letter}... ${letter}!`,
-      `Eins, zwei, drei, vier, fünf!`,
+      `Eins, zwei, drei, vier, fÃ¼nf!`,
       `${name} steht da!`,
       `So viele Namen!`,
       `Noch ein Film!`,
       `Die Zahlen sind toll!`,
       `Kannst du das ${letter} finden?`,
       `${nums}... ${nums+1}... ${nums+2}!`,
-      `Wunderschöne Abspänne!`,
-      `🌟 Sterne!`,
+      `WunderschÃ¶ne AbspÃ¤nne!`,
+      `ð Sterne!`,
       `Schau, wie es scrollt!`,
-      `Buchstaben überall!`
+      `Buchstaben Ã¼berall!`
     ];
     const comment=peppaComments[Math.floor(Math.random()*peppaComments.length)];
     setPeppa(['wave','laugh','surprised','clap','dance'][Math.floor(Math.random()*5)]);
@@ -2578,7 +2608,7 @@ function setCreditsFontSize(size){
   const scroll=document.getElementById('creditsScroll');
   const sizes={small:'1.3em',medium:'1.6em',large:'2em'};
   scroll.style.fontSize=sizes[size]||'1.3em';
-  updateSettingsButtons('Schrift',size,['small','medium','large'],['Klein','Mittel','Groß']);
+  updateSettingsButtons('Schrift',size,['small','medium','large'],['Klein','Mittel','GroÃ']);
   playSound('click');
 }
 
@@ -2633,9 +2663,9 @@ function regenerateCredits(){
   const scrollPos=scroll.scrollTop;
   scroll.innerHTML='';
   let html='<div style="height:40px"></div>';
-  html+=`<div class="credits-logo">🎬</div>`;
+  html+=`<div class="credits-logo">ð¬</div>`;
   html+=`<div class="credits-movie-title" style="margin:20px 0">LEEVIS WELT</div>`;
-  html+=`<div class="credits-studio">Leevi Studios präsentiert</div>`;
+  html+=`<div class="credits-studio">Leevi Studios prÃ¤sentiert</div>`;
   html+='<div style="height:60px"></div>';
   if(creditsConfig.numberDensity!=='off') html+=generateNumberRow();
   html+=generateCreditsBlock();
@@ -2668,7 +2698,7 @@ function playAmbientCreditsMusic(){
     iframe.allow='autoplay';
     document.body.appendChild(iframe);
   }
-  return; // Skip generated tones — use YouTube audio instead
+  return; // Skip generated tones â use YouTube audio instead
 
 
   const now=audioCtx.currentTime;
@@ -2822,7 +2852,7 @@ function initSensory(){
       const rect=sensoryCanvas.getBoundingClientRect();
       spawnSensoryChar(e.clientX-rect.left,e.clientY-rect.top);
     });
-    // Bei Rotation Canvas-Größe anpassen
+    // Bei Rotation Canvas-GrÃ¶Ãe anpassen
     window.addEventListener('resize',()=>{
       if(currentScreen==='sensory'&&sensoryCanvas){
         sensoryCanvas.width=window.innerWidth;
@@ -2915,39 +2945,42 @@ function initCalmMode(){
   bubbleSay('Lass dich entspannen...');
 }
 
-function playCalmSound(type){
+function playCalmSound(){
+try{
   let freq=200,duration=2;
   if(type==='wind')freq=180;
   else if(type==='rain')freq=150;
   else if(type==='ocean')freq=120;
 
-  const osc=audioCtx.createOscillator();
-  const gain=audioCtx.createGain();
+  const osc=getAudioCtx().createOscillator();
+  const gain=getAudioCtx().createGain();
   osc.connect(gain);
-  gain.connect(audioCtx.destination);
+  gain.connect(getAudioCtx().destination);
   osc.type='sine';
-  osc.frequency.setValueAtTime(freq,audioCtx.currentTime);
-  osc.frequency.linearRampToValueAtTime(freq-20,audioCtx.currentTime+duration);
-  gain.gain.setValueAtTime(0.08,audioCtx.currentTime);
-  gain.gain.exponentialRampToValueAtTime(0.01,audioCtx.currentTime+duration);
-  osc.start(audioCtx.currentTime);
-  osc.stop(audioCtx.currentTime+duration);
+  osc.frequency.setValueAtTime(freq,getAudioCtx().currentTime);
+  osc.frequency.linearRampToValueAtTime(freq-20,getAudioCtx().currentTime+duration);
+  gain.gain.setValueAtTime(0.08,getAudioCtx().currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.01,getAudioCtx().currentTime+duration);
+  osc.start(getAudioCtx().currentTime);
+  osc.stop(getAudioCtx().currentTime+duration);
 
   speak(type);
   playSound('click');
+
+}catch(e){console.warn("[Audio] playCalmSound error:",e)}
 }
 
 // ===== MOOD TRACKING / SCHNELLZUGRIFF =====
 
-// Alle verfügbaren Schnellzugriff-Symbole
+// Alle verfÃ¼gbaren Schnellzugriff-Symbole
 const allQuickSymbols=[
   {text:'Hilfe',pid:12252},{text:'Wasser',pid:32464},{text:'Essen',pid:6456},{text:'Toilette',pid:5921},
   {text:'Trinken',pid:6061},{text:'Schmerzen',pid:2367},{text:'Ja',pid:5584},{text:'Nein',pid:5526},
   {text:'Mama',pid:2458},{text:'Papa',pid:31146},{text:'Kuscheln',pid:6023},{text:'Ruhe',pid:7076},
-  {text:'Schlafen',pid:6479},{text:'Müde',pid:35537},{text:'Wütend',pid:35539},{text:'Angst',pid:10261},
+  {text:'Schlafen',pid:6479},{text:'MÃ¼de',pid:35537},{text:'WÃ¼tend',pid:35539},{text:'Angst',pid:10261},
   {text:'Krank',pid:3308},{text:'Mehr',pid:34312},{text:'Musik',pid:24791},{text:'Spielen',pid:23392},
-  {text:'Windel',pid:22017},{text:'Medizin',pid:8163},{text:'Glücklich',pid:35547},{text:'Traurig',pid:35545},
-  {text:'Durst',pid:7273},{text:'Fernsehen',pid:29123},{text:'Draußen',pid:5475},{text:'Baden',pid:6058},
+  {text:'Windel',pid:22017},{text:'Medizin',pid:8163},{text:'GlÃ¼cklich',pid:35547},{text:'Traurig',pid:35545},
+  {text:'Durst',pid:7273},{text:'Fernsehen',pid:29123},{text:'DrauÃen',pid:5475},{text:'Baden',pid:6058},
   {text:'Milch',pid:2445},{text:'Brot',pid:2494},{text:'Obst',pid:28339},{text:'Saft',pid:11461}
 ];
 
@@ -2961,7 +2994,7 @@ function saveQuickSymbolPids(pids){
   localStorage.setItem('quick_symbol_pids',JSON.stringify(pids));
 }
 
-function buildMoodPicker(){
+function try{buildMoodPicker()}catch(e){console.error("[Init] MoodPicker failed:",e)}{
   const picker=document.getElementById('moodPicker');
   const pids=getQuickSymbolPids();
   picker.innerHTML='';
@@ -2986,7 +3019,7 @@ function buildQuickSymbolEditor(){
       +(active?'border-color:var(--green);background:rgba(76,175,80,0.2);':'border-color:var(--border);background:var(--card-bg2);opacity:0.5;');
     btn.innerHTML=`<img src="https://static.arasaac.org/pictograms/${s.pid}/${s.pid}_500.png" style="width:50px;height:50px;object-fit:contain">
       <span style="font-size:0.7em;font-weight:700;color:var(--text-primary);text-align:center">${s.text}</span>
-      <span style="font-size:0.65em;color:${active?'var(--green)':'var(--text-secondary)'}">${active?'✅ Aktiv':'Aus'}</span>`;
+      <span style="font-size:0.65em;color:${active?'var(--green)':'var(--text-secondary)'}">${active?'â Aktiv':'Aus'}</span>`;
     btn.onclick=()=>{
       let current=getQuickSymbolPids();
       if(current.includes(s.pid)){
@@ -2996,7 +3029,7 @@ function buildQuickSymbolEditor(){
       }
       saveQuickSymbolPids(current);
       buildQuickSymbolEditor();
-      buildMoodPicker();
+      try{buildMoodPicker()}catch(e){console.error("[Init] MoodPicker failed:",e)}
     };
     editor.appendChild(btn);
   });
@@ -3009,7 +3042,7 @@ function toggleMoodPicker(){
 function quickSpeak(text,pid){
   speak(text);
   playSound('click');
-  // Peppa zeigt passendes Bild je nach Bedürfnis
+  // Peppa zeigt passendes Bild je nach BedÃ¼rfnis
   const peppaMap={'Hilfe':'scared','Wasser':'drink','Essen':'eat','Trinken':'drink','Schlafen':'sleep','Kuscheln':'love','Ruhe':'sleep','Schmerzen':'cry'};
   setPeppa(peppaMap[text]||'wave');
   bennyReact('wave');
@@ -3018,7 +3051,7 @@ function quickSpeak(text,pid){
 }
 
 function setMood(mood){
-  const moodEmojis={'happy':'😊','sad':'😢','angry':'😠','tired':'😴','excited':'🤩','calm':'😌'};
+  const moodEmojis={'happy':'ð','sad':'ð¢','angry':'ð ','tired':'ð´','excited':'ð¤©','calm':'ð'};
   const emoji=moodEmojis[mood];
   document.getElementById('moodBtn').textContent=emoji;
 
@@ -3029,13 +3062,13 @@ function setMood(mood){
   setState('mood_log',JSON.stringify(moodLog));
 
   document.getElementById('moodPicker').classList.remove('show');
-  bubbleSay(`Du fühlst dich ${mood}!`);
+  bubbleSay(`Du fÃ¼hlst dich ${mood}!`);
   playSound('click');
 
   if(mood==='sad'||mood==='angry'){
     setTimeout(()=>{
-      bubbleSay('Möchtest du zum Ruhezeit-Modus gehen?');
-      speak('Möchtest du zum Ruhezeit-Modus gehen?');
+      bubbleSay('MÃ¶chtest du zum Ruhezeit-Modus gehen?');
+      speak('MÃ¶chtest du zum Ruhezeit-Modus gehen?');
     },1000);
   }
 }
@@ -3068,7 +3101,7 @@ function openPin(){
   }
   const del=document.createElement('button');
   del.className='pin-n pin-d';
-  del.textContent='←';
+  del.textContent='â';
   del.onclick=()=>enterPin('del');
   pinPad.appendChild(del);
 
@@ -3080,7 +3113,7 @@ function openPin(){
 
   const x=document.createElement('button');
   x.className='pin-n pin-x';
-  x.textContent='✕';
+  x.textContent='â';
   x.onclick=()=>closePin();
   pinPad.appendChild(x);
 
@@ -3165,7 +3198,7 @@ function closePin(){
 }
 
 function resetData(){
-  if(confirm('Alle Daten zurücksetzen?')){
+  if(confirm('Alle Daten zurÃ¼cksetzen?')){
     localStorage.clear();
     closePin();
     location.reload();
@@ -3190,7 +3223,7 @@ function doInstall(){
   // Already installed as standalone?
   if(window.matchMedia('(display-mode:standalone)').matches||window.navigator.standalone){
     const done=document.getElementById('installDone');
-    if(done){done.style.display='block';done.textContent='✅ App ist bereits installiert!';}
+    if(done){done.style.display='block';done.textContent='â App ist bereits installiert!';}
     document.getElementById('installBtn').style.display='none';
     return;
   }
@@ -3218,8 +3251,8 @@ function doInstall(){
   document.getElementById('installGuide').querySelector('p[style*="font-weight"]').textContent='Anleitung:';
   document.getElementById('installGuide').querySelector('div').innerHTML=`
     <p style="font-weight:700;margin-bottom:8px;font-size:1.1em">Anleitung:</p>
-    <p>1. Öffne das Browser-Menü (⋮ oben rechts)</p>
-    <p>2. Tippe auf <b>"App installieren"</b> oder <b>"Zum Startbildschirm hinzufügen"</b></p>
+    <p>1. Ãffne das Browser-MenÃ¼ (â® oben rechts)</p>
+    <p>2. Tippe auf <b>"App installieren"</b> oder <b>"Zum Startbildschirm hinzufÃ¼gen"</b></p>
     <p style="margin-top:8px;color:var(--text-secondary);font-size:0.9em">Danach findest du Leevis Welt als App-Icon auf deinem Homescreen!</p>
   `;
   document.getElementById('installBtn').style.display='none';
@@ -3228,7 +3261,7 @@ function doInstall(){
 // Service Worker
 if('serviceWorker' in navigator){
   navigator.serviceWorker.register('sw.js').then(reg=>{
-    // Alle 60 Sekunden auf Updates prüfen
+    // Alle 60 Sekunden auf Updates prÃ¼fen
     setInterval(()=>reg.update().catch(()=>{}),60000);
     // Bei neuem SW automatisch neu laden
     reg.addEventListener('updatefound',()=>{
@@ -3255,15 +3288,14 @@ function exitApp(){
 
 // ===== INITIALIZATION =====
 document.addEventListener('DOMContentLoaded',()=>{
-  initAAC();
-  initMusic();
-  initYouTube();
-  buildMoodPicker();
+  try{initAAC()}catch(e){console.error("[Init] AAC failed:",e)}
+  try{initMusic()}catch(e){console.error("[Init] Music failed:",e)}
+  try{buildMoodPicker()}catch(e){console.error("[Init] MoodPicker failed:",e)}
 
   // Check if already installed - update install card
   if(window.matchMedia('(display-mode:standalone)').matches||window.navigator.standalone){
     const btn=document.getElementById('installBtn');
-    if(btn){btn.textContent='✅ Bereits installiert';btn.style.background='#4CAF50';btn.onclick=null;}
+    if(btn){btn.textContent='â Bereits installiert';btn.style.background='#4CAF50';btn.onclick=null;}
   }
 
   setInterval(updateUsageTime,1000);
@@ -3273,7 +3305,7 @@ document.addEventListener('DOMContentLoaded',()=>{
 document.addEventListener('touchmove',e=>{if(e.touches&&e.touches.length>1)e.preventDefault()},{passive:false});
 document.addEventListener('gesturestart',e=>e.preventDefault(),{passive:false});
 
-// ===== KIOSK MODUS (Vollbild + Zurück blockieren + kein Verlassen) =====
+// ===== KIOSK MODUS (Vollbild + ZurÃ¼ck blockieren + kein Verlassen) =====
 function goFullscreen(){
   const el=document.documentElement;
   if(document.fullscreenElement||document.webkitFullscreenElement)return;
@@ -3288,7 +3320,7 @@ if(!window.AndroidBridge){
     document.removeEventListener('click',fsOnce);
   },{once:true});
 }
-// Falls Vollbild verlassen wird, beim nächsten Touch wieder aktivieren (nicht in nativer App)
+// Falls Vollbild verlassen wird, beim nÃ¤chsten Touch wieder aktivieren (nicht in nativer App)
 if(!window.AndroidBridge){
   document.addEventListener('fullscreenchange',()=>{
     if(!document.fullscreenElement){
@@ -3308,8 +3340,8 @@ if(!window.AndroidBridge){
   });
 }
 
-// --- Zurück-Button blockieren ---
-// History-Stack voll packen, damit Zurück nie raus navigiert
+// --- ZurÃ¼ck-Button blockieren ---
+// History-Stack voll packen, damit ZurÃ¼ck nie raus navigiert
 history.pushState(null,null,location.href);
 window.addEventListener('popstate',()=>{
   history.pushState(null,null,location.href);
@@ -3329,7 +3361,7 @@ document.addEventListener('keydown',(e)=>{
   if(e.key==='F5'){e.preventDefault();}
   // Alt+F4 verhindern
   if(e.altKey&&e.key==='F4'){e.preventDefault();}
-  // Ctrl+W Tab schließen verhindern
+  // Ctrl+W Tab schlieÃen verhindern
   if(e.ctrlKey&&e.key==='w'){e.preventDefault();}
   // Ctrl+L Adressleiste verhindern
   if(e.ctrlKey&&e.key==='l'){e.preventDefault();}
@@ -3352,19 +3384,19 @@ document.addEventListener('visibilitychange',()=>{
   }
 });
 
-// ===== EDGE AI: KI-GEHÖR (Lokale Audio-Erkennung) =====
-// Modular und austauschbar. Keine Cloud-APIs — alles läuft on-device im Browser.
+// ===== EDGE AI: KI-GEHÃR (Lokale Audio-Erkennung) =====
+// Modular und austauschbar. Keine Cloud-APIs â alles lÃ¤uft on-device im Browser.
 // Verwendet TensorFlow.js Speech Commands Modell (18KHz, ~1s Fenster).
-// Trigger: Auffälliges Geräusch (Speech/Laut) > 75% Confidence → go('calm')
+// Trigger: AuffÃ¤lliges GerÃ¤usch (Speech/Laut) > 75% Confidence â go('calm')
 (function(){
   let aiListening=false;
   let aiRecognizer=null;
   let wakeLock=null;
   let aiCooldown=false; // Verhindert Mehrfach-Trigger
 
-  // Labels die als "auffällig" gelten (Speech Commands v0.5 Standardlabels)
-  // Das Modell erkennt ~20 Wörter + "_background_noise_" + "_unknown_"
-  // Alles außer "_background_noise_" bei hoher Confidence = auffällig
+  // Labels die als "auffÃ¤llig" gelten (Speech Commands v0.5 Standardlabels)
+  // Das Modell erkennt ~20 WÃ¶rter + "_background_noise_" + "_unknown_"
+  // Alles auÃer "_background_noise_" bei hoher Confidence = auffÃ¤llig
   const BACKGROUND_LABEL='_background_noise_';
   const CONFIDENCE_THRESHOLD=0.75;
   const COOLDOWN_MS=30000; // 30s Cooldown nach Trigger
@@ -3378,11 +3410,11 @@ document.addEventListener('visibilitychange',()=>{
     const btn=document.getElementById('aiListenBtn');
     if(!btn) return;
     if(active){
-      btn.textContent='🔴 KI-Gehör deaktivieren';
+      btn.textContent='ð´ KI-GehÃ¶r deaktivieren';
       btn.style.background='var(--category-red)';
       btn.style.borderColor='var(--red)';
     }else{
-      btn.textContent='🎙️ KI-Gehör aktivieren';
+      btn.textContent='ðï¸ KI-GehÃ¶r aktivieren';
       btn.style.background='var(--category-purple)';
       btn.style.borderColor='var(--purple)';
     }
@@ -3396,7 +3428,7 @@ document.addEventListener('visibilitychange',()=>{
         // Re-acquire wenn AI noch aktiv
         if(aiListening) requestWakeLock();
       });
-    }catch(e){/* Wake Lock nicht verfügbar — kein Fehler */}
+    }catch(e){/* Wake Lock nicht verfÃ¼gbar â kein Fehler */}
   }
 
   function releaseWakeLock(){
@@ -3404,11 +3436,11 @@ document.addEventListener('visibilitychange',()=>{
   }
 
   async function startAIListener(){
-    updateAIStatus('Modell lädt...');
+    updateAIStatus('Modell lÃ¤dt...');
     try{
-      // Prüfen ob TensorFlow.js geladen ist (async geladen)
+      // PrÃ¼fen ob TensorFlow.js geladen ist (async geladen)
       if(typeof speechCommands==='undefined'||typeof tf==='undefined'){
-        updateAIStatus('KI-Bibliothek lädt noch... bitte warten');
+        updateAIStatus('KI-Bibliothek lÃ¤dt noch... bitte warten');
         setTimeout(()=>{if(!aiListening)startAIListener()},3000);
         return;
       }
@@ -3417,14 +3449,14 @@ document.addEventListener('visibilitychange',()=>{
       await aiRecognizer.ensureModelLoaded();
 
       const labels=aiRecognizer.wordLabels();
-      updateAIStatus('Aktiv — lauscht...');
+      updateAIStatus('Aktiv â lauscht...');
       updateAIButton(true);
       aiListening=true;
 
-      // Wake Lock damit Tablet nicht einschläft
+      // Wake Lock damit Tablet nicht einschlÃ¤ft
       await requestWakeLock();
 
-      // Mikrofon-Überwachung starten
+      // Mikrofon-Ãberwachung starten
       aiRecognizer.listen(result=>{
         if(!aiListening||aiCooldown) return;
 
@@ -3437,11 +3469,11 @@ document.addEventListener('visibilitychange',()=>{
 
         const label=labels[maxIdx];
 
-        // Trigger: Alles außer Hintergrundrauschen mit >75% Confidence
+        // Trigger: Alles auÃer Hintergrundrauschen mit >75% Confidence
         if(label!==BACKGROUND_LABEL && maxScore>CONFIDENCE_THRESHOLD){
           aiCooldown=true;
-          updateAIStatus('Erkannt: '+label+' ('+Math.round(maxScore*100)+'%) → Ruhezeit');
-          bubbleSay('Ich höre etwas... Lass uns zur Ruhe kommen. 🌙');
+          updateAIStatus('Erkannt: '+label+' ('+Math.round(maxScore*100)+'%) â Ruhezeit');
+          bubbleSay('Ich hÃ¶re etwas... Lass uns zur Ruhe kommen. ð');
           setPeppa('sleep');bennyReact('wave');
 
           // Nur triggern wenn nicht schon im Calm-Modus
@@ -3452,14 +3484,14 @@ document.addEventListener('visibilitychange',()=>{
           // Cooldown: 30 Sekunden kein erneuter Trigger
           setTimeout(()=>{
             aiCooldown=false;
-            if(aiListening) updateAIStatus('Aktiv — lauscht...');
+            if(aiListening) updateAIStatus('Aktiv â lauscht...');
           },COOLDOWN_MS);
         }
       },{
         includeSpectrogram:false,
-        probabilityThreshold:0.5, // Vorfilter (feinere Prüfung oben)
+        probabilityThreshold:0.5, // Vorfilter (feinere PrÃ¼fung oben)
         invokeCallbackOnNoiseAndUnknown:true, // Auch _background_noise_ melden
-        overlapFactor:0.5 // 50% Überlappung der Audio-Fenster
+        overlapFactor:0.5 // 50% Ãberlappung der Audio-Fenster
       });
 
     }catch(e){
