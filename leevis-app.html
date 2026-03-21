@@ -2664,7 +2664,9 @@ function filterAppList(query){
       <span style="font-size:1.2em;color:var(--green)">+</span>`;
     row.onclick=()=>{
       addCustomApp(app.pkg,app.name);
+      const p=getPinnedApps();if(!p.includes(app.pkg)){p.push(app.pkg);savePinnedApps(p);}
       _cachedDeviceApps=null;
+      filterAppList(document.getElementById('appSearchInput')?document.getElementById('appSearchInput').value:'');
       buildExternalAppEditor();
       buildHomeGrid();
     };
