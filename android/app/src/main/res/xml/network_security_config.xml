@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <network-security-config>
-    <domain-config cleartextTrafficPermitted="false">
-        <domain includeSubdomains="true">wescheskro.github.io</domain>
-        <domain includeSubdomains="true">youtube.com</domain>
-        <domain includeSubdomains="true">youtubekids.com</domain>
-        <domain includeSubdomains="true">static.arasaac.org</domain>
-    </domain-config>
+    <!-- Alle HTTPS-Verbindungen erlauben (Standard) -->
+    <base-config cleartextTrafficPermitted="false">
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
 </network-security-config>

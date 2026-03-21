@@ -69,11 +69,14 @@ public class MainActivity extends Activity {
         settings.setCacheMode(WebSettings.LOAD_DEFAULT);
         settings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
         settings.setDatabaseEnabled(true);
-        settings.setLoadWithOverviewMode(true);
-        settings.setUseWideViewPort(true);
+        settings.setLoadWithOverviewMode(false);
+        settings.setUseWideViewPort(false);
         settings.setSupportZoom(false);
         settings.setBuiltInZoomControls(false);
         settings.setDisplayZoomControls(false);
+        settings.setAllowContentAccess(true);
+        settings.setAllowUniversalAccessFromFileURLs(true);
+        settings.setTextZoom(100);
 
         // Wichtig: User-Agent ergänzen damit Web-App erkennt dass sie in der APK läuft
         String ua = settings.getUserAgentString();
