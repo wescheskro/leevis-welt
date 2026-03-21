@@ -209,23 +209,23 @@ body{
 .learn-cat.active{border-width:3px;box-shadow:0 0 10px rgba(255,255,255,0.3);background:rgba(255,255,255,0.35);border-color:#fff}
 
 /* ===== GAME SCREEN ===== */
-.game-area{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:16px;overflow-y:scroll;-webkit-overflow-scrolling:touch;gap:8px;touch-action:pan-y;min-height:0}
-.g-progress{display:flex;gap:6px;margin-bottom:4px}
+.game-area{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px;overflow:hidden;gap:4px;min-height:0}
+.g-progress{display:flex;gap:4px;margin-bottom:2px}
 .g-dot{width:14px;height:14px;border-radius:50%;background:rgba(255,255,255,0.15);transition:all 0.3s}
 .g-dot.done{background:var(--green);box-shadow:0 0 6px var(--green)}
 .g-dot.current{background:var(--category-blue);box-shadow:0 0 8px var(--category-blue);transform:scale(1.2)}
-.g-prompt{font-size:clamp(1em,3.5vw,1.6em);font-weight:800;color:var(--text-primary);text-align:center;margin-bottom:4px}
-.g-visual{margin:8px 0;display:flex;align-items:center;justify-content:center}
-.g-big{font-size:4.5em;display:block;font-weight:900;text-shadow:0 4px 15px rgba(0,0,0,0.3)}
-.g-options{display:grid;grid-template-columns:1fr 1fr;gap:clamp(6px,1.5vw,12px);width:100%;max-width:min(420px,90vw)}
-.g-opt{background:var(--card-bg);border:3px solid var(--border);border-radius:clamp(12px,2.5vw,20px);padding:clamp(10px,2.5vw,22px);font-size:clamp(1.2em,4vw,2.2em);font-weight:800;cursor:pointer;transition:all 0.2s;text-align:center;color:var(--text-primary);touch-action:pan-y;min-height:clamp(50px,10vh,80px);display:flex;align-items:center;justify-content:center}
+.g-prompt{font-size:clamp(1em,3vw,1.4em);font-weight:800;color:var(--text-primary);text-align:center;margin-bottom:2px}
+.g-visual{margin:4px 0;display:flex;align-items:center;justify-content:center}
+.g-big{font-size:clamp(2.5em,8vw,4em);display:block;font-weight:900;text-shadow:0 4px 15px rgba(0,0,0,0.3)}
+.g-options{display:grid;grid-template-columns:1fr 1fr;gap:clamp(4px,1vw,8px);width:100%;max-width:min(420px,90vw)}
+.g-opt{background:var(--card-bg);border:3px solid var(--border);border-radius:clamp(10px,2vw,16px);padding:clamp(8px,2vw,16px);font-size:clamp(1.1em,3.5vw,1.8em);font-weight:800;cursor:pointer;transition:all 0.2s;text-align:center;color:var(--text-primary);touch-action:pan-y;min-height:clamp(40px,8vh,65px);display:flex;align-items:center;justify-content:center}
 .g-opt:active{transform:scale(0.95)}
 .g-opt.ok{border-color:var(--green);background:#1B5E20;animation:pop 0.5s}
 .g-opt.no{border-color:var(--red);background:#B71C1C;animation:shake 0.5s}
-.count-area{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:8px 0;max-width:350px}
+.count-area{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:4px 0;max-width:350px}
 .count-item{font-size:2.8em;animation:popIn 0.3s ease-out}
-.g-color-box{width:180px;height:180px;border-radius:24px;box-shadow:0 6px 25px rgba(0,0,0,0.4)}
-.g-shape{font-size:8em;filter:drop-shadow(0 4px 10px rgba(0,0,0,0.3))}
+.g-color-box{width:clamp(100px,20vw,150px);height:clamp(100px,20vw,150px);border-radius:20px;box-shadow:0 6px 25px rgba(0,0,0,0.4)}
+.g-shape{font-size:clamp(4em,10vw,6em);filter:drop-shadow(0 4px 10px rgba(0,0,0,0.3))}
 .g-celebration{display:flex;flex-direction:column;align-items:center;gap:16px;animation:popIn 0.5s ease-out}
 .g-celebration .g-stars{font-size:3.5em;display:flex;gap:8px}
 .g-celebration .g-star{animation:starSpin 0.6s ease-out;animation-fill-mode:both}
