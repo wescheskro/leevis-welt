@@ -1,18 +1,39 @@
 package com.leevi.welt;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
-
-import java.util.List;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
+import android.media.AudioManager;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
+import android.os.BatteryManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.StatFs;
+import android.os.VibrationEffect;
+import android.os.Vibrator;
+import android.speech.tts.TextToSpeech;
+import android.util.Base64;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.KeyEvent;
@@ -20,11 +41,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
+import android.webkit.ConsoleMessage;
 import android.webkit.CookieManager;
 import android.webkit.JavascriptInterface;
 import android.webkit.PermissionRequest;
-import android.util.Log;
-import android.webkit.ConsoleMessage;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceError;
 import android.webkit.WebResourceRequest;
@@ -36,53 +56,55 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.ByteArrayOutputStream;
+import java.util.List;
+import java.util.Locale;
+import java.util.Set;
+
 /**
  * Leevis Welt - Launcher App
  *
- * Tablet-Launcher für Leevi. Lädt die Web-App von GitHub Pages.
- * YouTube läuft in einem zweiten WebView mit nativen Overlay-Buttons.
+ * Tablet-Launcher fuer Leevi. Laedt die Web-App von GitHub Pages.
+ * YouTube laeuft in einem zweiten WebView mit nativen Overlay-Buttons.
  * Kiosk-Modus verhindert Verlassen. Rotation erlaubt.
+ *
+ * Die AppBridge stellt alle nativen Funktionen bereit, die die Web-App
+ * nicht selbst kann. So muss die APK nur selten aktualisiert werden.
  */
 public class MainActivity extends Activity {
 
     private static final String TAG = "LeevisWelt";
     private static final String APP_URL = "https://wescheskro.github.io/leevis-welt/leevis-app.html";
-
-    // Erlaubte Apps die gestartet werden dürfen
-    private static final String[] ALLOWED_PACKAGES = {
-        "com.google.android.youtube",
-        "com.google.android.apps.youtube.kids",
-        "com.google.android.music",
-        "com.spotify.music"
-    };
+    private static final String PREFS_NAME = "leevis_web";
 
     private FrameLayout rootLayout;
-    private WebView webView;         // Main app WebView
-    private WebView ytWebView;       // YouTube WebView (overlay)
-    private LinearLayout ytOverlay;  // Native button bar on top of YouTube
+    private WebView webView;
+    private WebView ytWebView;
+    private LinearLayout ytOverlay;
     private boolean ytModeActive = false;
+
+    // Native TTS
+    private TextToSpeech tts;
+    private boolean ttsReady = false;
+
+    // Screen time limit
+    private Handler timeLimitHandler;
+    private Runnable timeLimitChecker;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Vollbild: Keine Statusleiste, keine Navigationsleiste
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().setFlags(
             WindowManager.LayoutParams.FLAG_FULLSCREEN,
             WindowManager.LayoutParams.FLAG_FULLSCREEN
         );
-
-        // Screen bleibt an während App aktiv ist
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-
-        // Immersive Sticky Mode
         hideSystemUI();
 
-        // WebView Debug (Chrome DevTools: chrome://inspect)
         WebView.setWebContentsDebuggingEnabled(true);
 
-        // Root FrameLayout — stacks main WebView, YouTube WebView, and overlay
         rootLayout = new FrameLayout(this);
         rootLayout.setBackgroundColor(Color.BLACK);
         setContentView(rootLayout);
@@ -95,25 +117,20 @@ public class MainActivity extends Activity {
             ViewGroup.LayoutParams.MATCH_PARENT
         ));
 
-        // JavaScript-Bridge
         webView.addJavascriptInterface(new AppBridge(), "AndroidBridge");
 
-        // WebViewClient: Links innerhalb der App halten + YouTube abfangen
         webView.setWebViewClient(new WebViewClient() {
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, String url) {
-                // Custom protocol: app://youtube, app://youtube-peppa etc.
                 if (url.startsWith("app://youtube")) {
                     String target = url.replace("app://youtube", "").replace("-", "");
                     enterYouTubeMode(target);
                     return true;
                 }
-                // Block any YouTube navigation in the main WebView
                 if (url.contains("youtube.com") || url.contains("youtu.be")) {
                     enterYouTubeMode("");
                     return true;
                 }
-                // Intent-URLs abfangen
                 if (url.startsWith("intent://")) {
                     try {
                         Intent intent = Intent.parseUri(url, Intent.URI_INTENT_SCHEME);
@@ -149,7 +166,6 @@ public class MainActivity extends Activity {
             }
         });
 
-        // WebChromeClient: Kamera/Mikrofon erlauben + Console-Logging
         webView.setWebChromeClient(new WebChromeClient() {
             @Override
             public void onPermissionRequest(final PermissionRequest request) {
@@ -163,10 +179,9 @@ public class MainActivity extends Activity {
             }
         });
 
-        // ===== 2. YouTube WebView (hidden initially) =====
+        // ===== 2. YouTube WebView =====
         ytWebView = new WebView(this);
         configureWebView(ytWebView);
-        // YouTube braucht Third-Party Cookies
         CookieManager.getInstance().setAcceptThirdPartyCookies(ytWebView, true);
         ytWebView.setVisibility(View.GONE);
         rootLayout.addView(ytWebView, new FrameLayout.LayoutParams(
@@ -177,19 +192,16 @@ public class MainActivity extends Activity {
         ytWebView.setWebViewClient(new WebViewClient() {
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, String url) {
-                // Keep YouTube navigation inside the YouTube WebView
                 if (url.contains("youtube.com") || url.contains("youtu.be") || url.contains("google.com")) {
-                    return false; // let it load
+                    return false;
                 }
-                // External links: open in main WebView or browser
-                return true; // block
+                return true;
             }
 
             @Override
             public void onPageFinished(WebView view, String url) {
                 super.onPageFinished(view, url);
                 hideSystemUI();
-                // Inject CSS to add bottom padding so content isn't hidden behind overlay
                 view.evaluateJavascript(
                     "(function(){ " +
                     "  var s = document.createElement('style'); " +
@@ -208,17 +220,28 @@ public class MainActivity extends Activity {
             }
         });
 
-        // ===== 3. Overlay Button Bar (native Android buttons) =====
+        // ===== 3. Overlay Button Bar =====
         buildOverlayBar();
 
-        // App laden
+        // ===== 4. Native TTS =====
+        tts = new TextToSpeech(this, status -> {
+            if (status == TextToSpeech.SUCCESS) {
+                tts.setLanguage(Locale.GERMAN);
+                ttsReady = true;
+                Log.d(TAG, "TTS ready");
+            }
+        });
+
+        // ===== 5. Screen time limit handler =====
+        timeLimitHandler = new Handler(Looper.getMainLooper());
+
+        // Load app
         webView.clearCache(true);
         webView.loadUrl(APP_URL);
     }
 
-    /**
-     * Configure WebView settings (shared between main and YouTube WebViews)
-     */
+    // ==================== WebView Config ====================
+
     private void configureWebView(WebView wv) {
         WebSettings settings = wv.getSettings();
         settings.setJavaScriptEnabled(true);
@@ -235,26 +258,20 @@ public class MainActivity extends Activity {
         settings.setDisplayZoomControls(false);
         settings.setAllowContentAccess(true);
         settings.setTextZoom(100);
-
-        // User-Agent: damit YouTube Mobile-Version liefert
         String ua = settings.getUserAgentString();
         settings.setUserAgentString(ua + " LeevisWeltApp/1.0");
     }
 
-    /**
-     * Build the native overlay button bar for YouTube mode
-     * 3 buttons: 🐷 Peppa | 😊 Stimmung | ← Zurück
-     */
+    // ==================== YouTube Mode ====================
+
     private void buildOverlayBar() {
         int barHeight = dpToPx(80);
-
         ytOverlay = new LinearLayout(this);
         ytOverlay.setOrientation(LinearLayout.HORIZONTAL);
         ytOverlay.setGravity(Gravity.CENTER_VERTICAL);
         ytOverlay.setPadding(dpToPx(6), dpToPx(6), dpToPx(6), dpToPx(6));
         ytOverlay.setVisibility(View.GONE);
 
-        // Semi-transparent dark background
         GradientDrawable barBg = new GradientDrawable();
         barBg.setColor(Color.argb(240, 15, 15, 26));
         barBg.setCornerRadii(new float[]{
@@ -263,25 +280,19 @@ public class MainActivity extends Activity {
         ytOverlay.setBackground(barBg);
         ytOverlay.setElevation(dpToPx(8));
 
-        // --- Peppa Button ---
-        TextView peppaBtn = makeOverlayButton("🐷\nPeppa", new int[]{0xFFE91E63, 0xFFC2185B});
-        peppaBtn.setOnClickListener(v -> {
-            ytWebView.loadUrl("https://m.youtube.com/results?search_query=Peppa+Pig+Deutsch");
-        });
+        TextView peppaBtn = makeOverlayButton("\uD83D\uDC37\nPeppa", new int[]{0xFFE91E63, 0xFFC2185B});
+        peppaBtn.setOnClickListener(v ->
+            ytWebView.loadUrl("https://m.youtube.com/results?search_query=Peppa+Pig+Deutsch"));
 
-        // --- Stimmung Button ---
-        TextView moodBtn = makeOverlayButton("😊\nStimmung", new int[]{0xFFFF9800, 0xFFE65100});
+        TextView moodBtn = makeOverlayButton("\uD83D\uDE0A\nStimmung", new int[]{0xFFFF9800, 0xFFE65100});
         moodBtn.setOnClickListener(v -> {
-            // Exit YouTube mode and open mood picker in the app
             exitYouTubeMode();
             webView.evaluateJavascript("toggleMoodPicker()", null);
         });
 
-        // --- Zurück Button (bigger, red) ---
-        TextView backBtn = makeOverlayButton("← Zurück", new int[]{0xFFE74C3C, 0xFFC0392B});
+        TextView backBtn = makeOverlayButton("\u2190 Zur\u00fcck", new int[]{0xFFE74C3C, 0xFFC0392B});
         backBtn.setOnClickListener(v -> exitYouTubeMode());
 
-        // Add with weights: Peppa=1, Stimmung=1, Zurück=1.5
         LinearLayout.LayoutParams lp1 = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1f);
         lp1.setMargins(dpToPx(3), 0, dpToPx(3), 0);
         LinearLayout.LayoutParams lp15 = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1.5f);
@@ -291,7 +302,6 @@ public class MainActivity extends Activity {
         ytOverlay.addView(moodBtn, lp1);
         ytOverlay.addView(backBtn, lp15);
 
-        // Position: bottom of screen
         FrameLayout.LayoutParams overlayParams = new FrameLayout.LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT, barHeight
         );
@@ -299,9 +309,6 @@ public class MainActivity extends Activity {
         rootLayout.addView(ytOverlay, overlayParams);
     }
 
-    /**
-     * Create a styled overlay button
-     */
     private TextView makeOverlayButton(String text, int[] gradientColors) {
         TextView btn = new TextView(this);
         btn.setText(text);
@@ -312,24 +319,15 @@ public class MainActivity extends Activity {
         btn.setPadding(dpToPx(8), dpToPx(4), dpToPx(8), dpToPx(4));
 
         GradientDrawable bg = new GradientDrawable(
-            GradientDrawable.Orientation.TL_BR,
-            gradientColors
-        );
+            GradientDrawable.Orientation.TL_BR, gradientColors);
         bg.setCornerRadius(dpToPx(14));
         btn.setBackground(bg);
         btn.setElevation(dpToPx(4));
-
         return btn;
     }
 
-    /**
-     * Enter YouTube mode: show YouTube WebView + overlay, hide main app
-     * @param target optional target: "peppa", "lieder", "babybus", "sensory", or "" for home
-     */
     private void enterYouTubeMode(String target) {
         ytModeActive = true;
-
-        // Determine URL
         String url;
         if ("peppa".equals(target)) {
             url = "https://m.youtube.com/results?search_query=Peppa+Pig+Deutsch";
@@ -342,41 +340,27 @@ public class MainActivity extends Activity {
         } else {
             url = "https://m.youtube.com";
         }
-
-        // Show YouTube WebView on top of main WebView
         ytWebView.setVisibility(View.VISIBLE);
         ytWebView.loadUrl(url);
-
-        // Show overlay buttons
         ytOverlay.setVisibility(View.VISIBLE);
-
         hideSystemUI();
         Log.d(TAG, "YouTube mode entered: " + url);
     }
 
-    /**
-     * Exit YouTube mode: hide YouTube WebView + overlay, return to app
-     */
     private void exitYouTubeMode() {
         ytModeActive = false;
-
-        // Stop YouTube playback
         ytWebView.loadUrl("about:blank");
         ytWebView.setVisibility(View.GONE);
-
-        // Hide overlay
         ytOverlay.setVisibility(View.GONE);
-
-        // Ensure main WebView is showing the app
-        // (it's been underneath the whole time, no reload needed)
         hideSystemUI();
         Log.d(TAG, "YouTube mode exited");
     }
 
-    /**
-     * JavaScript-Bridge: Funktionen die aus der Web-App aufgerufen werden
-     */
+    // ==================== JAVASCRIPT BRIDGE ====================
+
     public class AppBridge {
+
+        // ===== APP MANAGEMENT =====
 
         @JavascriptInterface
         public void openYouTube(String target) {
@@ -404,21 +388,20 @@ public class MainActivity extends Activity {
             });
         }
 
+        /** Launch ANY installed app by package name (no restrictions) */
         @JavascriptInterface
         public void launchApp(String packageName) {
             runOnUiThread(() -> {
-                boolean allowed = false;
-                for (String pkg : ALLOWED_PACKAGES) {
-                    if (pkg.equals(packageName)) { allowed = true; break; }
-                }
-                if (!allowed) return;
                 try {
                     Intent intent = getPackageManager().getLaunchIntentForPackage(packageName);
                     if (intent != null) startActivity(intent);
-                } catch (Exception e) {}
+                } catch (Exception e) {
+                    Log.e(TAG, "Failed to launch: " + packageName, e);
+                }
             });
         }
 
+        /** Check if an app is installed */
         @JavascriptInterface
         public boolean isAppInstalled(String packageName) {
             try {
@@ -429,6 +412,7 @@ public class MainActivity extends Activity {
             }
         }
 
+        /** Get the display name of an installed app */
         @JavascriptInterface
         public String getAppName(String packageName) {
             try {
@@ -440,6 +424,7 @@ public class MainActivity extends Activity {
             }
         }
 
+        /** Get all launchable apps as JSON array [{pkg, name}] */
         @JavascriptInterface
         public String getInstalledApps() {
             Intent mainIntent = new Intent(Intent.ACTION_MAIN, null);
@@ -449,7 +434,6 @@ public class MainActivity extends Activity {
             boolean first = true;
             for (ResolveInfo ri : apps) {
                 String pkg = ri.activityInfo.packageName;
-                // eigene App ausblenden
                 if (pkg.equals(getPackageName())) continue;
                 String name = ri.loadLabel(getPackageManager()).toString();
                 if (!first) sb.append(",");
@@ -460,6 +444,53 @@ public class MainActivity extends Activity {
             }
             sb.append("]");
             return sb.toString();
+        }
+
+        /** Get app icon as base64 data URI */
+        @JavascriptInterface
+        public String getAppIcon(String packageName) {
+            try {
+                Drawable icon = getPackageManager().getApplicationIcon(packageName);
+                Bitmap bmp;
+                if (icon instanceof BitmapDrawable) {
+                    bmp = ((BitmapDrawable) icon).getBitmap();
+                } else {
+                    bmp = Bitmap.createBitmap(96, 96, Bitmap.Config.ARGB_8888);
+                    Canvas canvas = new Canvas(bmp);
+                    icon.setBounds(0, 0, 96, 96);
+                    icon.draw(canvas);
+                }
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                bmp.compress(Bitmap.CompressFormat.PNG, 90, baos);
+                String b64 = Base64.encodeToString(baos.toByteArray(), Base64.NO_WRAP);
+                return "data:image/png;base64," + b64;
+            } catch (Exception e) {
+                return "";
+            }
+        }
+
+        /** Open system uninstall dialog for an app */
+        @JavascriptInterface
+        public void uninstallApp(String packageName) {
+            runOnUiThread(() -> {
+                try {
+                    Intent intent = new Intent(Intent.ACTION_DELETE);
+                    intent.setData(Uri.parse("package:" + packageName));
+                    startActivity(intent);
+                } catch (Exception e) {}
+            });
+        }
+
+        /** Open system app settings for a specific app */
+        @JavascriptInterface
+        public void openAppSettings(String packageName) {
+            runOnUiThread(() -> {
+                try {
+                    Intent intent = new Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                    intent.setData(Uri.parse("package:" + packageName));
+                    startActivity(intent);
+                } catch (Exception e) {}
+            });
         }
 
         @JavascriptInterface
@@ -474,11 +505,360 @@ public class MainActivity extends Activity {
                 webView.evaluateJavascript("go('home')", null);
             });
         }
+
+        // ===== DEVICE INFO =====
+
+        /** Get battery level 0-100 */
+        @JavascriptInterface
+        public int getBatteryLevel() {
+            try {
+                IntentFilter ifilter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
+                Intent battery = registerReceiver(null, ifilter);
+                if (battery != null) {
+                    int level = battery.getIntExtra(BatteryManager.EXTRA_LEVEL, -1);
+                    int scale = battery.getIntExtra(BatteryManager.EXTRA_SCALE, -1);
+                    return (int) (level * 100f / scale);
+                }
+            } catch (Exception e) {}
+            return -1;
+        }
+
+        /** Check if battery is charging */
+        @JavascriptInterface
+        public boolean isBatteryCharging() {
+            try {
+                IntentFilter ifilter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
+                Intent battery = registerReceiver(null, ifilter);
+                if (battery != null) {
+                    int status = battery.getIntExtra(BatteryManager.EXTRA_STATUS, -1);
+                    return status == BatteryManager.BATTERY_STATUS_CHARGING ||
+                           status == BatteryManager.BATTERY_STATUS_FULL;
+                }
+            } catch (Exception e) {}
+            return false;
+        }
+
+        /** Get WiFi status as JSON {connected, ssid, signalLevel} */
+        @JavascriptInterface
+        public String getWifiStatus() {
+            try {
+                ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+                NetworkInfo ni = cm.getActiveNetworkInfo();
+                boolean connected = ni != null && ni.isConnected() && ni.getType() == ConnectivityManager.TYPE_WIFI;
+                String ssid = "";
+                int signal = 0;
+                if (connected) {
+                    WifiManager wm = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+                    WifiInfo wi = wm.getConnectionInfo();
+                    ssid = wi.getSSID().replace("\"", "");
+                    signal = WifiManager.calculateSignalLevel(wi.getRssi(), 5);
+                }
+                return "{\"connected\":" + connected + ",\"ssid\":\"" + ssid.replace("\"", "\\\"") +
+                       "\",\"signalLevel\":" + signal + "}";
+            } catch (Exception e) {
+                return "{\"connected\":false,\"ssid\":\"\",\"signalLevel\":0}";
+            }
+        }
+
+        /** Get storage info as JSON {totalMB, freeMB} */
+        @JavascriptInterface
+        public String getStorageInfo() {
+            try {
+                StatFs stat = new StatFs(Environment.getDataDirectory().getPath());
+                long totalBytes = stat.getTotalBytes();
+                long freeBytes = stat.getAvailableBytes();
+                return "{\"totalMB\":" + (totalBytes / 1048576) + ",\"freeMB\":" + (freeBytes / 1048576) + "}";
+            } catch (Exception e) {
+                return "{\"totalMB\":0,\"freeMB\":0}";
+            }
+        }
+
+        /** Get device info as JSON */
+        @JavascriptInterface
+        public String getDeviceInfo() {
+            String model = Build.MODEL;
+            String androidVersion = Build.VERSION.RELEASE;
+            int sdkInt = Build.VERSION.SDK_INT;
+            String appVersion = getAppVersionString();
+            int widthDp = (int) (getResources().getDisplayMetrics().widthPixels / getResources().getDisplayMetrics().density);
+            int heightDp = (int) (getResources().getDisplayMetrics().heightPixels / getResources().getDisplayMetrics().density);
+            return "{\"model\":\"" + model.replace("\"", "\\\"") +
+                   "\",\"androidVersion\":\"" + androidVersion +
+                   "\",\"sdkInt\":" + sdkInt +
+                   ",\"appVersion\":\"" + appVersion +
+                   "\",\"screenWidthDp\":" + widthDp +
+                   ",\"screenHeightDp\":" + heightDp + "}";
+        }
+
+        // ===== DEVICE CONTROL =====
+
+        /** Set screen brightness (0-255), only affects this window */
+        @JavascriptInterface
+        public void setBrightness(int level) {
+            runOnUiThread(() -> {
+                WindowManager.LayoutParams lp = getWindow().getAttributes();
+                lp.screenBrightness = Math.max(0, Math.min(255, level)) / 255f;
+                getWindow().setAttributes(lp);
+            });
+        }
+
+        /** Get current screen brightness (0-255) */
+        @JavascriptInterface
+        public int getBrightness() {
+            float b = getWindow().getAttributes().screenBrightness;
+            if (b < 0) b = 0.5f; // system default
+            return (int) (b * 255);
+        }
+
+        /** Set media volume (0 to maxVolume) */
+        @JavascriptInterface
+        public void setVolume(int level) {
+            try {
+                AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+                int max = am.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
+                am.setStreamVolume(AudioManager.STREAM_MUSIC, Math.max(0, Math.min(max, level)), 0);
+            } catch (Exception e) {}
+        }
+
+        /** Get current media volume */
+        @JavascriptInterface
+        public int getVolume() {
+            try {
+                AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+                return am.getStreamVolume(AudioManager.STREAM_MUSIC);
+            } catch (Exception e) {
+                return 0;
+            }
+        }
+
+        /** Get max media volume */
+        @JavascriptInterface
+        public int getMaxVolume() {
+            try {
+                AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+                return am.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
+            } catch (Exception e) {
+                return 15;
+            }
+        }
+
+        /** Show a native toast message */
+        @JavascriptInterface
+        public void showToast(String message) {
+            runOnUiThread(() -> Toast.makeText(MainActivity.this, message, Toast.LENGTH_SHORT).show());
+        }
+
+        /** Vibrate for given milliseconds (max 2000ms) */
+        @JavascriptInterface
+        public void vibrate(int ms) {
+            try {
+                Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+                if (v == null || !v.hasVibrator()) return;
+                int duration = Math.max(1, Math.min(2000, ms));
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    v.vibrate(VibrationEffect.createOneShot(duration, VibrationEffect.DEFAULT_AMPLITUDE));
+                } else {
+                    v.vibrate(duration);
+                }
+            } catch (Exception e) {}
+        }
+
+        /** Vibrate with pattern, JSON array e.g. [0,100,50,100] */
+        @JavascriptInterface
+        public void vibratePattern(String patternJson) {
+            try {
+                Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+                if (v == null || !v.hasVibrator()) return;
+                org.json.JSONArray arr = new org.json.JSONArray(patternJson);
+                long[] pattern = new long[arr.length()];
+                for (int i = 0; i < arr.length(); i++) {
+                    pattern[i] = Math.min(2000, arr.getLong(i));
+                }
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    v.vibrate(VibrationEffect.createWaveform(pattern, -1));
+                } else {
+                    v.vibrate(pattern, -1);
+                }
+            } catch (Exception e) {}
+        }
+
+        // ===== NATIVE TTS =====
+
+        /** Speak text using native TTS (more reliable than WebSpeech API) */
+        @JavascriptInterface
+        public void ttsSpeak(String text, String lang, float rate) {
+            if (!ttsReady || tts == null) return;
+            try {
+                if (lang != null && !lang.isEmpty()) {
+                    tts.setLanguage(Locale.forLanguageTag(lang));
+                }
+                tts.setSpeechRate(Math.max(0.25f, Math.min(3f, rate)));
+                tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, "leevis_tts");
+            } catch (Exception e) {}
+        }
+
+        /** Stop TTS */
+        @JavascriptInterface
+        public void ttsStop() {
+            if (tts != null) tts.stop();
+        }
+
+        /** Check if TTS is currently speaking */
+        @JavascriptInterface
+        public boolean ttsIsSpeaking() {
+            return tts != null && tts.isSpeaking();
+        }
+
+        /** Get available TTS languages as JSON array ["de-DE","en-US",...] */
+        @JavascriptInterface
+        public String ttsGetLanguages() {
+            if (!ttsReady || tts == null) return "[]";
+            try {
+                Set<Locale> locales = tts.getAvailableLanguages();
+                if (locales == null) return "[]";
+                StringBuilder sb = new StringBuilder("[");
+                boolean first = true;
+                for (Locale loc : locales) {
+                    if (!first) sb.append(",");
+                    first = false;
+                    sb.append("\"").append(loc.toLanguageTag()).append("\"");
+                }
+                sb.append("]");
+                return sb.toString();
+            } catch (Exception e) {
+                return "[]";
+            }
+        }
+
+        // ===== SCREEN TIME =====
+
+        /** Set daily screen time limit in minutes (0 = disabled) */
+        @JavascriptInterface
+        public void setTimeLimitMinutes(int minutes) {
+            SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+            prefs.edit().putInt("time_limit_minutes", Math.max(0, minutes)).apply();
+            startTimeLimitChecker();
+        }
+
+        /** Get current time limit setting */
+        @JavascriptInterface
+        public int getTimeLimitMinutes() {
+            return getSharedPreferences(PREFS_NAME, MODE_PRIVATE).getInt("time_limit_minutes", 0);
+        }
+
+        // ===== SETTINGS & SYSTEM =====
+
+        /** Open Android device settings */
+        @JavascriptInterface
+        public void openDeviceSettings() {
+            runOnUiThread(() -> {
+                try {
+                    startActivity(new Intent(android.provider.Settings.ACTION_SETTINGS));
+                } catch (Exception e) {}
+            });
+        }
+
+        /** Open WiFi settings directly */
+        @JavascriptInterface
+        public void openWifiSettings() {
+            runOnUiThread(() -> {
+                try {
+                    startActivity(new Intent(android.provider.Settings.ACTION_WIFI_SETTINGS));
+                } catch (Exception e) {}
+            });
+        }
+
+        /** Force reload the web app (clear cache) */
+        @JavascriptInterface
+        public void reloadApp() {
+            runOnUiThread(() -> {
+                webView.clearCache(true);
+                webView.loadUrl(APP_URL);
+            });
+        }
+
+        /** Get APK version string */
+        @JavascriptInterface
+        public String getAppVersion() {
+            return getAppVersionString();
+        }
+
+        /** Close the app completely */
+        @JavascriptInterface
+        public void exitApp() {
+            runOnUiThread(() -> {
+                if (tts != null) { tts.stop(); tts.shutdown(); }
+                finishAffinity();
+            });
+        }
+
+        // ===== PERSISTENT STORAGE =====
+        // More reliable than localStorage (survives WebView cache clears)
+
+        /** Save a key-value setting natively */
+        @JavascriptInterface
+        public void saveSetting(String key, String value) {
+            getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
+                .edit().putString("web_" + key, value).apply();
+        }
+
+        /** Load a setting (returns empty string if not found) */
+        @JavascriptInterface
+        public String loadSetting(String key) {
+            return getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
+                .getString("web_" + key, "");
+        }
     }
 
-    /**
-     * Vollbild-Modus
-     */
+    // ==================== Screen Time Limit ====================
+
+    private void startTimeLimitChecker() {
+        if (timeLimitChecker != null) {
+            timeLimitHandler.removeCallbacks(timeLimitChecker);
+        }
+        int limitMinutes = getSharedPreferences(PREFS_NAME, MODE_PRIVATE).getInt("time_limit_minutes", 0);
+        if (limitMinutes <= 0) return;
+
+        // Store session start if not set
+        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+        if (prefs.getLong("session_start", 0) == 0) {
+            prefs.edit().putLong("session_start", System.currentTimeMillis()).apply();
+        }
+
+        timeLimitChecker = new Runnable() {
+            @Override
+            public void run() {
+                SharedPreferences p = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+                int limit = p.getInt("time_limit_minutes", 0);
+                if (limit <= 0) return;
+                long start = p.getLong("session_start", System.currentTimeMillis());
+                long elapsed = (System.currentTimeMillis() - start) / 60000;
+                if (elapsed >= limit) {
+                    runOnUiThread(() -> {
+                        webView.evaluateJavascript(
+                            "if(typeof onTimeLimitReached==='function')onTimeLimitReached(" + elapsed + "," + limit + ")",
+                            null);
+                    });
+                }
+                timeLimitHandler.postDelayed(this, 60000); // check every minute
+            }
+        };
+        timeLimitHandler.postDelayed(timeLimitChecker, 60000);
+    }
+
+    // ==================== Helpers ====================
+
+    private String getAppVersionString() {
+        try {
+            PackageInfo pi = getPackageManager().getPackageInfo(getPackageName(), 0);
+            return pi.versionName;
+        } catch (Exception e) {
+            return "unknown";
+        }
+    }
+
+    // ==================== System UI ====================
+
     private void hideSystemUI() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             getWindow().setDecorFitsSystemWindows(false);
@@ -500,13 +880,9 @@ public class MainActivity extends Activity {
         if (hasFocus) hideSystemUI();
     }
 
-    /**
-     * ZURÜCK-BUTTON: In YouTube mode exits YouTube. In app navigates home.
-     */
     @Override
     public void onBackPressed() {
         if (ytModeActive) {
-            // In YouTube mode: check if YouTube WebView can go back, otherwise exit
             if (ytWebView.canGoBack()) {
                 ytWebView.goBack();
             } else {
@@ -514,35 +890,27 @@ public class MainActivity extends Activity {
             }
             return;
         }
-        // In main app: navigate to home screen
         webView.evaluateJavascript(
             "(function(){ if(typeof currentScreen !== 'undefined' && currentScreen !== 'home'){ go('home'); return 'navigated'; } return 'home'; })()",
-            value -> {
-                // Wenn bereits auf Home: nichts tun (Kiosk)
-            }
+            value -> {}
         );
     }
 
-    /**
-     * Home-Button: App bleibt im Vordergrund (nur als Standard-Launcher)
-     */
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
-        if (keyCode == KeyEvent.KEYCODE_APP_SWITCH) {
-            return true;
-        }
+        if (keyCode == KeyEvent.KEYCODE_APP_SWITCH) return true;
         return super.onKeyDown(keyCode, event);
     }
 
-    /**
-     * WebView Lifecycle
-     */
+    // ==================== Lifecycle ====================
+
     @Override
     protected void onResume() {
         super.onResume();
         hideSystemUI();
         if (webView != null) webView.onResume();
         if (ytWebView != null && ytModeActive) ytWebView.onResume();
+        startTimeLimitChecker();
     }
 
     @Override
@@ -550,6 +918,18 @@ public class MainActivity extends Activity {
         super.onPause();
         if (webView != null) webView.onPause();
         if (ytWebView != null) ytWebView.onPause();
+        if (timeLimitHandler != null && timeLimitChecker != null) {
+            timeLimitHandler.removeCallbacks(timeLimitChecker);
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (tts != null) { tts.stop(); tts.shutdown(); }
+        if (timeLimitHandler != null && timeLimitChecker != null) {
+            timeLimitHandler.removeCallbacks(timeLimitChecker);
+        }
     }
 
     @Override
@@ -564,7 +944,6 @@ public class MainActivity extends Activity {
         if (webView != null) webView.restoreState(savedInstanceState);
     }
 
-    /** Helper: dp to pixels */
     private int dpToPx(int dp) {
         return (int) (dp * getResources().getDisplayMetrics().density + 0.5f);
     }
