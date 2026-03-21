@@ -351,7 +351,7 @@ body{
 .calm-exit:active{background:rgba(224,224,224,0.25)}
 
 /* .mood-quick removed — now in .motor-bar (Motor Planning) */
-.mood-picker{position:fixed;bottom:clamp(50px,10vw,76px);left:12px;background:var(--card-bg);border-radius:clamp(12px,2.5vw,20px);padding:clamp(8px,1.5vw,14px);box-shadow:0 8px 30px rgba(0,0,0,0.5);z-index:61;display:none;gap:clamp(6px,1.2vw,10px);flex-wrap:wrap;width:50vw;height:50vh;overflow-y:auto;border:1px solid var(--border);align-content:start}
+.mood-picker{position:fixed;bottom:clamp(50px,10vw,76px);left:12px;background:var(--card-bg);border-radius:clamp(12px,2.5vw,20px);padding:clamp(8px,1.5vw,14px);box-shadow:0 8px 30px rgba(0,0,0,0.5);z-index:61;display:none;gap:clamp(6px,1.2vw,10px);flex-wrap:wrap;width:50vw;height:50vh;overflow-y:scroll;-webkit-overflow-scrolling:touch;touch-action:pan-y;border:1px solid var(--border);align-content:start}
 .mood-picker.show{display:flex;opacity:1}
 .mood-pick{padding:clamp(3px,0.8vw,6px);cursor:pointer;border-radius:clamp(8px,2vw,14px);border:2px solid var(--border);background:var(--card-bg2);transition:all 0.15s;touch-action:manipulation;display:flex;flex-direction:column;align-items:center;gap:3px;width:clamp(60px,14vw,100px);min-height:clamp(60px,14vw,100px);justify-content:center}
 .mood-pick:active{transform:scale(0.85);background:var(--category-blue);border-color:var(--blue)}
