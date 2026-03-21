@@ -214,19 +214,18 @@ body{
 .pkey.bk{background:#333;color:transparent;height:clamp(45px,10vh,75px);width:clamp(18px,4vw,30px);margin:0 clamp(-9px,-2vw,-15px);z-index:2;border-color:#111;border-radius:0 0 6px 6px}
 .pkey.bk:active{background:#555}
 
-/* ===== YOUTUBE IFRAME SCREEN ===== */
-.yt-iframe-wrap{flex:1;position:relative;overflow:hidden;background:#000}
-.yt-iframe-wrap iframe{width:100%;height:100%;border:none}
-/* Persistent overlay bar — always visible on top of YouTube */
-.yt-overlay{position:fixed;bottom:0;left:0;right:0;z-index:9999;display:none;align-items:stretch;gap:0;height:clamp(70px,14vh,100px);background:rgba(15,15,26,0.95);border-top:3px solid rgba(255,255,255,0.15);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);padding:6px 8px;box-shadow:0 -4px 20px rgba(0,0,0,0.6)}
-.yt-overlay.visible{display:flex}
-.yt-overlay-btn{flex:1;border:none;border-radius:clamp(12px,2vw,18px);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-weight:800;font-size:clamp(0.7em,2vw,0.95em);transition:all 0.12s;touch-action:manipulation;margin:0 3px;color:#fff}
-.yt-overlay-btn:active{transform:scale(0.94)}
-.yt-overlay-btn.peppa-btn{background:linear-gradient(135deg,#E91E63,#C2185B)}
-.yt-overlay-btn.mood-btn{background:linear-gradient(135deg,#FF9800,#E65100)}
-.yt-overlay-btn.back-btn-yt{background:linear-gradient(135deg,#e74c3c,#c0392b);flex:1.5}
-.yt-overlay-btn img,.yt-overlay-btn svg{width:clamp(32px,6vw,48px);height:clamp(32px,6vw,48px);object-fit:contain}
-.yt-overlay-btn .yt-ob-label{font-size:clamp(0.65em,1.8vw,0.85em);white-space:nowrap}
+/* ===== YOUTUBE (native Android overlay handles buttons) ===== */
+/* The YouTube screen is a minimal placeholder. In the APK, tapping Videos
+   triggers AndroidBridge.openYouTube() which opens a second native WebView
+   with m.youtube.com and native floating buttons (Peppa, Stimmung, Zurück).
+   In a browser, we show a simple message with a link. */
+#youtube{background:linear-gradient(135deg,#1a0000 0%,#0f0f1a 100%)}
+.yt-waiting{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(16px,3vh,30px);padding:20px;text-align:center}
+.yt-waiting-icon{font-size:clamp(4em,12vw,8em)}
+.yt-waiting-text{font-size:clamp(1.2em,3.5vw,1.8em);font-weight:800;color:#fff}
+.yt-waiting-sub{font-size:clamp(0.85em,2.5vw,1.1em);color:var(--text-secondary)}
+.yt-waiting-back{min-height:clamp(70px,12vh,100px);width:80%;max-width:400px;background:#e74c3c;border:3px solid #c0392b;border-radius:clamp(16px,3vw,24px);color:#fff;font-size:clamp(1.3em,3.5vw,1.8em);font-weight:900;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;touch-action:manipulation;box-shadow:0 6px 20px rgba(231,76,60,0.4)}
+.yt-waiting-back:active{transform:scale(0.97);background:#c0392b}
 
 /* ===== CREDITS SCREEN (CINEMATIC FULLSCREEN) ===== */
 #credits{overflow:hidden}
@@ -425,26 +424,15 @@ body{
   <div class="music-content" id="musicContent" style="flex:1;overflow-y:scroll;-webkit-overflow-scrolling:touch;padding:10px;touch-action:pan-y;min-height:0"></div>
 </div>
 
-<!-- YOUTUBE IFRAME SCREEN -->
+<!-- YOUTUBE SCREEN (waiting/fallback — native overlay handles YouTube in APK) -->
 <div class="screen" id="youtube">
-  <div class="yt-iframe-wrap">
-    <iframe id="ytMainFrame" src="about:blank" allow="autoplay;encrypted-media;fullscreen" allowfullscreen sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-presentation"></iframe>
+  <div class="topbar red" style="flex-wrap:nowrap"><button class="back-btn" onclick="go('home')">←</button><span style="font-weight:700;font-size:1.1em">Videos</span></div>
+  <div class="yt-waiting">
+    <div class="yt-waiting-icon">📺</div>
+    <div class="yt-waiting-text">YouTube ist offen!</div>
+    <div class="yt-waiting-sub">Tippe den Knopf um zurückzukommen</div>
+    <button class="yt-waiting-back" onclick="go('home');playSound('click')">← Zurück zu Leevis Welt</button>
   </div>
-</div>
-<!-- YouTube Overlay Bar (outside screen div so it stays on top of everything) -->
-<div class="yt-overlay" id="ytOverlay">
-  <button class="yt-overlay-btn peppa-btn" onclick="ytNavigate('peppa')">
-    <span style="font-size:clamp(1.8em,5vw,2.6em)">🐷</span>
-    <span class="yt-ob-label">Peppa</span>
-  </button>
-  <button class="yt-overlay-btn mood-btn" onclick="toggleMoodPicker()">
-    <img src="https://static.arasaac.org/pictograms/6517/6517_500.png" alt="Stimmung">
-    <span class="yt-ob-label">Stimmung</span>
-  </button>
-  <button class="yt-overlay-btn back-btn-yt" onclick="ytGoHome()">
-    <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-    <span class="yt-ob-label">Zurück</span>
-  </button>
 </div>
 
 <!-- CREDITS SCREEN (CINEMATIC FULLSCREEN) -->
@@ -597,7 +585,7 @@ body{
 
       <div class="dcard">
         <h3>📺 YouTube</h3>
-        <p style="font-size:0.85em;color:var(--text-secondary)">YouTube läuft direkt in der App mit einer Overlay-Leiste (Peppa, Stimmung, Zurück). Leevi kann jederzeit zurückkommen.</p>
+        <p style="font-size:0.85em;color:var(--text-secondary)">YouTube öffnet sich in einem eigenen Bildschirm mit nativen Buttons (Peppa, Stimmung, Zurück). Die APK muss neu gebaut werden für diese Funktion.</p>
       </div>
 
       <div class="dcard">
@@ -698,16 +686,6 @@ function go(screen){
   // Stop loops from previous screen
   if(currentScreen==='credits')stopCreditsLoops();
   if(currentScreen==='sensory')stopSensory();
-  // Hide YouTube overlay and stop iframe when leaving YouTube
-  if(currentScreen==='youtube'&&screen!=='youtube'){
-    document.getElementById('ytOverlay').classList.remove('visible');
-    document.getElementById('ytMainFrame').src='about:blank';
-    document.getElementById('motorBar').style.display='';
-  }
-  // Hide motor bar when entering YouTube (overlay replaces it)
-  if(screen==='youtube'){
-    document.getElementById('motorBar').style.display='none';
-  }
 
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById(screen).classList.add('active');
@@ -1748,48 +1726,27 @@ function initAlphabetGrid(){
   }
 }
 
-// ===== YOUTUBE - IN-APP IFRAME WITH OVERLAY =====
-// YouTube loads inside an iframe. A persistent overlay bar stays on top
-// with Peppa, Stimmung, and Zurück buttons — always accessible for Leevi.
-
-const YT_URLS={
-  home:'https://m.youtube.com',
-  peppa:'https://m.youtube.com/results?search_query=Peppa+Pig+Deutsch',
-  lieder:'https://m.youtube.com/results?search_query=Kinderlieder+deutsch',
-  babybus:'https://m.youtube.com/results?search_query=BabyBus+Deutsch',
-  sensory:'https://m.youtube.com/results?search_query=Hey+Bear+Sensory'
-};
+// ===== YOUTUBE - NATIVE ANDROID OVERLAY =====
+// In APK: AndroidBridge.openYouTube() opens a second native WebView with
+// m.youtube.com and native floating buttons (Peppa, Stimmung, Zurück).
+// In browser: falls back to opening YouTube in a new tab.
 
 function initYouTube(){
-  const frame=document.getElementById('ytMainFrame');
-  // Only load if not already loaded
-  if(!frame.src||frame.src==='about:blank'){
-    frame.src=YT_URLS.home;
-  }
-  // Show the overlay bar
-  document.getElementById('ytOverlay').classList.add('visible');
+  // Nothing to init — the waiting screen is static HTML.
+  // YouTube is opened by launchYouTube() via Android bridge.
   bubbleSay('Viel Spaß mit Videos!');
 }
 
-function ytNavigate(key){
-  const url=YT_URLS[key]||YT_URLS.home;
-  const frame=document.getElementById('ytMainFrame');
-  frame.src=url;
-  playSound('click');
-  bubbleSay(key==='peppa'?'Peppa Pig!':'Videos!');
-}
-
-function ytGoHome(){
-  // Hide overlay, stop iframe, go home
-  document.getElementById('ytOverlay').classList.remove('visible');
-  const frame=document.getElementById('ytMainFrame');
-  frame.src='about:blank';
-  go('home');
-  playSound('click');
-}
-
 function launchYouTube(){
+  // Show the YouTube waiting screen first
   go('youtube');
+  // Then open YouTube via Android bridge (native overlay with buttons)
+  if(window.AndroidBridge&&typeof AndroidBridge.openYouTube==='function'){
+    AndroidBridge.openYouTube('');
+  }else{
+    // Browser fallback: open YouTube in new tab
+    window.open('https://m.youtube.com','_blank');
+  }
 }
 
 // ===== ENDLESS CREDITS GENERATOR (NEW) =====
