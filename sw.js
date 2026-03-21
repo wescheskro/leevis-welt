@@ -1,11 +1,11 @@
-const CACHE_NAME = 'leevis-welt-v3';
+const CACHE_NAME = 'leevis-welt-v4';
 
 self.addEventListener('install', e => {
   self.skipWaiting();
 });
 
 self.addEventListener('activate', e => {
-  // Alte Caches löschen
+  // Alte Caches lÃ¶schen
   e.waitUntil(
     caches.keys().then(keys =>
       Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
