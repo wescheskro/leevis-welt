@@ -2533,47 +2533,138 @@ function savePinnedApps(arr){
   localStorage.setItem('pinned_apps',JSON.stringify(arr));
 }
 
+function getCustomApps(){
+  try{return JSON.parse(localStorage.getItem('custom_apps'))||[]}catch(e){return []}
+}
+function saveCustomApps(arr){
+  localStorage.setItem('custom_apps',JSON.stringify(arr));
+}
+function addCustomApp(pkg,name){
+  const apps=getCustomApps();
+  if(apps.some(a=>a.pkg===pkg))return false;
+  if(knownExternalApps.some(a=>a.pkg===pkg))return false;
+  apps.push({pkg,name});
+  saveCustomApps(apps);
+  return true;
+}
+function removeCustomApp(pkg){
+  let apps=getCustomApps().filter(a=>a.pkg!==pkg);
+  saveCustomApps(apps);
+  let pinned=getPinnedApps().filter(p=>p!==pkg);
+  savePinnedApps(pinned);
+}
+
+function renderAppToggle(editor,app,pinned,isCustom){
+  const active=pinned.includes(app.pkg);
+  const btn=document.createElement('div');
+  btn.style.cssText='display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px;border-radius:12px;cursor:pointer;border:3px solid;width:90px;min-height:90px;justify-content:center;transition:all 0.15s;touch-action:manipulation;position:relative;'
+    +(active?'border-color:var(--green);background:rgba(76,175,80,0.2);':'border-color:var(--border);background:var(--card-bg2);opacity:0.5;');
+  const icon=isCustom
+    ?'<span style="font-size:2em">📱</span>'
+    :`<img src="https://static.arasaac.org/pictograms/${app.pid}/${app.pid}_500.png" style="width:50px;height:50px;object-fit:contain">`;
+  btn.innerHTML=`${icon}
+    <span style="font-size:0.7em;font-weight:700;color:var(--text-primary);text-align:center;word-break:break-word">${app.name}</span>
+    <span style="font-size:0.65em;color:${active?'var(--green)':'var(--text-secondary)'}">${active?'✅ Auf Home':'Aus'}</span>`;
+  if(isCustom){
+    const del=document.createElement('div');
+    del.style.cssText='position:absolute;top:-6px;right:-6px;background:#C62828;color:#fff;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:0.7em;font-weight:700;cursor:pointer;z-index:1;';
+    del.textContent='✕';
+    del.onclick=(e)=>{e.stopPropagation();removeCustomApp(app.pkg);buildExternalAppEditor();buildHomeGrid();};
+    btn.appendChild(del);
+  }
+  btn.onclick=()=>{
+    let current=getPinnedApps();
+    if(current.includes(app.pkg)) current=current.filter(p=>p!==app.pkg);
+    else current.push(app.pkg);
+    savePinnedApps(current);
+    buildExternalAppEditor();
+    buildHomeGrid();
+  };
+  editor.appendChild(btn);
+}
+
+function buildAddAppForm(editor){
+  const wrap=document.createElement('div');
+  wrap.style.cssText='width:100%;margin-top:12px;padding-top:12px;border-top:1px solid var(--border);';
+  wrap.innerHTML=`<p style="font-size:0.8em;font-weight:700;color:var(--text-primary);margin-bottom:8px">App manuell hinzufügen</p>
+    <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+      <input id="customAppPkg" type="text" placeholder="Package-Name (z.B. com.example.app)" style="flex:1;min-width:180px;padding:8px 10px;border-radius:8px;border:2px solid var(--border);background:var(--card-bg2);color:var(--text-primary);font-size:0.85em">
+      <button onclick="handleAddCustomApp()" style="padding:8px 14px;border-radius:8px;border:2px solid var(--green);background:var(--green);color:#fff;font-weight:700;font-size:0.85em;cursor:pointer;white-space:nowrap">+ Hinzufügen</button>
+    </div>
+    <p id="customAppMsg" style="font-size:0.75em;margin-top:6px;display:none"></p>`;
+  editor.appendChild(wrap);
+}
+
+function handleAddCustomApp(){
+  const input=document.getElementById('customAppPkg');
+  const msg=document.getElementById('customAppMsg');
+  if(!input||!msg)return;
+  const pkg=input.value.trim();
+  if(!pkg){
+    msg.style.display='block';msg.style.color='#C62828';msg.textContent='Bitte Package-Name eingeben.';return;
+  }
+  if(knownExternalApps.some(a=>a.pkg===pkg)||getCustomApps().some(a=>a.pkg===pkg)){
+    msg.style.display='block';msg.style.color='#C62828';msg.textContent='Diese App ist bereits in der Liste.';return;
+  }
+  if(window.AndroidBridge && typeof AndroidBridge.isAppInstalled==='function'){
+    if(!AndroidBridge.isAppInstalled(pkg)){
+      msg.style.display='block';msg.style.color='#C62828';msg.textContent='App nicht gefunden. Ist sie installiert?';return;
+    }
+  }
+  let name=pkg.split('.').pop();
+  if(window.AndroidBridge && typeof AndroidBridge.getAppName==='function'){
+    const resolved=AndroidBridge.getAppName(pkg);
+    if(resolved)name=resolved;
+  }
+  addCustomApp(pkg,name);
+  input.value='';
+  msg.style.display='block';msg.style.color='var(--green)';msg.textContent='✅ '+name+' hinzugefügt!';
+  buildExternalAppEditor();
+  buildHomeGrid();
+}
+
 function buildExternalAppEditor(){
   const editor=document.getElementById('externalAppEditor');
   if(!editor)return;
-  if(window.AndroidBridge && typeof AndroidBridge.isAppInstalled === 'function'){
-    const pinned=getPinnedApps();
-    editor.innerHTML='';
-    let foundAny=false;
+  const hasbridge=window.AndroidBridge && typeof AndroidBridge.isAppInstalled === 'function';
+  const pinned=getPinnedApps();
+  editor.innerHTML='';
+  let foundAny=false;
+  if(hasbridge){
     knownExternalApps.forEach(app=>{
       if(AndroidBridge.isAppInstalled(app.pkg)){
         foundAny=true;
-        const active=pinned.includes(app.pkg);
-        const btn=document.createElement('div');
-        btn.style.cssText='display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px;border-radius:12px;cursor:pointer;border:3px solid;width:90px;min-height:90px;justify-content:center;transition:all 0.15s;touch-action:manipulation;'
-          +(active?'border-color:var(--green);background:rgba(76,175,80,0.2);':'border-color:var(--border);background:var(--card-bg2);opacity:0.5;');
-        btn.innerHTML=`<img src="https://static.arasaac.org/pictograms/${app.pid}/${app.pid}_500.png" style="width:50px;height:50px;object-fit:contain">
-          <span style="font-size:0.7em;font-weight:700;color:var(--text-primary);text-align:center">${app.name}</span>
-          <span style="font-size:0.65em;color:${active?'var(--green)':'var(--text-secondary)'}">${active?'✅ Auf Home':'Aus'}</span>`;
-        btn.onclick=()=>{
-          let current=getPinnedApps();
-          if(current.includes(app.pkg)) current=current.filter(p=>p!==app.pkg);
-          else current.push(app.pkg);
-          savePinnedApps(current);
-          buildExternalAppEditor();
-          buildHomeGrid();
-        };
-        editor.appendChild(btn);
+        renderAppToggle(editor,app,pinned,false);
       }
     });
-    if(!foundAny) editor.innerHTML='<p style="font-size:0.8em;color:var(--text-secondary)">Keine der 10 häufigsten Kinder-Apps gefunden.</p>';
-  }else{
-    editor.innerHTML='<p style="font-size:0.8em;color:var(--text-secondary)">App-Check wird auf diesem Tablet nicht unterstützt.</p>';
   }
+  const customApps=getCustomApps();
+  customApps.forEach(app=>{
+    foundAny=true;
+    renderAppToggle(editor,app,pinned,true);
+  });
+  if(!foundAny && !hasbridge){
+    const p=document.createElement('p');
+    p.style.cssText='font-size:0.8em;color:var(--text-secondary)';
+    p.textContent='App-Check wird auf diesem Tablet nicht unterstützt. Du kannst trotzdem Apps manuell hinzufügen.';
+    editor.appendChild(p);
+  }else if(!foundAny){
+    const p=document.createElement('p');
+    p.style.cssText='font-size:0.8em;color:var(--text-secondary)';
+    p.textContent='Keine bekannten Kinder-Apps gefunden. Füge Apps manuell hinzu!';
+    editor.appendChild(p);
+  }
+  buildAddAppForm(editor);
 }
 
 function buildHomeGrid(){
   const container=document.getElementById('dynamicHomeApps');
   if(!container)return;
   const pinned=getPinnedApps();
+  const customApps=getCustomApps();
   container.innerHTML='';
   pinned.forEach(pkg=>{
-    const app=knownExternalApps.find(a=>a.pkg===pkg);
+    const app=knownExternalApps.find(a=>a.pkg===pkg)||customApps.find(a=>a.pkg===pkg);
     if(app){
       const btn=document.createElement('div');
       btn.className='home-btn';
@@ -2584,7 +2675,10 @@ function buildHomeGrid(){
           fireIntent("intent://#Intent;action=android.intent.action.MAIN;category=android.intent.category.LAUNCHER;package="+app.pkg+";end");
         }catch(e){}
       };
-      btn.innerHTML=`<img class="icon" src="https://static.arasaac.org/pictograms/${app.pid}/${app.pid}_500.png"><span class="label">${app.name}</span>`;
+      const icon=app.pid
+        ?`<img class="icon" src="https://static.arasaac.org/pictograms/${app.pid}/${app.pid}_500.png">`
+        :'<span class="icon" style="font-size:clamp(24px,4vh,48px)">📱</span>';
+      btn.innerHTML=`${icon}<span class="label">${app.name}</span>`;
       container.appendChild(btn);
     }
   });
