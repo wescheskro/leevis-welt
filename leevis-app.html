@@ -12,7 +12,7 @@
 <!-- Edge AI: TensorFlow.js + Speech Commands (lokal, keine Cloud) -->
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js" async></script>
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/speech-commands@0.5.4/dist/speech-commands.min.js" async></script>
-<!-- YouTube Data API v3: Fuer echte Video-Suche wie auf YouTube -->
+<!-- YouTube: Opens external YouTube app -->
 <style>
 /* ========================================================================
  * MOTOR PLANNING (MOTORISCHE PLANUNG) - CORE DESIGN PRINCIPLE
@@ -214,40 +214,18 @@ body{
 .pkey.bk{background:#333;color:transparent;height:clamp(45px,10vh,75px);width:clamp(18px,4vw,30px);margin:0 clamp(-9px,-2vw,-15px);z-index:2;border-color:#111;border-radius:0 0 6px 6px}
 .pkey.bk:active{background:#555}
 
-/* ===== YOUTUBE SCREEN ===== */
-.yt-cats{display:flex;gap:8px;flex:1;flex-wrap:nowrap;padding:0;background:none;border:none;transition:none;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;-ms-overflow-style:none;touch-action:pan-x}
-.yt-cats::-webkit-scrollbar{display:none}
-.yt-cats.hidden-scroll{opacity:1;margin-top:0;pointer-events:auto}
-.yt-cat{background:rgba(255,255,255,0.15);border:2px solid rgba(255,255,255,0.25);border-radius:14px;width:140px;height:140px;font-size:0.65em;font-weight:700;cursor:pointer;color:#fff;transition:all 0.15s;touch-action:pan-x;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;flex-shrink:0;white-space:nowrap}
-.yt-cat .cat-icon{font-size:5.6em;line-height:1}
-.yt-cat:active{transform:scale(0.95)}
-.yt-cat.active{background:rgba(255,255,255,0.35);color:#fff;border-color:#fff;box-shadow:0 0 10px rgba(255,255,255,0.3)}
-.yt-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(clamp(140px,28vw,280px),1fr));gap:clamp(8px,1.5vw,14px);padding:clamp(8px,1.5vw,14px);flex:1;overflow-y:scroll;-webkit-overflow-scrolling:touch;align-content:start;min-height:0;grid-auto-rows:min-content;touch-action:pan-y}
-.yt-card{background:var(--card-bg);border-radius:clamp(10px,2vw,16px);overflow:hidden;box-shadow:0 3px 12px rgba(0,0,0,0.3);cursor:pointer;transition:all 0.15s;border:1px solid var(--border);touch-action:pan-y}
-.yt-card:active{transform:scale(0.98)}
-.yt-thumb{width:100%;aspect-ratio:16/9;background:#000;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
-.yt-thumb img{width:100%;height:100%;object-fit:cover}
-.yt-play{position:absolute;width:60px;height:42px;background:rgba(198,40,40,0.95);border-radius:10px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.5em}
-.yt-info{display:none}
-.yt-player{flex:1;background:#000;display:flex;flex-direction:column}
-.yt-player iframe{flex:1;width:100%;border:none}
-.yt-player-info{background:var(--dark-bg2);padding:12px 16px;border-top:1px solid var(--border)}
-.yt-player-info h3{font-size:1.1em;color:var(--text-primary)}
-.yt-player-info p{font-size:0.85em;color:var(--text-secondary);margin-top:4px}
-.yt-back-list{background:none;border:none;color:var(--category-red);font-weight:600;font-size:0.95em;cursor:pointer;padding:8px 0;margin-top:6px;transition:all 0.2s;touch-action:manipulation}
-.yt-back-list:active{color:var(--red)}
-.yt-embed-area{flex:1;display:flex;flex-direction:column;overflow:hidden;background:#000}
-.yt-loading{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 20px;gap:16px;color:var(--text-secondary);font-size:1.1em}
-.yt-loading-bounce{width:48px;height:48px;border-radius:50%;background:var(--red);animation:ytBounce 0.6s infinite alternate}
-@keyframes ytBounce{0%{transform:translateY(0) scale(1)}100%{transform:translateY(-20px) scale(1.1)}}
-.scroll-top-btn{position:fixed;bottom:85px;right:16px;width:60px;height:60px;border-radius:50%;border:3px solid var(--red);background:var(--category-red);color:#fff;font-size:2em;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:70;opacity:0;pointer-events:none;transition:opacity 0.3s,transform 0.15s;touch-action:manipulation;box-shadow:0 4px 15px rgba(244,67,54,0.4)}
-.scroll-top-btn.visible{opacity:1;pointer-events:auto}
-.scroll-top-btn:active{transform:scale(0.92)}
-
-/* ===== VOICE SEARCH BUTTON (in Kategorie-Leiste) ===== */
-.yt-voice-cat{background:rgba(255,255,255,0.3)!important;border-color:#fff!important;color:#fff!important}
-.yt-voice-cat.listening{animation:voicePulse 1s infinite;box-shadow:0 0 20px rgba(255,255,255,0.6)}
-@keyframes voicePulse{0%,100%{box-shadow:0 0 0 0 rgba(244,67,54,0.4)}50%{box-shadow:0 0 0 15px rgba(244,67,54,0)}}
+/* ===== YOUTUBE LAUNCH SCREEN ===== */
+.yt-launch{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;padding:20px;gap:clamp(16px,3vh,30px);background:linear-gradient(135deg,#1a0000 0%,#2d0a0a 50%,#0f0f1a 100%)}
+.yt-launch-logo{width:clamp(100px,25vw,180px);height:auto}
+.yt-launch-title{font-size:clamp(1.4em,4vw,2.2em);font-weight:900;color:#fff;text-align:center}
+.yt-channel-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:clamp(10px,2vw,16px);width:100%;max-width:500px;padding:0 10px}
+.yt-channel-btn{background:var(--card-bg);border:2px solid var(--border);border-radius:clamp(14px,2.5vw,20px);padding:clamp(14px,2.5vw,20px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;cursor:pointer;transition:all 0.15s;min-height:clamp(90px,18vw,130px);touch-action:manipulation}
+.yt-channel-btn:active{transform:scale(0.95);background:rgba(255,255,255,0.1)}
+.yt-channel-btn .ch-icon{font-size:clamp(2.2em,6vw,3.5em);line-height:1}
+.yt-channel-btn .ch-label{font-size:clamp(0.75em,2vw,1em);font-weight:700;color:#fff;text-align:center}
+.yt-back-huge{width:calc(100% - 40px);max-width:500px;min-height:clamp(100px,15vh,140px);background:#e74c3c;border:4px solid #c0392b;border-radius:clamp(18px,3vw,28px);color:#fff;font-size:clamp(1.6em,4.5vw,2.4em);font-weight:900;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:12px;transition:all 0.15s;touch-action:manipulation;box-shadow:0 6px 25px rgba(231,76,60,0.5);letter-spacing:0.5px;margin-top:auto;margin-bottom:20px}
+.yt-back-huge:active{transform:scale(0.97);background:#c0392b}
+@keyframes ytBackPulse{0%,100%{box-shadow:0 6px 25px rgba(231,76,60,0.5)}50%{box-shadow:0 6px 35px rgba(231,76,60,0.8)}}
 
 /* ===== CREDITS SCREEN (CINEMATIC FULLSCREEN) ===== */
 #credits{overflow:hidden}
@@ -417,8 +395,8 @@ body{
       <div class="home-btn" onclick="try{go('learn');bubbleSay('Lernen')}catch(e){}"><img class="icon" src="https://static.arasaac.org/pictograms/37810/37810_500.png"><span class="label">Lernen</span></div>
       <div class="home-btn" onclick="try{launchYouTube();speak('Videos');bubbleSay('Videos')}catch(e){}"><span class="icon" style="display:flex;align-items:center;justify-content:center"><svg viewBox="0 0 48 48" style="width:100%;height:100%"><rect x="2" y="8" width="44" height="32" rx="8" fill="#FF0000"/><polygon points="20,15 35,24 20,33" fill="#fff"/></svg></span><span class="label">Videos</span></div>
       <div class="home-btn" onclick="try{go('music');speak('Musik');bubbleSay('Musik')}catch(e){}"><img class="icon" src="https://static.arasaac.org/pictograms/24791/24791_500.png"><span class="label">Musik</span></div>
-      <div class="home-btn" onclick="try{go('credits')}catch(e){};speak('Kino');bubbleSay('Kino')"><img class="icon" src="https://static.arasaac.org/pictograms/30387/30387_500.png"><span class="label">Kino</span></div>
-      <div class="home-btn" onclick="try{go('sensory')}catch(e){};speak('Spielen');bubbleSay('Spielen')"><img class="icon" src="https://static.arasaac.org/pictograms/23392/23392_500.png"><span class="label">Spielen</span></div>
+      <div class="home-btn" onclick="try{go('credits');speak('Kino');bubbleSay('Kino')}catch(e){}"><img class="icon" src="https://static.arasaac.org/pictograms/30387/30387_500.png"><span class="label">Kino</span></div>
+      <div class="home-btn" onclick="try{go('sensory');speak('Spielen');bubbleSay('Spielen')}catch(e){}"><img class="icon" src="https://static.arasaac.org/pictograms/23392/23392_500.png"><span class="label">Spielen</span></div>
     </div>
   </div>
 </div>
@@ -446,22 +424,29 @@ body{
   <div class="music-content" id="musicContent" style="flex:1;overflow-y:scroll;-webkit-overflow-scrolling:touch;padding:10px;touch-action:pan-y;min-height:0"></div>
 </div>
 
-<!-- YOUTUBE SCREEN -->
-
+<!-- YOUTUBE LAUNCH SCREEN -->
 <div class="screen" id="youtube">
-<div class="topbar red" style="flex-wrap:nowrap"><button class="back-btn" onclick="showYTGrid(currentYTCat||'⭐ Favoriten')">←</button><div class="yt-cats-wrap" id="ytCats" style="display:flex;gap:6px;overflow-x:auto;flex:1;-webkit-overflow-scrolling:touch"></div></div>
-<div class="yt-grid" id="ytGrid" style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;display:grid;grid-template-columns:repeat(2,1fr);gap:10px;padding:10px;align-content:start;touch-action:pan-y;min-height:0"></div>
-<div id="ytPlayer" style="display:none;flex:1;flex-direction:column">
-<div style="position:relative;width:100%;padding-top:56.25%;background:#000">
-<iframe id="ytPlayerFrame" style="position:absolute;top:0;left:0;width:100%;height:100%;border:none" allow="autoplay;encrypted-media" allowfullscreen></iframe>
+  <div class="topbar red" style="flex-wrap:nowrap"><button class="back-btn" onclick="go('home')">←</button><span style="font-weight:700;font-size:1.1em">Videos</span></div>
+  <div class="yt-launch">
+    <!-- YouTube Logo -->
+    <svg class="yt-launch-logo" viewBox="0 0 120 85" xmlns="http://www.w3.org/2000/svg"><rect x="0" y="0" width="120" height="85" rx="18" fill="#FF0000"/><polygon points="48,18 48,67 90,42.5" fill="#fff"/></svg>
+    <div class="yt-launch-title">Was möchtest du schauen?</div>
+    <!-- Preset Channel Buttons -->
+    <div class="yt-channel-grid">
+      <div class="yt-channel-btn" onclick="openYouTubeChannel('peppa')"><span class="ch-icon">🐷</span><span class="ch-label">Peppa Pig</span></div>
+      <div class="yt-channel-btn" onclick="openYouTubeChannel('lieder')"><span class="ch-icon">🎵</span><span class="ch-label">Kinderlieder</span></div>
+      <div class="yt-channel-btn" onclick="openYouTubeChannel('babybus')"><span class="ch-icon">🚌</span><span class="ch-label">BabyBus</span></div>
+      <div class="yt-channel-btn" onclick="openYouTubeChannel('sensory')"><span class="ch-icon">🌈</span><span class="ch-label">Sensory</span></div>
+    </div>
+    <!-- Open YouTube directly -->
+    <div class="yt-channel-btn" onclick="openYouTubeApp('')" style="width:calc(100% - 40px);max-width:500px;flex-direction:row;min-height:70px;background:rgba(255,0,0,0.15);border-color:rgba(255,0,0,0.4)">
+      <span class="ch-icon">▶️</span><span class="ch-label" style="font-size:clamp(1em,2.5vw,1.3em)">YouTube öffnen</span>
+    </div>
+    <!-- HUGE Back Button - always visible, toddler-proof -->
+    <button class="yt-back-huge" onclick="go('home');playSound('click')">← Zurück zu Leevis Welt</button>
+  </div>
 </div>
-<div style="padding:10px">
-<button class="back-btn" onclick="showYTGrid(currentYTCat||'⭐ Favoriten')" style="margin-bottom:8px">← Zurück</button>
-<div id="ytPlayerTitle" style="font-size:1.1em;font-weight:700;color:var(--text-primary);margin-bottom:8px"></div>
-<div id="ytRelated" style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px"></div>
-</div>
-</div>
-</div>
+
 <!-- CREDITS SCREEN (CINEMATIC FULLSCREEN) -->
 <div class="screen" id="credits">
   <div class="topbar purple"><button class="back-btn" onclick="go('home')">←</button>🎬 Abspann</div>
@@ -611,14 +596,8 @@ body{
       </div>
 
       <div class="dcard">
-        <h3>📺 YouTube API Keys (Rotation)</h3>
-        <p style="font-size:0.8em;color:var(--text-secondary);margin-bottom:8px">Mehrere Keys kommagetrennt eingeben. Bei Quota-Limit wechselt die App automatisch zum nächsten Key.</p>
-        <textarea id="ytApiKeyInput" placeholder="AIza..., AIza..., AIza..." rows="3" style="width:100%;padding:8px 12px;border-radius:8px;border:1px solid var(--border);background:var(--dark-bg2);color:var(--text-primary);font-size:0.85em;box-sizing:border-box;margin-bottom:6px;resize:vertical;font-family:monospace"></textarea>
-        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-          <button class="close-dash-btn" onclick="saveYTApiKey()" style="background:var(--category-green);color:#fff;border-color:var(--green)">💾 Speichern</button>
-          <span id="ytKeyCount" style="font-size:0.8em;color:var(--accent-blue)"></span>
-          <span id="ytApiKeyStatus" style="font-size:0.75em;color:var(--text-secondary)"></span>
-        </div>
+        <h3>📺 YouTube</h3>
+        <p style="font-size:0.85em;color:var(--text-secondary)">YouTube öffnet jetzt die echte YouTube-App auf dem Handy. Leevi kann jederzeit über den großen roten Knopf zurückkommen.</p>
       </div>
 
       <div class="dcard">
@@ -677,11 +656,11 @@ body{
      Position: Mood=left, Parent=center, Credits=right
      These buttons are ALWAYS visible on EVERY screen at the SAME position.
      DO NOT reorder, hide conditionally, or change positions based on usage. -->
-<button id="ytScrollTopBtn" class="scroll-top-btn" onclick="document.getElementById('ytGrid').scrollTo({top:0,behavior:'smooth'})">▲</button>
+<!-- scroll-top button removed (YouTube now launches external app) -->
 <div class="motor-bar" id="motorBar">
   <button class="motor-btn" onclick="toggleMoodPicker()" id="moodBtn"><img src="https://static.arasaac.org/pictograms/6517/6517_500.png" style="width:70%;height:70%;object-fit:contain"></button>
-  <button class="motor-btn" onclick="try{go('home')}catch(e){}" style="background:var(--category-blue);border-color:var(--accent-blue);color:#fff;font-size:clamp(1.6em,4vw,2.6em)">🏠</button>
-  <button class="motor-btn" onclick="try{go('credits')}catch(e){}"><img src="https://static.arasaac.org/pictograms/9183/9183_500.png" style="width:70%;height:70%;object-fit:contain"></button>
+  <button class="motor-btn" onclick="go('home');playSound('click')" style="background:var(--category-blue);border-color:var(--accent-blue);color:#fff;font-size:clamp(1.6em,4vw,2.6em)">🏠</button>
+  <button class="motor-btn" onclick="go('credits');playSound('click')"><img src="https://static.arasaac.org/pictograms/9183/9183_500.png" style="width:70%;height:70%;object-fit:contain"></button>
 </div>
 <div class="mood-picker" id="moodPicker">
   <button class="mood-pick" onclick="quickSpeak('Hilfe',12252)"><img src="https://static.arasaac.org/pictograms/12252/12252_500.png"><span class="mood-label">Hilfe</span></button>
@@ -698,20 +677,6 @@ body{
   <button class="mood-pick" onclick="quickSpeak('Ruhe',7076)"><img src="https://static.arasaac.org/pictograms/7076/7076_500.png"><span class="mood-label">Ruhe</span></button>
 </div>
 
-<script>
-window.__errors=[];
-window.onerror=function(msg,src,line,col,err){
-  window.__errors.push(msg+' (line '+line+')');
-  var d=document.getElementById('debug-errors');
-  if(!d){d=document.createElement('div');d.id='debug-errors';d.style.cssText='position:fixed;bottom:60px;left:10px;right:10px;background:red;color:white;padding:10px;font-size:12px;z-index:99999;max-height:200px;overflow:auto;border-radius:8px;';document.body.appendChild(d);}
-  d.innerHTML='<b>FEHLER:</b><br>'+window.__errors.join('<br>');
-};
-window.addEventListener('unhandledrejection',function(e){
-  window.__errors.push('Promise: '+e.reason);
-  var d=document.getElementById('debug-errors');
-  if(d)d.innerHTML='<b>FEHLER:</b><br>'+window.__errors.join('<br>');
-});
-</script>
 <script>
 // ===== APP STATE =====
 let currentScreen='home';
@@ -737,46 +702,39 @@ function go(screen){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById(screen).classList.add('active');
   currentScreen=screen;
-  try{playSound('click')}catch(e){};
+  try{playSound('click')}catch(e){}
   if(screen==='calm')initCalmMode();
   if(screen==='credits')initCredits();
   if(screen==='sensory')initSensory();
   if(screen==='learn'){initLearnCats();endGame()}
+  if(screen==='youtube')initYouTube();
   // Peppa zeigt passende Bilder je nach Screen
   const peppaScreenMap={home:'happy',aac:'happy',learn:'think',youtube:'happy',music:'music',credits:'happy',sensory:'play',calm:'sleep'};
   setPeppa(peppaScreenMap[screen]||'happy');
   // Peppa ist jetzt standardmäßig versteckt, erscheint nur kurz bei bubbleSay()
   const buddy=document.getElementById('buddy');
   if(screen==='home'){buddy.style.display='none'}else{buddy.style.display='';buddy.classList.remove('visible')}
-  if(screen==='youtube')initYouTube();
 }
 
 // ===== TEXT-TO-SPEECH (High-Quality Audio First) =====
-const synth=window.speechSynthesis||null;
+const synth=window.speechSynthesis;
 let deVoice=null;
 
 function findGermanVoice(){
-  if(!synth) return;
-  try {
-    const voices=synth.getVoices();
-    if(!voices || voices.length===0) return;
-    // Premium-Stimmen bevorzugen (Siri, Google, Microsoft Neural, Enhanced)
-    const premiumKeywords=['siri','premium','enhanced','neural','natural','google','samantha','anna'];
-    const deVoices=voices.filter(v=>v.lang && (v.lang.startsWith('de')||v.lang.includes('DE')));
-    if(deVoices.length===0) return;
-    // Zuerst Premium-Stimme suchen
-    deVoice=deVoices.find(v=>{
-      const n=v.name.toLowerCase();
-      return premiumKeywords.some(k=>n.includes(k));
-    });
-    // Dann lokale (nicht remote) Stimme
-    if(!deVoice) deVoice=deVoices.find(v=>v.localService===true);
-    // Dann irgendeine deutsche Stimme
-    if(!deVoice) deVoice=deVoices[0]||null;
-    if(deVoice) console.log('[TTS] Stimme gewaehlt:',deVoice.name,'('+deVoice.lang+')');
-  } catch(e) {
-    console.warn('[TTS] findGermanVoice error:', e);
-  }
+  const voices=synth.getVoices();
+  // Premium-Stimmen bevorzugen (Siri, Google, Microsoft Neural, Enhanced)
+  const premiumKeywords=['siri','premium','enhanced','neural','natural','google','samantha','anna'];
+  const deVoices=voices.filter(v=>v.lang.startsWith('de')||v.lang.includes('DE'));
+  // Zuerst Premium-Stimme suchen
+  deVoice=deVoices.find(v=>{
+    const n=v.name.toLowerCase();
+    return premiumKeywords.some(k=>n.includes(k));
+  });
+  // Dann lokale (nicht remote) Stimme
+  if(!deVoice) deVoice=deVoices.find(v=>!v.localService===false);
+  // Dann irgendeine deutsche Stimme
+  if(!deVoice) deVoice=deVoices[0]||null;
+  if(deVoice) console.log('[TTS] Stimme gewählt:',deVoice.name,'('+deVoice.lang+')');
 }
 if(synth&&synth.onvoiceschanged!==undefined)synth.onvoiceschanged=findGermanVoice;
 findGermanVoice();
@@ -788,24 +746,20 @@ let currentSpeechAudio=null;
 
 function stopCurrentAudio(){
   if(currentSpeechAudio){currentSpeechAudio.pause();currentSpeechAudio.currentTime=0;currentSpeechAudio=null}
-  if(synth){ try{ synth.cancel(); }catch(e){} }
+  if(synth)synth.cancel();
 }
 
 function speakWithTTS(text){
   if(!synth)return;
-  try {
-    synth.cancel();
-    if(!deVoice)findGermanVoice();
-    const u=new SpeechSynthesisUtterance(text);
-    u.lang='de-DE';
-    u.rate=0.9;
-    u.pitch=1.0;
-    u.volume=1;
-    if(deVoice)u.voice=deVoice;
-    synth.speak(u);
-  } catch(e) {
-    console.warn('[TTS] speakWithTTS error:', e);
-  }
+  synth.cancel();
+  if(!deVoice)findGermanVoice();
+  const u=new SpeechSynthesisUtterance(text);
+  u.lang='de-DE';
+  u.rate=0.9;
+  u.pitch=1.0;
+  u.volume=1;
+  if(deVoice)u.voice=deVoice;
+  synth.speak(u);
 }
 
 function speak(text){
@@ -1318,13 +1272,15 @@ function updateLearnStars(){
 }
 
 // ===== MUSIC SCREEN =====
+// AudioContext LAZY INIT — WebView erlaubt Erstellung nur nach User-Geste!
+// Vorher: "const audioCtx = new AudioContext()" crashte sofort und tötete ALLES danach.
 let audioCtx=null;
 function getAudioCtx(){
   if(!audioCtx){
     try{
       audioCtx=new(window.AudioContext||window.webkitAudioContext)();
     }catch(e){
-      console.warn('[Audio] AudioContext nicht verfuegbar:',e);
+      console.warn('[Audio] AudioContext nicht verfügbar:',e);
       return null;
     }
   }
@@ -1333,11 +1289,9 @@ function getAudioCtx(){
   }
   return audioCtx;
 }
-function resumeAudioCtx(){if(audioCtx&&audioCtx.state==='suspended')audioCtx.resume().catch(()=>{});else getAudioCtx()}
+function resumeAudioCtx(){getAudioCtx()}
 document.addEventListener('touchstart',resumeAudioCtx,{once:false,passive:true});
 document.addEventListener('click',resumeAudioCtx,{once:false});
-// WebView/Chrome erfordert User-Geste um AudioContext zu starten
-// resumeAudioCtx - consolidated (duplicate removed)
 
 const pianoNotes=[
   {note:'C',freq:261.63},{note:'D',freq:293.66},{note:'E',freq:329.63},{note:'F',freq:349.23},
@@ -1369,23 +1323,23 @@ function playTone(freq){
   const ctx=getAudioCtx();
   if(!ctx)return;
   try{
-  const osc=ctx.createOscillator();
-  const gain=ctx.createGain();
-  osc.connect(gain);
-  gain.connect(ctx.destination);
-  osc.frequency.value=freq;
-  osc.type='sine';
-  gain.gain.setValueAtTime(0.3,ctx.currentTime);
-  gain.gain.exponentialRampToValueAtTime(0.01,ctx.currentTime+0.5);
-  osc.start(ctx.currentTime);
-  osc.stop(ctx.currentTime+0.5);
-
-  }catch(e){console.warn("[Audio] playTone:",e)}
+    const osc=ctx.createOscillator();
+    const gain=ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.frequency.value=freq;
+    osc.type='sine';
+    gain.gain.setValueAtTime(0.3,ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01,ctx.currentTime+0.5);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime+0.5);
+  }catch(e){console.warn('[Audio] playTone error:',e)}
 }
 
 function playSound(type){
+  const ctx=getAudioCtx();
+  if(!ctx)return;
   try{
-  const ctx=getAudioCtx();if(!ctx)return;
   const now=ctx.currentTime;
   const gain=ctx.createGain();
   gain.connect(ctx.destination);
@@ -1423,8 +1377,7 @@ function playSound(type){
     osc.start(now);
     osc.stop(now+0.3);
   }
-
-  }catch(e){console.warn("[Audio] playSound:",e)}
+  }catch(e){console.warn('[Audio] playSound error:',e)}
 }
 
 // ===== MUSIC CATEGORY SYSTEM =====
@@ -1785,611 +1738,52 @@ function initAlphabetGrid(){
   }
 }
 
-// ===== YOUTUBE - SUCH-SYSTEM (YouTube Data API v3) =====
-// Jede Kategorie hat Suchbegriffe. Die App sucht wie YouTube selbst.
-// Ergebnisse werden 24h in localStorage gecacht.
-// API-Key wird einmalig im Eltern-Dashboard eingegeben (kostenlos).
+// ===== YOUTUBE - EXTERNAL APP LAUNCHER =====
+// YouTube opens the REAL YouTube app on the phone.
+// The app shows a launch screen with preset channels and a HUGE back button.
+// When Leevi returns (via Android back or task switcher), the back button screen is waiting.
 
-// --- YouTube Kanal-IDs (RSS-Feed basiert, kein API-Key nötig) ---
-const ytChannelMap={
-  '🔢 Zahlen':[
-    {id:'UCooPit08nD5lkSjgc5Gjxqw',name:'Sing Kinderlieder'},
-    {id:'UCctbi1Jw2jiVhj2ogdwiFdA',name:'Kinderlieder Mitsingen'},
-    {id:'UCpYye8D5fFMUPf9nSfgd4bA',name:'BabyBus'}
-  ],
-  '🔤 ABC':[
-    {id:'UCooPit08nD5lkSjgc5Gjxqw',name:'Sing Kinderlieder'},
-    {id:'UCctbi1Jw2jiVhj2ogdwiFdA',name:'Kinderlieder Mitsingen'},
-    {id:'UCpYye8D5fFMUPf9nSfgd4bA',name:'BabyBus'}
-  ],
-  '🎬 Abspänne':[
-    {id:'UCswHAbaWV6tsed5J5E8vBgg',name:'Disney Channel DE'},
-    {id:'UCpYye8D5fFMUPf9nSfgd4bA',name:'BabyBus'}
-  ],
-  '🎵 Lieder':[
-    {id:'UCooPit08nD5lkSjgc5Gjxqw',name:'Sing Kinderlieder'},
-    {id:'UCctbi1Jw2jiVhj2ogdwiFdA',name:'Kinderlieder Mitsingen'},
-    {id:'UCpYye8D5fFMUPf9nSfgd4bA',name:'BabyBus'}
-  ],
-  '🌙 Ruhe':[
-    {id:'UCtf9cFBJkHVAf2qMqF01xYg',name:'Hey Bear Sensory'}
-  ],
-  '🐷 Peppa Pig':[
-    {id:'UCNclt7O1bO7hz8Mari68neg',name:'Peppa Deutsch'}
-  ]
+// --- YouTube Channel URLs for external launch ---
+const ytChannelUrls={
+  'peppa':'https://www.youtube.com/@PeppaPigDeutsch',
+  'lieder':'https://www.youtube.com/@SingKinderlieder',
+  'babybus':'https://www.youtube.com/@BabyBusDeutsch',
+  'sensory':'https://www.youtube.com/@HeyBearSensory'
 };
-const ytCategories={
-  '🔢 Zahlen':{query:'Zahlen lernen Kinder deutsch Lied'},
-  '🔤 ABC':{query:'ABC Buchstaben lernen Kinder deutsch Lied'},
-  '🎬 Abspänne':{query:'movie end credits rolling credits'},
-  '🎵 Lieder':{query:'Kinderlieder deutsch zum Mitsingen'},
-  '🌙 Ruhe':{query:'Baby Sensory calming relaxing video'},
-  '🐷 Peppa Pig':{query:'Peppa Pig Deutsch'}
-};
+// --- YouTube External Launch Functions ---
 
-let ytPlayerActive=false;
-let ytLoadGeneration=0;
-
-// --- API Key Management (Multi-Key Rotation) ---
-const YT_DEFAULT_KEYS=['AIzaSyC_LocCmhYdt8RN2E67t9F10e7vgJUTzsQ','AIzaSyCqFu2U7a9kvKuOquqiU8knbj2AONM3b3s'];
-function getYTApiKeys(){
+// --- Open YouTube app or channel ---
+function openYouTubeApp(url){
+  const target=url||'https://www.youtube.com';
+  // Try intent URL for Android WebView first, then fallback to window.open
   try{
-    const stored=localStorage.getItem('yt_api_keys');
-    if(stored){const arr=JSON.parse(stored);if(arr.length>0)return arr}
-  }catch(e){}
-  // Fallback: alte Single-Key-Migration
-  const old=localStorage.getItem('yt_api_key');
-  if(old)return[old,...YT_DEFAULT_KEYS.filter(k=>k!==old)];
-  return[...YT_DEFAULT_KEYS];
-}
-function getYTCurrentKeyIndex(){return parseInt(localStorage.getItem('yt_key_idx')||'0')||0}
-function setYTCurrentKeyIndex(i){localStorage.setItem('yt_key_idx',String(i))}
-function getYTApiKey(){
-  const keys=getYTApiKeys();
-  if(keys.length===0)return null;
-  const idx=getYTCurrentKeyIndex()%keys.length;
-  return keys[idx];
-}
-function rotateYTApiKey(){
-  const keys=getYTApiKeys();
-  if(keys.length<=1)return null;
-  const oldIdx=getYTCurrentKeyIndex()%keys.length;
-  const newIdx=(oldIdx+1)%keys.length;
-  setYTCurrentKeyIndex(newIdx);
-  console.log('YT API Key rotiert: Key '+(newIdx+1)+'/'+keys.length);
-  return keys[newIdx];
-}
-function saveYTApiKey(){
-  const input=document.getElementById('ytApiKeyInput');
-  const status=document.getElementById('ytApiKeyStatus');
-  const raw=input.value.trim();
-  if(!raw){
-    localStorage.removeItem('yt_api_keys');
-    localStorage.removeItem('yt_key_idx');
-    status.textContent='Alle entfernt – Standard-Key aktiv';
-    status.style.color='var(--red)';
-    updateKeyCountDisplay();
-    setTimeout(()=>{status.textContent=''},3000);
-    return;
+    // Android intent: opens YouTube app directly
+    const intentUrl='intent://'+target.replace(/^https?:\/\//,'')+'#Intent;scheme=https;package=com.google.android.youtube;end';
+    window.location.href=intentUrl;
+  }catch(e){
+    // Fallback: open in new tab/window (works in browser)
+    window.open(target,'_blank');
   }
-  // Mehrere Keys: komma- oder zeilengetrennt
-  const keys=raw.split(/[,\n]+/).map(k=>k.trim()).filter(k=>k.startsWith('AIza'));
-  if(keys.length===0){
-    status.textContent='Ungültige Keys (müssen mit AIza... beginnen)';
-    status.style.color='var(--red)';
-  }else{
-    localStorage.setItem('yt_api_keys',JSON.stringify(keys));
-    setYTCurrentKeyIndex(0);
-    status.textContent=keys.length+' Key'+(keys.length>1?'s':'')+' gespeichert! Rotation aktiv.';
-    status.style.color='var(--green)';
-  }
-  updateKeyCountDisplay();
-  setTimeout(()=>{status.textContent=''},4000);
-}
-function updateKeyCountDisplay(){
-  const el=document.getElementById('ytKeyCount');
-  if(!el)return;
-  const keys=getYTApiKeys();
-  const idx=getYTCurrentKeyIndex()%keys.length;
-  el.textContent='Aktiv: Key '+(idx+1)+' von '+keys.length;
+  bubbleSay('YouTube ist offen! Tippe den roten Knopf zum Zurückkommen.');
 }
 
-// --- YouTube RSS-Feed Suche (kein API-Key nötig!) ---
-const CORS_PROXIES=[
-  url=>'https://api.codetabs.com/v1/proxy?quest='+encodeURIComponent(url),
-  url=>'https://api.allorigins.win/raw?url='+encodeURIComponent(url)
-];
-
-async function fetchViaProxy(url,timeout){
-  for(const makeProxy of CORS_PROXIES){
-    try{
-      const r=await fetch(makeProxy(url),{signal:AbortSignal.timeout(timeout||6000)});
-      if(r.ok)return await r.text();
-    }catch(e){continue}
-  }
-  return null;
-}
-
-// RSS-Feed eines YouTube-Kanals laden und Video-IDs extrahieren
-async function loadChannelRSS(channelId){
-  const rssUrl='https://www.youtube.com/feeds/videos.xml?channel_id='+channelId;
-  const xml=await fetchViaProxy(rssUrl,6000);
-  if(!xml)return[];
-  const ids=[...xml.matchAll(/<yt:videoId>([^<]+)<\/yt:videoId>/g)].map(m=>m[1]);
-  const titles=[...xml.matchAll(/<media:title>([^<]+)<\/media:title>/g)].map(m=>m[1]);
-  return ids.map((id,i)=>({
-    id,
-    title:(titles[i]||'Video').replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&#39;/g,"'").replace(/&quot;/g,'"'),
-    thumb:'https://img.youtube.com/vi/'+id+'/mqdefault.jpg'
-  }));
-}
-
-// Haupt-Suchfunktion: RSS zuerst, dann Google API als Fallback
-async function searchYouTube(query,maxResults,pageToken,categoryName){
-  // 1. RSS-Feed basierte Suche (kein Key nötig!)
-  const channels=ytChannelMap[categoryName]||[];
-  if(channels.length>0){
-    let allVideos=[];
-    for(const ch of channels){
-      const videos=await loadChannelRSS(ch.id);
-      allVideos=allVideos.concat(videos);
-    }
-    if(allVideos.length>0){
-      console.log('[YT] RSS erfolgreich:',allVideos.length,'Videos für',categoryName);
-      return{videos:allVideos.slice(0,maxResults||24),nextPageToken:null};
-    }
-  }
-
-  // 2. Fallback: Google YouTube Data API v3 mit Key-Rotation
-  const keys=getYTApiKeys();
-  if(keys.length===0)return null;
-  for(let attempt=0;attempt<keys.length;attempt++){
-    const key=getYTApiKey();
-    if(!key)return null;
-    const params=new URLSearchParams({
-      part:'snippet',type:'video',
-      maxResults:String(maxResults||12),
-      q:query,safeSearch:'strict',relevanceLanguage:'de',key:key
-    });
-    if(pageToken)params.set('pageToken',pageToken);
-    try{
-      const r=await fetch('https://www.googleapis.com/youtube/v3/search?'+params);
-      if(r.ok){
-        const data=await r.json();
-        updateKeyCountDisplay();
-        return{
-          videos:(data.items||[]).map(item=>({
-            id:item.id,
-            title:item.snippet.title,
-            thumb:item.snippet.thumbnails.medium?item.snippet.thumbnails.medium.url:('https://img.youtube.com/vi/'+item.id+'/mqdefault.jpg')
-          })),
-          nextPageToken:data.nextPageToken||null
-        };
-      }
-      if(r.status===403&&keys.length>1){rotateYTApiKey();continue}
-      return null;
-    }catch(e){return null}
-  }
-  return null;
-}
-
-// --- localStorage Cache (24h) ---
-function getCachedSearch(query){
-  try{
-    const raw=localStorage.getItem('yt_search_'+query);
-    if(!raw)return null;
-    const d=JSON.parse(raw);
-    if(Date.now()-d.timestamp>24*60*60*1000)return null;
-    return{videos:d.videos,nextPageToken:d.nextPageToken||null};
-  }catch(e){return null}
-}
-function setCachedSearch(query,videos,nextPageToken){
-  try{localStorage.setItem('yt_search_'+query,JSON.stringify({timestamp:Date.now(),videos,nextPageToken:nextPageToken||null}))}catch(e){}
-}
-
-// --- Favoriten-System ---
-// Migration: Alte Playlist-IDs entfernen
-(function(){
-  try{
-    const favs=JSON.parse(localStorage.getItem('yt_favorites')||'{}');
-    const cleaned={};let changed=false;
-    for(const[id,data]of Object.entries(favs)){
-      if(!id.startsWith('PL')&&!id.startsWith('UU')){cleaned[id]=data}else{changed=true}
-    }
-    if(changed)localStorage.setItem('yt_favorites',JSON.stringify(cleaned));
-  }catch(e){}
-})();
-function getYTFavorites(){
-  try{return JSON.parse(localStorage.getItem('yt_favorites')||'{}')}catch(e){return{}}
-}
-function trackYTView(v){
-  const favs=getYTFavorites();
-  if(!favs[v.id])favs[v.id]={title:v.title||'',count:0};
-  favs[v.id].count++;
-  favs[v.id].title=v.title||favs[v.id].title;
-  if(v.thumb)favs[v.id].thumb=v.thumb;
-  favs[v.id].lastWatched=Date.now();
-  localStorage.setItem('yt_favorites',JSON.stringify(favs));
-}
-function getFavoriteVideos(){
-  const favs=getYTFavorites();
-  return Object.entries(favs)
-    .map(([id,data])=>({id,title:data.title||id,thumb:data.thumb||'',count:data.count,lastWatched:data.lastWatched||0}))
-    .sort((a,b)=>b.count-a.count)
-    .slice(0,12);
-}
-
-// --- Kategorie-Videos laden ---
-let ytCurrentQuery=null; // Aktuelle Suchanfrage fuer Infinite Scroll
-let ytNextPageToken=null; // Token fuer naechste Seite
-let ytLoadingMore=false; // Verhindert doppeltes Nachladen
-let ytSeenIds=new Set(); // Bereits angezeigte Video-IDs
-
-async function loadCategoryVideos(cat,gen){
-  const grid=document.getElementById('ytGrid');
-  ytCurrentQuery=null;
-  ytNextPageToken=null;
-  ytLoadingMore=false;
-  ytSeenIds=new Set();
-  if(ytObserver){ytObserver.disconnect();ytObserver=null}
-
-  // Favoriten
-  if(cat==='⭐ Favoriten'){
-    const favs=getFavoriteVideos();
-    if(favs.length===0){
-      grid.innerHTML='<div style="text-align:center;padding:40px;color:var(--text-secondary);font-size:1.1em">Noch keine Favoriten — schau ein paar Videos!</div>';
-    }else{
-      grid.innerHTML='';
-      appendVideos(grid,favs);
-    }
-    return;
-  }
-
-  const catData=ytCategories[cat];
-  if(!catData)return;
-
-  ytCurrentQuery=catData.query;
-
-  // Cache pruefen
-  const cached=getCachedSearch(catData.query);
-  if(cached&&cached.videos.length>0){
-    grid.innerHTML='';
-    ytNextPageToken=cached.nextPageToken;
-    appendVideos(grid,cached.videos);
-    if(ytNextPageToken){setupSentinelObserver(grid,gen)}
-    return;
-  }
-
-  // Lade-Animation
-  grid.innerHTML='<div class="yt-loading"><div class="yt-loading-bounce"></div><span>Videos laden...</span></div>';
-
-  // YouTube-Suche: RSS-Feeds zuerst, dann API als Fallback
-  let loaded=false;
-  const result=await searchYouTube(catData.query,24,null,cat);
-  if(ytLoadGeneration!==gen)return;
-  if(result&&result.videos.length>0){
-    setCachedSearch(catData.query,result.videos,result.nextPageToken);
-    grid.innerHTML='';
-    ytNextPageToken=result.nextPageToken;
-    appendVideos(grid,result.videos);
-    if(ytNextPageToken){
-      setupSentinelObserver(grid,gen);
-    }
-    loaded=true;
-  }
-
-  // Fehlermeldung wenn nichts funktioniert
-  if(!loaded){
-    if(ytLoadGeneration!==gen)return;
-    grid.innerHTML='<div style="text-align:center;padding:40px;color:var(--text-secondary);font-size:1.1em">⚠️ Videos konnten nicht geladen werden.<br><span style="font-size:0.85em">Bitte Internetverbindung prüfen.</span></div>';
+function openYouTubeChannel(key){
+  const url=ytChannelUrls[key];
+  if(url){
+    openYouTubeApp(url);
+    playSound('click');
   }
 }
 
-// --- Einzelne Video-Karte erstellen ---
-function createVideoCard(v){
-  const card=document.createElement('div');
-  card.className='yt-card';
-  const favs=getYTFavorites();
-  const vc=favs[v.id]?favs[v.id].count:0;
-  const hb=vc>0?'<span style="color:var(--red);font-size:0.75em;margin-left:4px">\u2665'+vc+'</span>':'';
-  const thumbUrl=v.thumb||('https://img.youtube.com/vi/'+v.id+'/mqdefault.jpg');
-  const displayTitle=v.title||'Video';
-  card.innerHTML='<div class="yt-thumb"><img src="'+thumbUrl+'" alt="" loading="lazy" onerror="this.src=\'https://img.youtube.com/vi/'+v.id+'/mqdefault.jpg\'"><div class="yt-play">\u25B6</div></div><div class="yt-info"><h4>'+displayTitle+hb+'</h4></div>';
-  card.onclick=()=>{playYTVideo(v);playSound('click')};
-  return card;
-}
-
-// --- Videos ans Grid anhaengen (dedupliziert) ---
-function appendVideos(grid,videos){
-  // Sentinel vor dem Anhaengen entfernen (wird danach neu angehaengt)
-  const oldSentinel=document.getElementById('ytSentinel');
-  if(oldSentinel)oldSentinel.remove();
-
-  videos.forEach(v=>{
-    if(!v.id||ytSeenIds.has(v.id))return;
-    ytSeenIds.add(v.id);
-    grid.appendChild(createVideoCard(v));
-  });
-
-  // Sentinel immer ganz unten anhaengen wenn es noch Seiten gibt
-  if(ytNextPageToken&&ytCurrentQuery){
-    const sentinel=document.createElement('div');
-    sentinel.id='ytSentinel';
-    sentinel.style.cssText='grid-column:1/-1;height:4px;pointer-events:none';
-    grid.appendChild(sentinel);
-  }
-}
-
-// --- IntersectionObserver: Naechste Seite laden wenn Sentinel sichtbar ---
-let ytObserver=null;
-
-function setupSentinelObserver(grid,gen){
-  // Alten Observer aufräumen
-  if(ytObserver){ytObserver.disconnect();ytObserver=null}
-
-  ytObserver=new IntersectionObserver((entries)=>{
-    const entry=entries[0];
-    if(!entry||!entry.isIntersecting)return;
-    if(ytLoadGeneration!==gen){ytObserver.disconnect();return}
-    loadMoreVideos(grid,gen);
-  },{root:grid,rootMargin:'0px 0px 200px 0px',threshold:0});
-
-  // Sentinel erst NACH Layout-Berechnung beobachten (verhindert sofortiges Feuern)
-  requestAnimationFrame(()=>{
-    requestAnimationFrame(()=>{
-      const sentinel=document.getElementById('ytSentinel');
-      if(sentinel&&ytObserver)ytObserver.observe(sentinel);
-    });
-  });
-}
-
-async function loadMoreVideos(grid,gen){
-  if(ytLoadingMore||!ytNextPageToken||!ytCurrentQuery)return;
-  if(ytLoadGeneration!==gen)return;
-  ytLoadingMore=true;
-
-  // Lade-Indikator vor dem Sentinel
-  const sentinel=document.getElementById('ytSentinel');
-  const loader=document.createElement('div');
-  loader.className='yt-loading';
-  loader.id='ytLoader';
-  loader.style.cssText='grid-column:1/-1;padding:20px 0';
-  loader.innerHTML='<div class="yt-loading-bounce" style="width:32px;height:32px"></div>';
-  if(sentinel)grid.insertBefore(loader,sentinel);else grid.appendChild(loader);
-
-  const result=await searchYouTube(ytCurrentQuery,12,ytNextPageToken);
-  if(ytLoadGeneration!==gen){ytLoadingMore=false;return}
-
-  const ldr=document.getElementById('ytLoader');
-  if(ldr)ldr.remove();
-
-  if(result&&result.videos.length>0){
-    ytNextPageToken=result.nextPageToken;
-    appendVideos(grid,result.videos);
-    // Cache aktualisieren
-    const cached=getCachedSearch(ytCurrentQuery);
-    const merged=cached?[...cached.videos,...result.videos]:result.videos;
-    setCachedSearch(ytCurrentQuery,merged,ytNextPageToken);
-    // Observer auf neues Sentinel umschalten (nach Layout)
-    requestAnimationFrame(()=>{
-      requestAnimationFrame(()=>{
-        const newSentinel=document.getElementById('ytSentinel');
-        if(newSentinel&&ytObserver)ytObserver.observe(newSentinel);
-      });
-    });
-  }else{
-    ytNextPageToken=null;
-    // Sentinel entfernen wenn keine Seiten mehr
-    if(sentinel)sentinel.remove();
-  }
-  ytLoadingMore=false;
-}
-
-// --- YouTube UI Steuerung ---
+// --- YouTube Launch Screen (simple, no search/player needed) ---
 function initYouTube(){
-  const catsDiv=document.getElementById('ytCats');
-  catsDiv.innerHTML='';
-  const favVideos=getFavoriteVideos();
-  const allCats=['⭐ Favoriten',...Object.keys(ytCategories)];
-
-  // Such-Button als erstes
-  const micBtn=document.createElement('div');
-  micBtn.className='yt-cat yt-voice-cat';
-  micBtn.id='ytVoiceCatBtn';
-  micBtn.innerHTML='<span class="cat-icon">🎙️</span>Suche';
-  micBtn.onclick=()=>startYTVoiceSearch();
-  catsDiv.appendChild(micBtn);
-
-  allCats.forEach((cat,i)=>{
-    const btn=document.createElement('div');
-    btn.className='yt-cat'+(i===0?' active':'');
-    const parts=cat.match(/^(\S+)\s+(.+)$/);
-    if(parts){
-      btn.innerHTML=`<span class="cat-icon">${parts[1]}</span>${parts[2]}`;
-    }else{
-      btn.textContent=cat;
-    }
-    btn.onclick=()=>{
-      document.querySelectorAll('.yt-cat').forEach(b=>b.classList.remove('active'));
-      btn.classList.add('active');
-      currentYTCat=cat;
-      showYTGrid(cat);
-      playSound('click');
-    };
-    catsDiv.appendChild(btn);
-  });
-
-  currentYTCat=allCats[0];
-  showYTGrid(allCats[0]);
+  // Nothing complex needed - the HTML is static with preset buttons
+  bubbleSay('Wähle was du schauen willst!');
 }
 
-function showYTGrid(cat){
-  ytPlayerActive=false;
-  const grid=document.getElementById('ytGrid');
-  const player=document.getElementById('ytPlayer');
-  const playerFrame=document.getElementById('ytPlayerFrame');
-  grid.style.display='';
-  player.style.display='none';
-  // Video komplett stoppen
-  playerFrame.contentWindow?.postMessage('{"event":"command","func":"pauseVideo","args":""}','*');
-  playerFrame.src='about:blank';
-  playerFrame.src='';
-  const cats=document.getElementById('ytCats');
-  cats.style.display='';
-  cats.classList.remove('hidden-scroll');
-  const ytTopbar=document.getElementById('youtube').querySelector('.topbar');
-  if(ytTopbar)ytTopbar.style.display='';
-  grid.scrollTop=0;
-  // Kategorie-Leiste bei Scroll ausblenden + Scroll-to-Top Button
-  const scrollTopBtn=document.getElementById('ytScrollTopBtn');
-  if(scrollTopBtn)scrollTopBtn.classList.remove('visible');
-  grid.onscroll=()=>{
-    if(grid.scrollTop>80)cats.classList.add('hidden-scroll');
-    else cats.classList.remove('hidden-scroll');
-    if(scrollTopBtn){
-      if(grid.scrollTop>400)scrollTopBtn.classList.add('visible');
-      else scrollTopBtn.classList.remove('visible');
-    }
-  };
-  const gen=++ytLoadGeneration;
-  loadCategoryVideos(cat,gen);
-  bubbleSay(cat==='⭐ Favoriten'?'Deine Lieblingsvideos!':'Wähle ein Video!');
-}
-
-function playYTVideo(v){
-  ytPlayerActive=true;
-  trackYTView(v);
-  document.getElementById('ytGrid').style.display='none';
-  document.getElementById('ytCats').style.display='none';
-  document.getElementById('youtube').querySelector('.topbar').style.display='none';
-  const player=document.getElementById('ytPlayer');
-  player.style.display='flex';
-  document.getElementById('ytPlayerFrame').src='https://www.youtube.com/embed/'+v.id+'?autoplay=1&rel=0&modestbranding=1&enablejsapi=1&playsinline=1&fs=0';
-  document.getElementById('ytPlayerTitle').textContent=v.title||'Video';
-  bubbleSay(v.title||'Video');
-  // Ähnliche Videos unten laden (aus gleicher Kategorie)
-  const related=document.getElementById('ytRelated');
-  related.innerHTML='';
-  if(currentYTCat&&ytCategories[currentYTCat]){
-    const q=ytCategories[currentYTCat].query;
-    searchYouTube(q,8).then(results=>{
-      if(results&&results.videos){
-        results.videos.forEach(item=>{
-          if(item.id===v.id)return;
-          const rv={id:item.id,title:item.title||'Video',thumb:item.thumb||('https://img.youtube.com/vi/'+item.id+'/mqdefault.jpg')};
-          related.appendChild(createVideoCard(rv));
-        });
-      }
-    }).catch(()=>{});
-  }
-}
-
-// --- YouTube direkt öffnen (echte App auf Tablet) ---
 // ===== YOUTUBE APP LAUNCHER =====
 function launchYouTube(){
   go('youtube');
-  initYouTube();
-}
-
-// ===== YOUTUBE VOICE SEARCH =====
-let ytVoiceRecognition=null;
-
-function startYTVoiceSearch(){
-  const SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;
-  if(!SpeechRecognition){
-    bubbleSay('Sprachsuche wird hier leider nicht unterstützt.');
-    return;
-  }
-  // Falls bereits aktiv, stoppen
-  if(ytVoiceRecognition){
-    ytVoiceRecognition.abort();
-    ytVoiceRecognition=null;
-    return;
-  }
-  const recognition=new SpeechRecognition();
-  recognition.lang='de-DE';
-  recognition.continuous=false;
-  recognition.interimResults=false;
-  recognition.maxAlternatives=1;
-  ytVoiceRecognition=recognition;
-  const btn=document.getElementById('ytVoiceCatBtn');
-
-  recognition.onstart=()=>{
-    if(btn)btn.classList.add('listening');
-    bubbleSay('Ich höre zu... sag mir, was du sehen willst!');
-    playSound('click');
-  };
-  recognition.onresult=(e)=>{
-    const transcript=e.results[0][0].transcript.trim();
-    if(transcript){
-      bubbleSay('Suche nach: '+transcript);
-      showVoiceSearchResults(transcript);
-    }
-  };
-  recognition.onerror=(e)=>{
-    if(btn)btn.classList.remove('listening');
-    ytVoiceRecognition=null;
-    if(e.error==='no-speech'){
-      bubbleSay('Ich habe nichts gehört. Versuch es nochmal!');
-    }else if(e.error!=='aborted'){
-      bubbleSay('Ups, das hat nicht geklappt.');
-    }
-  };
-  recognition.onend=()=>{
-    if(btn)btn.classList.remove('listening');
-    ytVoiceRecognition=null;
-  };
-  recognition.start();
-}
-
-async function showVoiceSearchResults(query){
-  // Kategorie-Buttons deselektieren
-  document.querySelectorAll('.yt-cat').forEach(b=>b.classList.remove('active'));
-  const grid=document.getElementById('ytGrid');
-  const cats=document.getElementById('ytCats');
-  cats.style.display='';
-  cats.classList.remove('hidden-scroll');
-  grid.style.display='';
-  document.getElementById('ytPlayer').style.display='none';
-  document.getElementById('ytPlayerFrame').src='';
-  ytPlayerActive=false;
-
-  // Grid leeren und Ladeanimation
-  grid.innerHTML='<div class="yt-loading"><div class="yt-loading-bounce"></div>Suche Videos...</div>';
-  grid.scrollTop=0;
-
-  // Scroll-Listener einrichten
-  const scrollTopBtn=document.getElementById('ytScrollTopBtn');
-  if(scrollTopBtn)scrollTopBtn.classList.remove('visible');
-  grid.onscroll=()=>{
-    if(grid.scrollTop>80)cats.classList.add('hidden-scroll');
-    else cats.classList.remove('hidden-scroll');
-    if(scrollTopBtn){
-      if(grid.scrollTop>400)scrollTopBtn.classList.add('visible');
-      else scrollTopBtn.classList.remove('visible');
-    }
-  };
-
-  // Suche starten
-  const gen=++ytLoadGeneration;
-  ytCurrentQuery=query;
-  ytNextPageToken=null;
-  ytLoadingMore=false;
-  ytSeenIds=new Set();
-
-  const result=await searchYouTube(query,24);
-  if(ytLoadGeneration!==gen)return;
-
-  if(result&&result.videos.length>0){
-    grid.innerHTML='';
-    appendVideos(grid,result.videos);
-    ytNextPageToken=result.nextPageToken;
-    setCachedSearch(query,result.videos,result.nextPageToken);
-    setupSentinelObserver(grid,gen);
-    setPeppa('celebrate');bennyReact('happy');
-  }else{
-    grid.innerHTML='<div style="text-align:center;padding:40px;color:var(--text-secondary)">Keine Videos gefunden.<br><span style="font-size:0.85em">Versuch einen anderen Begriff!</span></div>';
-  }
 }
 
 // ===== ENDLESS CREDITS GENERATOR (NEW) =====
@@ -2970,29 +2364,29 @@ function initCalmMode(){
   bubbleSay('Lass dich entspannen...');
 }
 
-function playCalmSound(){
-  try{
+function playCalmSound(type){
+  const ctx=getAudioCtx();
   let freq=200,duration=2;
   if(type==='wind')freq=180;
   else if(type==='rain')freq=150;
   else if(type==='ocean')freq=120;
 
-  const osc=getAudioCtx().createOscillator();
-  const gain=getAudioCtx().createGain();
-  osc.connect(gain);
-  gain.connect(getAudioCtx().destination);
-  osc.type='sine';
-  osc.frequency.setValueAtTime(freq,getAudioCtx().currentTime);
-  osc.frequency.linearRampToValueAtTime(freq-20,getAudioCtx().currentTime+duration);
-  gain.gain.setValueAtTime(0.08,getAudioCtx().currentTime);
-  gain.gain.exponentialRampToValueAtTime(0.01,getAudioCtx().currentTime+duration);
-  osc.start(getAudioCtx().currentTime);
-  osc.stop(getAudioCtx().currentTime+duration);
+  if(ctx){try{
+    const osc=ctx.createOscillator();
+    const gain=ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.type='sine';
+    osc.frequency.setValueAtTime(freq,ctx.currentTime);
+    osc.frequency.linearRampToValueAtTime(freq-20,ctx.currentTime+duration);
+    gain.gain.setValueAtTime(0.08,ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01,ctx.currentTime+duration);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime+duration);
+  }catch(e){}}
 
   speak(type);
   playSound('click');
-
-  }catch(e){console.warn("[Audio] playCalmSound:",e)}
 }
 
 // ===== MOOD TRACKING / SCHNELLZUGRIFF =====
@@ -3179,13 +2573,7 @@ function showDashboard(){
   document.getElementById('pinBoxWrap').style.display='none';
   const dash=document.getElementById('dashContent');
   dash.style.display='block';
-  // API Keys Feld vorbelegen
-  const keyInput=document.getElementById('ytApiKeyInput');
-  if(keyInput){
-    const keys=getYTApiKeys();
-    keyInput.value=keys.join(', ');
-  }
-  updateKeyCountDisplay();
+  // YouTube now uses external app - no API keys needed
   updateDashboard();
   buildQuickSymbolEditor();
 }
@@ -3313,16 +2701,18 @@ function exitApp(){
 
 // ===== INITIALIZATION =====
 document.addEventListener('DOMContentLoaded',()=>{
-  try{initAAC();document.title="AAC OK"}catch(e){window.__errors.push("initAAC: "+e.message);console.error("[Init] AAC:",e)}
-  try{initMusic();document.title+=" Music OK"}catch(e){window.__errors.push("initMusic: "+e.message);console.error("[Init] Music:",e)}
-
-  try{buildMoodPicker();document.title+=" Mood OK"}catch(e){window.__errors.push("buildMoodPicker: "+e.message);console.error("[Init] MoodPicker:",e)}
+  // Jede Init einzeln wrappen — wenn eine fehlschlägt, laufen die anderen trotzdem
+  try{initAAC()}catch(e){console.error('[Init] AAC failed:',e)}
+  try{initMusic()}catch(e){console.error('[Init] Music failed:',e)}
+  try{buildMoodPicker()}catch(e){console.error('[Init] MoodPicker failed:',e)}
 
   // Check if already installed - update install card
-  if(window.matchMedia('(display-mode:standalone)').matches||window.navigator.standalone){
-    const btn=document.getElementById('installBtn');
-    if(btn){btn.textContent='✅ Bereits installiert';btn.style.background='#4CAF50';btn.onclick=null;}
-  }
+  try{
+    if(window.matchMedia('(display-mode:standalone)').matches||window.navigator.standalone){
+      const btn=document.getElementById('installBtn');
+      if(btn){btn.textContent='✅ Bereits installiert';btn.style.background='#4CAF50';btn.onclick=null;}
+    }
+  }catch(e){}
 
   setInterval(updateUsageTime,1000);
 });
