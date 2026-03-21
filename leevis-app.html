@@ -2629,7 +2629,18 @@ function filterAppList(query){
   }
   container.innerHTML='';
   if(!allApps.length){
+    let debugInfo='';
+    if(!window.AndroidBridge) debugInfo='⚠️ AndroidBridge fehlt (alte APK oder Browser)';
+    else{
+      try{
+        const methods=['getInstalledApps','isAppInstalled','getAppName','launchApp'];
+        const has=methods.filter(m=>AndroidBridge[m]);
+        const missing=methods.filter(m=>!AndroidBridge[m]);
+        debugInfo='✅ Bridge da. Hat: '+has.join(', ')+(missing.length?' | Fehlt: '+missing.join(', '):'');
+      }catch(e){debugInfo='❌ Bridge Fehler: '+e.message;}
+    }
     container.innerHTML=`<div style="margin-top:4px">
+      <p style="font-size:0.7em;color:#999;margin-bottom:6px;font-family:monospace">${debugInfo}</p>
       <p style="font-size:0.8em;color:var(--text-secondary);margin-bottom:8px">App-Liste nicht verfügbar. App manuell per Package-Name hinzufügen:</p>
       <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
         <input id="manualPkgInput" type="text" placeholder="z.B. com.netflix.mediaclient" style="flex:1;min-width:160px;padding:8px 10px;border-radius:8px;border:2px solid var(--border);background:var(--card-bg2);color:var(--text-primary);font-size:0.85em">
