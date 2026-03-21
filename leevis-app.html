@@ -12,7 +12,7 @@
 <!-- Edge AI: TensorFlow.js + Speech Commands (lokal, keine Cloud) -->
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js" async></script>
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/speech-commands@0.5.4/dist/speech-commands.min.js" async></script>
-<!-- YouTube: Opens external YouTube app -->
+<!-- YouTube: Loads in iframe with persistent overlay buttons -->
 <style>
 /* ========================================================================
  * MOTOR PLANNING (MOTORISCHE PLANUNG) - CORE DESIGN PRINCIPLE
@@ -214,18 +214,19 @@ body{
 .pkey.bk{background:#333;color:transparent;height:clamp(45px,10vh,75px);width:clamp(18px,4vw,30px);margin:0 clamp(-9px,-2vw,-15px);z-index:2;border-color:#111;border-radius:0 0 6px 6px}
 .pkey.bk:active{background:#555}
 
-/* ===== YOUTUBE LAUNCH SCREEN ===== */
-.yt-launch{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;padding:20px;gap:clamp(16px,3vh,30px);background:linear-gradient(135deg,#1a0000 0%,#2d0a0a 50%,#0f0f1a 100%)}
-.yt-launch-logo{width:clamp(100px,25vw,180px);height:auto}
-.yt-launch-title{font-size:clamp(1.4em,4vw,2.2em);font-weight:900;color:#fff;text-align:center}
-.yt-channel-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:clamp(10px,2vw,16px);width:100%;max-width:500px;padding:0 10px}
-.yt-channel-btn{background:var(--card-bg);border:2px solid var(--border);border-radius:clamp(14px,2.5vw,20px);padding:clamp(14px,2.5vw,20px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;cursor:pointer;transition:all 0.15s;min-height:clamp(90px,18vw,130px);touch-action:manipulation}
-.yt-channel-btn:active{transform:scale(0.95);background:rgba(255,255,255,0.1)}
-.yt-channel-btn .ch-icon{font-size:clamp(2.2em,6vw,3.5em);line-height:1}
-.yt-channel-btn .ch-label{font-size:clamp(0.75em,2vw,1em);font-weight:700;color:#fff;text-align:center}
-.yt-back-huge{width:calc(100% - 40px);max-width:500px;min-height:clamp(100px,15vh,140px);background:#e74c3c;border:4px solid #c0392b;border-radius:clamp(18px,3vw,28px);color:#fff;font-size:clamp(1.6em,4.5vw,2.4em);font-weight:900;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:12px;transition:all 0.15s;touch-action:manipulation;box-shadow:0 6px 25px rgba(231,76,60,0.5);letter-spacing:0.5px;margin-top:auto;margin-bottom:20px}
-.yt-back-huge:active{transform:scale(0.97);background:#c0392b}
-@keyframes ytBackPulse{0%,100%{box-shadow:0 6px 25px rgba(231,76,60,0.5)}50%{box-shadow:0 6px 35px rgba(231,76,60,0.8)}}
+/* ===== YOUTUBE IFRAME SCREEN ===== */
+.yt-iframe-wrap{flex:1;position:relative;overflow:hidden;background:#000}
+.yt-iframe-wrap iframe{width:100%;height:100%;border:none}
+/* Persistent overlay bar — always visible on top of YouTube */
+.yt-overlay{position:fixed;bottom:0;left:0;right:0;z-index:9999;display:none;align-items:stretch;gap:0;height:clamp(70px,14vh,100px);background:rgba(15,15,26,0.95);border-top:3px solid rgba(255,255,255,0.15);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);padding:6px 8px;box-shadow:0 -4px 20px rgba(0,0,0,0.6)}
+.yt-overlay.visible{display:flex}
+.yt-overlay-btn{flex:1;border:none;border-radius:clamp(12px,2vw,18px);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-weight:800;font-size:clamp(0.7em,2vw,0.95em);transition:all 0.12s;touch-action:manipulation;margin:0 3px;color:#fff}
+.yt-overlay-btn:active{transform:scale(0.94)}
+.yt-overlay-btn.peppa-btn{background:linear-gradient(135deg,#E91E63,#C2185B)}
+.yt-overlay-btn.mood-btn{background:linear-gradient(135deg,#FF9800,#E65100)}
+.yt-overlay-btn.back-btn-yt{background:linear-gradient(135deg,#e74c3c,#c0392b);flex:1.5}
+.yt-overlay-btn img,.yt-overlay-btn svg{width:clamp(32px,6vw,48px);height:clamp(32px,6vw,48px);object-fit:contain}
+.yt-overlay-btn .yt-ob-label{font-size:clamp(0.65em,1.8vw,0.85em);white-space:nowrap}
 
 /* ===== CREDITS SCREEN (CINEMATIC FULLSCREEN) ===== */
 #credits{overflow:hidden}
@@ -424,27 +425,26 @@ body{
   <div class="music-content" id="musicContent" style="flex:1;overflow-y:scroll;-webkit-overflow-scrolling:touch;padding:10px;touch-action:pan-y;min-height:0"></div>
 </div>
 
-<!-- YOUTUBE LAUNCH SCREEN -->
+<!-- YOUTUBE IFRAME SCREEN -->
 <div class="screen" id="youtube">
-  <div class="topbar red" style="flex-wrap:nowrap"><button class="back-btn" onclick="go('home')">←</button><span style="font-weight:700;font-size:1.1em">Videos</span></div>
-  <div class="yt-launch">
-    <!-- YouTube Logo -->
-    <svg class="yt-launch-logo" viewBox="0 0 120 85" xmlns="http://www.w3.org/2000/svg"><rect x="0" y="0" width="120" height="85" rx="18" fill="#FF0000"/><polygon points="48,18 48,67 90,42.5" fill="#fff"/></svg>
-    <div class="yt-launch-title">Was möchtest du schauen?</div>
-    <!-- Preset Channel Buttons -->
-    <div class="yt-channel-grid">
-      <div class="yt-channel-btn" onclick="openYouTubeChannel('peppa')"><span class="ch-icon">🐷</span><span class="ch-label">Peppa Pig</span></div>
-      <div class="yt-channel-btn" onclick="openYouTubeChannel('lieder')"><span class="ch-icon">🎵</span><span class="ch-label">Kinderlieder</span></div>
-      <div class="yt-channel-btn" onclick="openYouTubeChannel('babybus')"><span class="ch-icon">🚌</span><span class="ch-label">BabyBus</span></div>
-      <div class="yt-channel-btn" onclick="openYouTubeChannel('sensory')"><span class="ch-icon">🌈</span><span class="ch-label">Sensory</span></div>
-    </div>
-    <!-- Open YouTube directly -->
-    <div class="yt-channel-btn" onclick="openYouTubeApp('')" style="width:calc(100% - 40px);max-width:500px;flex-direction:row;min-height:70px;background:rgba(255,0,0,0.15);border-color:rgba(255,0,0,0.4)">
-      <span class="ch-icon">▶️</span><span class="ch-label" style="font-size:clamp(1em,2.5vw,1.3em)">YouTube öffnen</span>
-    </div>
-    <!-- HUGE Back Button - always visible, toddler-proof -->
-    <button class="yt-back-huge" onclick="go('home');playSound('click')">← Zurück zu Leevis Welt</button>
+  <div class="yt-iframe-wrap">
+    <iframe id="ytMainFrame" src="about:blank" allow="autoplay;encrypted-media;fullscreen" allowfullscreen sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-presentation"></iframe>
   </div>
+</div>
+<!-- YouTube Overlay Bar (outside screen div so it stays on top of everything) -->
+<div class="yt-overlay" id="ytOverlay">
+  <button class="yt-overlay-btn peppa-btn" onclick="ytNavigate('peppa')">
+    <span style="font-size:clamp(1.8em,5vw,2.6em)">🐷</span>
+    <span class="yt-ob-label">Peppa</span>
+  </button>
+  <button class="yt-overlay-btn mood-btn" onclick="toggleMoodPicker()">
+    <img src="https://static.arasaac.org/pictograms/6517/6517_500.png" alt="Stimmung">
+    <span class="yt-ob-label">Stimmung</span>
+  </button>
+  <button class="yt-overlay-btn back-btn-yt" onclick="ytGoHome()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+    <span class="yt-ob-label">Zurück</span>
+  </button>
 </div>
 
 <!-- CREDITS SCREEN (CINEMATIC FULLSCREEN) -->
@@ -597,7 +597,7 @@ body{
 
       <div class="dcard">
         <h3>📺 YouTube</h3>
-        <p style="font-size:0.85em;color:var(--text-secondary)">YouTube öffnet jetzt die echte YouTube-App auf dem Handy. Leevi kann jederzeit über den großen roten Knopf zurückkommen.</p>
+        <p style="font-size:0.85em;color:var(--text-secondary)">YouTube läuft direkt in der App mit einer Overlay-Leiste (Peppa, Stimmung, Zurück). Leevi kann jederzeit zurückkommen.</p>
       </div>
 
       <div class="dcard">
@@ -698,6 +698,16 @@ function go(screen){
   // Stop loops from previous screen
   if(currentScreen==='credits')stopCreditsLoops();
   if(currentScreen==='sensory')stopSensory();
+  // Hide YouTube overlay and stop iframe when leaving YouTube
+  if(currentScreen==='youtube'&&screen!=='youtube'){
+    document.getElementById('ytOverlay').classList.remove('visible');
+    document.getElementById('ytMainFrame').src='about:blank';
+    document.getElementById('motorBar').style.display='';
+  }
+  // Hide motor bar when entering YouTube (overlay replaces it)
+  if(screen==='youtube'){
+    document.getElementById('motorBar').style.display='none';
+  }
 
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById(screen).classList.add('active');
@@ -1738,50 +1748,46 @@ function initAlphabetGrid(){
   }
 }
 
-// ===== YOUTUBE - EXTERNAL APP LAUNCHER =====
-// YouTube opens the REAL YouTube app on the phone.
-// The app shows a launch screen with preset channels and a HUGE back button.
-// When Leevi returns (via Android back or task switcher), the back button screen is waiting.
+// ===== YOUTUBE - IN-APP IFRAME WITH OVERLAY =====
+// YouTube loads inside an iframe. A persistent overlay bar stays on top
+// with Peppa, Stimmung, and Zurück buttons — always accessible for Leevi.
 
-// --- YouTube Channel URLs for external launch ---
-const ytChannelUrls={
-  'peppa':'https://www.youtube.com/@PeppaPigDeutsch',
-  'lieder':'https://www.youtube.com/@SingKinderlieder',
-  'babybus':'https://www.youtube.com/@BabyBusDeutsch',
-  'sensory':'https://www.youtube.com/@HeyBearSensory'
+const YT_URLS={
+  home:'https://m.youtube.com',
+  peppa:'https://m.youtube.com/results?search_query=Peppa+Pig+Deutsch',
+  lieder:'https://m.youtube.com/results?search_query=Kinderlieder+deutsch',
+  babybus:'https://m.youtube.com/results?search_query=BabyBus+Deutsch',
+  sensory:'https://m.youtube.com/results?search_query=Hey+Bear+Sensory'
 };
-// --- YouTube External Launch Functions ---
 
-// --- Open YouTube app or channel ---
-function openYouTubeApp(url){
-  const target=url||'https://www.youtube.com';
-  // Try intent URL for Android WebView first, then fallback to window.open
-  try{
-    // Android intent: opens YouTube app directly
-    const intentUrl='intent://'+target.replace(/^https?:\/\//,'')+'#Intent;scheme=https;package=com.google.android.youtube;end';
-    window.location.href=intentUrl;
-  }catch(e){
-    // Fallback: open in new tab/window (works in browser)
-    window.open(target,'_blank');
-  }
-  bubbleSay('YouTube ist offen! Tippe den roten Knopf zum Zurückkommen.');
-}
-
-function openYouTubeChannel(key){
-  const url=ytChannelUrls[key];
-  if(url){
-    openYouTubeApp(url);
-    playSound('click');
-  }
-}
-
-// --- YouTube Launch Screen (simple, no search/player needed) ---
 function initYouTube(){
-  // Nothing complex needed - the HTML is static with preset buttons
-  bubbleSay('Wähle was du schauen willst!');
+  const frame=document.getElementById('ytMainFrame');
+  // Only load if not already loaded
+  if(!frame.src||frame.src==='about:blank'){
+    frame.src=YT_URLS.home;
+  }
+  // Show the overlay bar
+  document.getElementById('ytOverlay').classList.add('visible');
+  bubbleSay('Viel Spaß mit Videos!');
 }
 
-// ===== YOUTUBE APP LAUNCHER =====
+function ytNavigate(key){
+  const url=YT_URLS[key]||YT_URLS.home;
+  const frame=document.getElementById('ytMainFrame');
+  frame.src=url;
+  playSound('click');
+  bubbleSay(key==='peppa'?'Peppa Pig!':'Videos!');
+}
+
+function ytGoHome(){
+  // Hide overlay, stop iframe, go home
+  document.getElementById('ytOverlay').classList.remove('visible');
+  const frame=document.getElementById('ytMainFrame');
+  frame.src='about:blank';
+  go('home');
+  playSound('click');
+}
+
 function launchYouTube(){
   go('youtube');
 }
